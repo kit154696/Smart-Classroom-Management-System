@@ -13,12 +13,12 @@ app.use(express.static(__dirname)); // serve index.html
 
 // ─── 1. เชื่อมต่อ MySQL ──────────────────────────────────
 const db = mysql.createConnection({
-  host:     'localhost',
-  user:     'root',
-  password: '0812667717asdFGH-',   // ⚠️ เปลี่ยนเป็นรหัสผ่าน MySQL ของคุณ
-  database: 'smart_classroom'      // ⚠️ ชื่อ database ใน TablePlus
+  host:     process.env.MYSQLHOST,
+  user:     process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port:     process.env.MYSQLPORT || 3306
 });
-
 db.connect((err) => {
   if (err) { console.error('❌ เชื่อมต่อฐานข้อมูลไม่สำเร็จ:', err.message); return; }
   console.log('✅ เชื่อมต่อฐานข้อมูล MySQL สำเร็จแล้ว!');
