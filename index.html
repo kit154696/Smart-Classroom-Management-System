@@ -681,6 +681,245 @@
     .navbar { padding: 0 14px; }
     .nav-title { font-size: 15px; }
   }
+
+/* ========================================
+   ✨ ANIMATIONS
+   ======================================== */
+
+/* — Keyframes — */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes ripple {
+  to { transform: scale(4); opacity: 0; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139,48,32,0.4); }
+  50%       { box-shadow: 0 0 0 10px rgba(139,48,32,0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px) scaleY(0.95); }
+  to   { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* — Screen transitions — */
+.screen.active {
+  animation: fadeInUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.screen.slide-left {
+  animation: slideInLeft 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* — Navbar — */
+.navbar {
+  animation: fadeInDown 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* — Hero banner — */
+.hero-banner {
+  animation: scaleIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+/* — Landing buttons — */
+#screen-landing .big-btn:nth-child(2) {
+  animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+#screen-landing .big-btn:nth-child(3) {
+  animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both;
+}
+
+/* — Dashboard buttons — */
+#screen-dashboard .big-btn:nth-child(1) {
+  animation: slideInRight 0.45s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+}
+#screen-dashboard .big-btn:nth-child(2) {
+  animation: slideInRight 0.45s cubic-bezier(0.22,1,0.36,1) 0.2s both;
+}
+#screen-dashboard .big-btn:nth-child(3) {
+  animation: slideInRight 0.45s cubic-bezier(0.22,1,0.36,1) 0.3s both;
+}
+
+/* — Float effect on KKU icon — */
+.kku-icon {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* — Button ripple effect — */
+.big-btn, .auth-btn, .social-btn, .scoring-btns button {
+  position: relative;
+  overflow: hidden;
+}
+.big-btn::after, .auth-btn::after, .social-btn::after, .scoring-btns button::after {
+  content: '';
+  position: absolute;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  transform: scale(0);
+  top: 50%; left: 50%;
+  margin: -12px 0 0 -12px;
+  pointer-events: none;
+}
+.big-btn:active::after, .auth-btn:active::after,
+.social-btn:active::after, .scoring-btns button:active::after {
+  animation: ripple 0.5s ease-out;
+}
+
+/* — Shimmer on auth-btn — */
+.auth-btn {
+  background: linear-gradient(
+    90deg,
+    var(--kku-red) 0%,
+    #b04030 40%,
+    var(--kku-red) 60%,
+    var(--kku-red) 100%
+  );
+  background-size: 200% auto;
+  transition: background-position 0.4s, transform 0.2s, box-shadow 0.2s;
+}
+.auth-btn:hover {
+  background-position: right center;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139,48,32,0.4);
+}
+.auth-btn:active { transform: translateY(0); }
+
+/* — Pulse on primary big-btn hover — */
+.big-btn:hover {
+  animation: pulse 1.2s infinite;
+}
+
+/* — Form fields — */
+.field-row {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.field-row:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139,48,32,0.2);
+}
+.field-input {
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* — Score fields stagger — */
+.score-field:nth-child(1) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.05s both; }
+.score-field:nth-child(2) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.12s both; }
+.score-field:nth-child(3) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.19s both; }
+.score-field:nth-child(4) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.26s both; }
+.score-field:nth-child(5) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.33s both; }
+.score-field:nth-child(6) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.40s both; }
+
+/* — Dropdown menu — */
+.dropdown-menu.open {
+  animation: slideDown 0.22s cubic-bezier(0.22,1,0.36,1) both;
+  transform-origin: top right;
+}
+.dropdown-menu button {
+  transition: background 0.15s, transform 0.15s, padding-left 0.15s;
+}
+.dropdown-menu button:hover {
+  padding-left: 30px;
+}
+
+/* — Toast — */
+.toast.show {
+  animation: toastIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* — Table rows — */
+.grade-table tbody tr,
+.schedule-table tbody tr {
+  transition: background 0.15s, transform 0.15s;
+}
+.grade-table tbody tr:hover,
+.schedule-table tbody tr:hover {
+  background: #fef0ee !important;
+  transform: scale(1.01);
+}
+
+/* — Result box — */
+.result-box {
+  transition: box-shadow 0.3s;
+}
+.result-box:hover {
+  box-shadow: 0 4px 20px rgba(139,48,32,0.1);
+}
+
+/* — Loading spinner — */
+.spinner {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+/* — Back btn — */
+.back-btn {
+  transition: transform 0.2s, background 0.2s;
+}
+.back-btn:hover {
+  transform: translateX(-3px);
+  background: rgba(255,255,255,0.35);
+}
+
+/* — Profile circle — */
+.profile-circle {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.profile-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(139,48,32,0.3);
+}
+
+/* — Hamburger btn — */
+.hamburger-btn {
+  transition: transform 0.2s, background 0.2s;
+}
+.hamburger-btn:hover {
+  transform: rotate(90deg);
+  background: rgba(139,48,32,0.08);
+}
+
+/* — Page title fade — */
+.page-indicator, .nav-title {
+  animation: fadeInDown 0.4s cubic-bezier(0.22,1,0.36,1) 0.15s both;
+}
 </style>
 </head>
 <body>
@@ -939,7 +1178,7 @@
       <div style="text-align:center;">
         <div style="font-size:48px;margin-bottom:12px;">❓</div>
         <div style="font-size:20px;font-weight:700;color:#666;margin-bottom:8px;">ศูนย์ช่วยเหลือ</div>
-        <div style="font-size:15px;color:#888;">ติดต่อ: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="95e6e0e5e5fae7e1d5fefee0bbf4f6bbe1fd">[email&#160;protected]</a> | โทร: 043-009-700</div>
+        <div style="font-size:15px;color:#888;">ติดต่อ: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a4d7d1d4d4cbd6d0e4cfcfd18ac5c78ad0cc">[email&#160;protected]</a> | โทร: 043-009-700</div>
       </div>
     </div>
   </div>
@@ -1169,15 +1408,22 @@
 <!-- ============================================================ -->
 <script>
 // ═══════════════════════════════════════════════
-// CONFIG — ชี้ไปที่ Backend จริง
+// CONFIG — ✅ Railway Production API
 // ═══════════════════════════════════════════════
-const API = 'smart-classroom-management-system-production.up.railway.app';
+const API = 'https://smart-classroom-management-system-production.up.railway.app/api';
 let currentUser = null;
 
-// ─── Navigation ─────────────────────────────────
+// ─── Navigation with animation ──────────────────
 function navigate(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
+  const current = document.querySelector('.screen.active');
+  const next    = document.getElementById(screenId);
+  if (!next || current === next) return;
+  current.classList.remove('active');
+  next.classList.add('active');
+  // re-trigger animation
+  next.style.animation = 'none';
+  next.offsetHeight; // reflow
+  next.style.animation = '';
   closeMenus();
   window.scrollTo(0, 0);
 }
@@ -1214,72 +1460,69 @@ async function callAPI(method, path, body) {
   return res.json();
 }
 
+// ─── Loading button helper ───────────────────
+function setLoading(btn, loading, label = 'Continue / ดำเนินการต่อ') {
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? '<span class="spinner"></span>กำลังโหลด...'
+    : label;
+}
+
 // ═══════════════════════════════════════════════
-// REGISTER — เรียก POST /api/register จริง
+// REGISTER
 // ═══════════════════════════════════════════════
 async function doRegister() {
-  const u = document.getElementById('reg-username').value.trim();
-  const p = document.getElementById('reg-password').value;
-  const c = document.getElementById('reg-confirm').value;
+  const u   = document.getElementById('reg-username').value.trim();
+  const p   = document.getElementById('reg-password').value;
+  const c   = document.getElementById('reg-confirm').value;
+  const btn = document.querySelector('#screen-register .auth-btn');
 
   if (!u || !p) { showToast('กรุณากรอกข้อมูลให้ครบ', true); return; }
   if (p !== c)  { showToast('รหัสผ่านไม่ตรงกัน', true); return; }
 
+  setLoading(btn, true);
   try {
     const r = await callAPI('POST', '/register', { username: u, password: p, role: 'student' });
     if (r.success) {
-      showToast('ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ ✓');
+      showToast('ลงทะเบียนสำเร็จ! ✓');
       setTimeout(() => navigate('screen-login'), 1500);
     } else {
       showToast(r.message, true);
     }
-  } catch (e) {
-    showToast('❌ ไม่สามารถเชื่อมต่อ Server ได้', true);
-  }
+  } catch { showToast('❌ เชื่อมต่อ Server ไม่ได้', true); }
+  finally  { setLoading(btn, false); }
 }
 
 // ═══════════════════════════════════════════════
-// LOGIN — เรียก POST /api/login จริง
+// LOGIN
 // ═══════════════════════════════════════════════
 async function doLogin() {
-  const u = document.getElementById('login-username').value.trim();
-  const p = document.getElementById('login-password').value;
+  const u   = document.getElementById('login-username').value.trim();
+  const p   = document.getElementById('login-password').value;
+  const btn = document.querySelector('#screen-login .auth-btn');
 
   if (!u || !p) { showToast('กรุณากรอกข้อมูลให้ครบ', true); return; }
 
-  // แสดง loading
-  const btn = document.querySelector('#screen-login .auth-btn');
-  const orig = btn.textContent;
-  btn.textContent = '⏳ กำลังตรวจสอบ...';
-  btn.disabled = true;
-
+  setLoading(btn, true);
   try {
     const r = await callAPI('POST', '/login', { username: u, password: p });
-
     if (r.success) {
       currentUser = r;
-
-      // อัปเดตหน้า Account
       const el = id => document.getElementById(id);
-      if (el('acc-username'))  el('acc-username').textContent  = r.username;
-      if (el('acc-role'))      el('acc-role').textContent      = r.role;
+      if (el('acc-username')) el('acc-username').textContent = r.username;
+      if (el('acc-role'))     el('acc-role').textContent     = r.role;
       if (el('account-name-bar')) {
         const bar = el('account-name-bar');
         bar.textContent = r.name;
         bar.style.cssText += ';display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;padding:0 10px;';
       }
-
       showToast('ยินดีต้อนรับ ' + r.name + ' ✓');
       setTimeout(() => navigate('screen-dashboard'), 1200);
     } else {
       showToast(r.message || 'Username หรือ Password ไม่ถูกต้อง', true);
     }
-  } catch (e) {
-    showToast('❌ ไม่สามารถเชื่อมต่อ Server ได้', true);
-  } finally {
-    btn.textContent = orig;
-    btn.disabled = false;
-  }
+  } catch { showToast('❌ เชื่อมต่อ Server ไม่ได้', true); }
+  finally  { setLoading(btn, false, 'Continue / ดำเนินการต่อ'); }
 }
 
 // ═══════════════════════════════════════════════
@@ -1293,132 +1536,127 @@ function doLogout() {
 }
 
 // ═══════════════════════════════════════════════
-// CHECK GRADE — เรียก GET /api/grades/:id จริง
+// CHECK GRADE
 // ═══════════════════════════════════════════════
 async function checkGrade() {
   const uid   = document.getElementById('grade-userid').value.trim().toUpperCase();
   const table = document.getElementById('grade-table');
   const tbody = document.getElementById('grade-tbody');
   const empty = document.getElementById('grade-empty');
+  const btn   = document.querySelector('#screen-grades .auth-btn');
 
   if (!uid) { showToast('กรุณากรอก User ID', true); return; }
 
-  empty.textContent = '⏳ กำลังดึงข้อมูลจากฐานข้อมูล...';
-  empty.style.display = 'block';
+  setLoading(btn, true, 'SUBMIT / ยืนยัน');
+  empty.innerHTML = '<span class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:var(--kku-red);"></span> กำลังดึงข้อมูล...';
+  empty.style.display = 'block'; empty.style.color = '#888';
   table.classList.remove('show');
 
   try {
     const r = await callAPI('GET', '/grades/' + uid);
-
     if (r.success && r.data.length > 0) {
       tbody.innerHTML = '';
-      r.data.forEach(row => {
-        const gradeColor =
-          row.grade === 'A'  ? '#1a7a45' :
-          row.grade === 'F'  ? '#c0392b' :
-          row.grade.startsWith('B') ? '#1d4ed8' : '#333';
-
-        tbody.innerHTML += `<tr>
+      r.data.forEach((row, i) => {
+        const gc = row.grade==='A' ? '#1a7a45' : row.grade==='F' ? '#c0392b' : row.grade.startsWith('B') ? '#1d4ed8' : '#333';
+        const tr = document.createElement('tr');
+        tr.style.cssText = `animation:fadeInUp 0.3s ease ${i*0.06}s both`;
+        tr.innerHTML = `
           <td><b>${row.course_id}</b></td>
           <td>${row.course_name}</td>
-          <td>${row.attend_score ?? '-'}</td>
-          <td>${row.attitude_score ?? '-'}</td>
-          <td>${row.homework_score ?? '-'}</td>
-          <td>${row.midterm_score ?? '-'}</td>
-          <td>${row.final_score ?? '-'}</td>
+          <td>${row.attend_score??'-'}</td>
+          <td>${row.attitude_score??'-'}</td>
+          <td>${row.homework_score??'-'}</td>
+          <td>${row.midterm_score??'-'}</td>
+          <td>${row.final_score??'-'}</td>
           <td><b>${row.total_score}</b></td>
-          <td><b style="color:${gradeColor};font-size:17px;">${row.grade}</b></td>
-        </tr>`;
+          <td><b style="color:${gc};font-size:17px;">${row.grade}</b></td>`;
+        tbody.appendChild(tr);
       });
       empty.style.display = 'none';
       table.classList.add('show');
       showToast('พบเกรด ' + r.data.length + ' วิชา ✓');
     } else {
-      empty.textContent = '⚠️ ' + (r.message || 'ไม่พบข้อมูลของ ' + uid);
-      showToast('ไม่พบ User ID: ' + uid, true);
+      empty.innerHTML = '⚠️ ' + (r.message || 'ไม่พบข้อมูลของ ' + uid);
+      empty.style.color = '#c0392b';
+      showToast('ไม่พบ ' + uid, true);
     }
-  } catch (e) {
-    empty.textContent = '❌ ไม่สามารถเชื่อมต่อ Server ได้';
+  } catch {
+    empty.innerHTML = '❌ Server ไม่ตอบสนอง';
+    empty.style.color = '#c0392b';
     showToast('Server ไม่ตอบสนอง', true);
-  }
+  } finally { setLoading(btn, false, 'SUBMIT / ยืนยัน'); }
 }
 
 // ═══════════════════════════════════════════════
-// CHECK SCHEDULE — เรียก GET /api/schedule/:id จริง
+// CHECK SCHEDULE
 // ═══════════════════════════════════════════════
 async function checkSchedule() {
   const uid   = document.getElementById('schedule-userid').value.trim().toUpperCase();
   const table = document.getElementById('schedule-table');
   const tbody = document.getElementById('schedule-tbody');
   const empty = document.getElementById('schedule-empty');
+  const btn   = document.querySelector('#screen-schedule .auth-btn');
 
   if (!uid) { showToast('กรุณากรอก User ID', true); return; }
 
-  empty.textContent = '⏳ กำลังดึงข้อมูล...';
-  empty.style.display = 'block';
+  setLoading(btn, true, 'SUBMIT / ยืนยัน');
+  empty.innerHTML = '<span class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:var(--kku-red);"></span> กำลังดึงข้อมูล...';
+  empty.style.display = 'block'; empty.style.color = '#888';
   table.classList.remove('show');
 
   try {
     const r = await callAPI('GET', '/schedule/' + uid);
-
     if (r.success && r.data.length > 0) {
       tbody.innerHTML = '';
-      r.data.forEach(row => {
-        tbody.innerHTML += `<tr>
-          <td><b>${row.day}</b></td>
-          <td>${row.time}</td>
-          <td>${row.code}</td>
-          <td>${row.name}</td>
-          <td>${row.teacher}</td>
-          <td>${row.room}</td>
-        </tr>`;
+      r.data.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        tr.style.cssText = `animation:fadeInUp 0.3s ease ${i*0.07}s both`;
+        tr.innerHTML = `<td><b>${row.day}</b></td><td>${row.time}</td><td>${row.code}</td><td>${row.name}</td><td>${row.teacher}</td><td>${row.room}</td>`;
+        tbody.appendChild(tr);
       });
       empty.style.display = 'none';
       table.classList.add('show');
       showToast('พบตารางเรียน ' + r.data.length + ' วิชา ✓');
     } else {
-      empty.textContent = '⚠️ ' + (r.message || 'ไม่พบตารางเรียนของ ' + uid);
-      showToast('ไม่พบ User ID: ' + uid, true);
+      empty.innerHTML = '⚠️ ' + (r.message || 'ไม่พบตารางเรียนของ ' + uid);
+      empty.style.color = '#c0392b';
+      showToast('ไม่พบ ' + uid, true);
     }
-  } catch (e) {
-    empty.textContent = '❌ ไม่สามารถเชื่อมต่อ Server ได้';
+  } catch {
+    empty.innerHTML = '❌ Server ไม่ตอบสนอง';
+    empty.style.color = '#c0392b';
     showToast('Server ไม่ตอบสนอง', true);
-  }
+  } finally { setLoading(btn, false, 'SUBMIT / ยืนยัน'); }
 }
 
 // ═══════════════════════════════════════════════
-// SCORING — เรียก API จริง
+// SCORING
 // ═══════════════════════════════════════════════
 async function loadStudentInfo() {
   const uid    = document.getElementById('scoring-userid').value.trim().toUpperCase();
   const nameEl = document.getElementById('scoring-name');
   if (!uid) return;
-
   nameEl.textContent = '⏳ กำลังค้นหา...';
   nameEl.style.color = '#888';
-
   try {
     const r = await callAPI('GET', '/student/' + uid);
     if (r.success) {
       nameEl.textContent = r.data.student_name;
       nameEl.style.color = '#222';
-
-      // โหลดคะแนนเดิม (ถ้ามี)
+      nameEl.style.animation = 'scaleIn 0.3s ease both';
       const sr = await callAPI('GET', '/score/' + uid);
       if (sr.success) {
-        document.getElementById('sc-attend').value   = sr.data.attend_score   || '';
-        document.getElementById('sc-attitude').value = sr.data.attitude_score || '';
-        document.getElementById('sc-homework').value = sr.data.homework_score || '';
-        document.getElementById('sc-midterm').value  = sr.data.midterm_score  || '';
-        document.getElementById('sc-final').value    = sr.data.final_score    || '';
-        document.getElementById('sc-quiz').value     = sr.data.quiz_score     || '';
+        ['attend','attitude','homework','midterm','final','quiz'].forEach((f,i) => {
+          const el = document.getElementById('sc-'+f);
+          if (el) { el.value = sr.data[f+'_score'] || ''; el.style.animation = `fadeInUp 0.25s ease ${i*0.04}s both`; }
+        });
         showToast('โหลดคะแนนเดิมแล้ว ✓');
       }
     } else {
-      nameEl.textContent = '⚠️ ไม่พบ User ID นี้ใน Database';
+      nameEl.textContent = '⚠️ ไม่พบ User ID นี้';
       nameEl.style.color = '#c0392b';
     }
-  } catch (e) {
+  } catch {
     nameEl.textContent = '❌ Server ไม่ตอบสนอง';
     nameEl.style.color = '#c0392b';
   }
@@ -1427,7 +1665,7 @@ async function loadStudentInfo() {
 function getScorePayload() {
   return {
     student_id:    document.getElementById('scoring-userid').value.trim().toUpperCase(),
-    course_id:     'CS101', // ค่า default — เพิ่ม input course ได้ทีหลัง
+    course_id:     'CS101',
     attend_score:  parseFloat(document.getElementById('sc-attend').value)   || 0,
     attitude_score:parseFloat(document.getElementById('sc-attitude').value) || 0,
     homework_score:parseFloat(document.getElementById('sc-homework').value) || 0,
@@ -1437,15 +1675,8 @@ function getScorePayload() {
   };
 }
 
-function calcGrade(total) {
-  if (total >= 80) return 'A';
-  if (total >= 75) return 'B+';
-  if (total >= 70) return 'B';
-  if (total >= 65) return 'C+';
-  if (total >= 60) return 'C';
-  if (total >= 55) return 'D+';
-  if (total >= 50) return 'D';
-  return 'F';
+function calcGrade(t) {
+  return t>=80?'A':t>=75?'B+':t>=70?'B':t>=65?'C+':t>=60?'C':t>=55?'D+':t>=50?'D':'F';
 }
 
 async function saveScore() {
@@ -1454,12 +1685,10 @@ async function saveScore() {
   try {
     const r = await callAPI('POST', '/score', d);
     showToast(r.success ? 'บันทึกคะแนนสำเร็จ ✓' : r.message, !r.success);
-  } catch (e) { showToast('❌ Server ไม่ตอบสนอง', true); }
+  } catch { showToast('❌ Server ไม่ตอบสนอง', true); }
 }
 
-async function editScore() {
-  await loadStudentInfo();
-}
+async function editScore() { await loadStudentInfo(); }
 
 async function submitScore() {
   const d = getScorePayload();
@@ -1467,12 +1696,11 @@ async function submitScore() {
   try {
     const r = await callAPI('POST', '/score', d);
     if (r.success) {
-      const total = Object.values(d).slice(2).reduce((a, b) => a + b, 0);
-      showToast(`ยืนยันแล้ว | รวม: ${total} | เกรด: ${calcGrade(total)} ✓`);
-    } else {
-      showToast(r.message, true);
-    }
-  } catch (e) { showToast('❌ Server ไม่ตอบสนอง', true); }
+      const vals = [d.attend_score, d.attitude_score, d.homework_score, d.midterm_score, d.final_score, d.quiz_score];
+      const total = vals.reduce((a,b) => a+b, 0);
+      showToast(`ยืนยันแล้ว ✓  รวม: ${total}  เกรด: ${calcGrade(total)}`);
+    } else { showToast(r.message, true); }
+  } catch { showToast('❌ Server ไม่ตอบสนอง', true); }
 }
 
 // ─── Enter key ──────────────────────────────
