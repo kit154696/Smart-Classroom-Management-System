@@ -1217,6 +1217,176 @@
 .page-indicator, .nav-title {
   animation: fadeInDown 0.4s cubic-bezier(0.22,1,0.36,1) 0.15s both;
 }
+/* ========== MY ATTENDANCE SCREEN ========== */
+.myatt-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.myatt-filter {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.myatt-select {
+  padding: 9px 12px;
+  border: 2px solid var(--kku-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Sarabun', sans-serif;
+  background: #fff;
+  outline: none;
+  min-width: 120px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.myatt-select:focus { border-color: var(--kku-red); }
+
+.myatt-load-btn {
+  background: var(--kku-red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Sarabun', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.myatt-load-btn:hover { background: var(--kku-dark); transform: translateY(-1px); }
+
+/* Summary strip */
+.myatt-summary {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.myatt-chip {
+  flex: 1;
+  min-width: 70px;
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  border: 2px solid #eee;
+  background: #fff;
+}
+.myatt-chip.present { border-color: #1a7a45; background: #f0faf4; }
+.myatt-chip.late    { border-color: #e67e22; background: #fef9f0; }
+.myatt-chip.absent  { border-color: #c0392b; background: #fdf0ef; }
+
+.myatt-chip-num   { font-size: 26px; font-weight: 800; line-height: 1; }
+.myatt-chip.present .myatt-chip-num { color: #1a7a45; }
+.myatt-chip.late    .myatt-chip-num { color: #e67e22; }
+.myatt-chip.absent  .myatt-chip-num { color: #c0392b; }
+.myatt-chip-label { font-size: 11px; color: #888; margin-top: 3px; font-weight: 600; }
+
+/* Table */
+.myatt-table-wrap { overflow-x: auto; }
+
+.myatt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+  display: none;
+}
+.myatt-table.show { display: table; }
+
+.myatt-table th {
+  background: var(--kku-red);
+  color: white;
+  padding: 12px 14px;
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.myatt-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+.myatt-table tr:last-child td { border-bottom: none; }
+.myatt-table tr:hover td { background: #fef5f4; }
+.myatt-table td:first-child { color: #aaa; font-size: 12px; text-align: center; width: 32px; }
+
+.myatt-course-name { font-weight: 700; font-size: 14px; color: #222; }
+.myatt-course-date { font-size: 12px; color: #999; margin-top: 2px; }
+
+.myatt-type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #e8f0fe;
+  color: #1a56db;
+  white-space: nowrap;
+}
+.myatt-type-badge.lab { background: #fef3c7; color: #b45309; }
+
+.myatt-status-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.myatt-status-badge.present { background: #dcfce7; color: #166534; }
+.myatt-status-badge.late    { background: #fef9c3; color: #854d0e; }
+.myatt-status-badge.absent  { background: #fee2e2; color: #991b1b; }
+
+.myatt-time-cell { font-size: 13px; color: #555; white-space: nowrap; }
+.myatt-time-cell.late-time { color: #e67e22; font-weight: 700; }
+
+.myatt-empty {
+  text-align: center;
+  padding: 40px;
+  color: #aaa;
+  font-size: 15px;
+}
+
+/* Progress bar attendance rate */
+.myatt-rate-bar-wrap {
+  background: #fff;
+  border: 2px solid var(--kku-border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: none;
+}
+.myatt-rate-bar-wrap.show { display: block; }
+.myatt-rate-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.myatt-rate-bar-bg {
+  height: 12px;
+  background: #eee;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.myatt-rate-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.22,1,0.36,1);
+  background: #1a7a45;
+}
 </style>
 </head>
 <body>
@@ -1714,7 +1884,114 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- SCREEN 10: NFC CHECK-IN (นักศึกษาเช็คชื่อ) -->
+<!-- SCREEN 10: MY ATTENDANCE (นักศึกษาดูประวัติเข้าเรียนตัวเอง) -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-myatt">
+  <div class="topbar"></div>
+  <div class="navbar" style="position:relative;">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator" style="font-size:18px;">การเข้าเรียน</span>
+    <button class="hamburger-btn" onclick="toggleMenu('menu-myatt')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="16" y2="16"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="menu-myatt">
+      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
+      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
+      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
+      <button onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="myatt-wrap">
+    <!-- Filter -->
+    <div class="myatt-filter">
+      <select class="myatt-select" id="myatt-course">
+        <option value="">ทุกวิชา</option>
+        <option value="CS101">CS101</option>
+        <option value="CS102">CS102</option>
+        <option value="CS103">CS103</option>
+        <option value="CS104">CS104</option>
+      </select>
+      <button class="myatt-load-btn" onclick="loadMyAtt()">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="white" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        โหลดข้อมูล
+      </button>
+    </div>
+
+    <!-- Attendance rate bar -->
+    <div class="myatt-rate-bar-wrap" id="myatt-rate-wrap">
+      <div class="myatt-rate-label">
+        <span>อัตราการเข้าเรียน</span>
+        <span id="myatt-rate-text" style="color:var(--kku-red)">0%</span>
+      </div>
+      <div class="myatt-rate-bar-bg">
+        <div class="myatt-rate-bar-fill" id="myatt-rate-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Summary chips -->
+    <div class="myatt-summary">
+      <div class="myatt-chip present">
+        <div class="myatt-chip-num" id="myatt-present">0</div>
+        <div class="myatt-chip-label">✅ มาทัน</div>
+      </div>
+      <div class="myatt-chip late">
+        <div class="myatt-chip-num" id="myatt-late">0</div>
+        <div class="myatt-chip-label">⏰ มาสาย</div>
+      </div>
+      <div class="myatt-chip absent">
+        <div class="myatt-chip-num" id="myatt-absent">0</div>
+        <div class="myatt-chip-label">❌ ขาด</div>
+      </div>
+      <div class="myatt-chip">
+        <div class="myatt-chip-num" id="myatt-total" style="color:var(--kku-red)">0</div>
+        <div class="myatt-chip-label">📚 ทั้งหมด</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="myatt-table-wrap">
+      <div class="myatt-empty" id="myatt-empty">กด "โหลดข้อมูล" เพื่อดูประวัติการเข้าเรียน</div>
+      <table class="myatt-table" id="myatt-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th style="text-align:left; min-width:180px;">รายการ</th>
+            <th>ประเภท</th>
+            <th>สถานะ</th>
+            <th>เวลาที่เริ่มเช็คชื่อ</th>
+            <th>เวลาที่ถูกเช็คชื่อ</th>
+          </tr>
+        </thead>
+        <tbody id="myatt-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="back-btn" onclick="navigate('screen-dashboard')">
+      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 11: NFC CHECK-IN (นักศึกษาเช็คชื่อ) -->
 <!-- ============================================================ -->
 <div class="screen" id="screen-nfc">
   <div class="topbar"></div>
@@ -1909,9 +2186,8 @@
 // ═══════════════════════════════════════════════
 // CONFIG — ✅ Railway Production API
 // ═══════════════════════════════════════════════
-const API = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000/api'
-  : 'https://smart-classroom-management-system-production.up.railway.app/api';
+const API = 'https://smart-classroom-management-system-production.up.railway.app/api';
+let currentUser = null;
 
 // ─── Navigation with animation ──────────────────
 function navigate(screenId) {
@@ -2298,6 +2574,7 @@ function renderDashboard() {
   html    += `<button class="big-btn" onclick="navigate('screen-schedule')">ตารางเรียน</button>`;
 
   if (role === 'student') {
+    html += `<button class="big-btn" onclick="openMyAtt()">📅 การเข้าเรียน</button>`;
     html += `<button class="big-btn" onclick="openNFC()">📲 เช็คชื่อ NFC</button>`;
   }
   if (role === 'teacher' || role === 'admin') {
@@ -2313,8 +2590,118 @@ function renderDashboard() {
 }
 
 // ═══════════════════════════════════════════════
-// NFC CHECK-IN
+// MY ATTENDANCE (นักศึกษาดูประวัติตัวเอง)
 // ═══════════════════════════════════════════════
+function openMyAtt() {
+  navigate('screen-myatt');
+  setTimeout(loadMyAtt, 300);
+}
+
+async function loadMyAtt() {
+  const uid      = currentUser ? currentUser.user_id : '';
+  const course   = document.getElementById('myatt-course').value;
+  const empty    = document.getElementById('myatt-empty');
+  const table    = document.getElementById('myatt-table');
+  const tbody    = document.getElementById('myatt-tbody');
+  const btn      = document.querySelector('.myatt-load-btn');
+  const rateWrap = document.getElementById('myatt-rate-wrap');
+
+  if (!uid) { showToast('กรุณา Login ก่อน', true); return; }
+
+  btn.innerHTML = '<span class="spinner"></span> กำลังโหลด...';
+  btn.disabled  = true;
+  empty.textContent = '⏳ กำลังดึงข้อมูล...';
+  empty.style.display = 'block';
+  table.classList.remove('show');
+  rateWrap.classList.remove('show');
+
+  try {
+    const endpoint = course
+      ? `/attendance/myhistory/${uid}?course=${course}`
+      : `/attendance/myhistory/${uid}`;
+
+    const r = await callAPI('GET', endpoint);
+
+    if (r.success && r.data && r.data.length > 0) {
+      let present = 0, late = 0, absent = 0;
+      tbody.innerHTML = '';
+
+      r.data.forEach((row, i) => {
+        const status   = row.status || 'absent';
+        const isLate   = status === 'late';
+        const isAbsent = status === 'absent';
+
+        if (isAbsent) absent++;
+        else if (isLate) late++;
+        else present++;
+
+        // Badge status
+        const statusText  = isAbsent ? 'ขาดเรียน' : isLate ? 'มาสาย' : 'มาเรียน';
+        const statusClass = isAbsent ? 'absent'    : isLate ? 'late'   : 'present';
+
+        // Type badge — ดูจาก course_name ว่ามี Lab หรือไม่
+        const isLab     = (row.course_name || '').toLowerCase().includes('lab') ||
+                          (row.course_id   || '').toLowerCase().includes('lab');
+        const typeText  = isLab ? 'ปฏิบัติ' : 'บรรยาย';
+        const typeClass = isLab ? 'lab' : '';
+
+        // Format datetime display
+        const classDate     = row.attendance_date || '-';
+        const classStart    = row.class_start_time ? `${classDate} ${row.class_start_time}` : `${classDate}`;
+        const checkinTime   = row.checkin_time     ? `${classDate} ${row.checkin_time}` : '-';
+        const checkinClass  = isLate ? 'late-time' : '';
+
+        const tr = document.createElement('tr');
+        tr.style.animation = `fadeInUp 0.3s ease ${i * 0.04}s both`;
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td>
+            <div class="myatt-course-name">${row.course_name || row.course_id}</div>
+            <div class="myatt-course-date">${classDate}</div>
+          </td>
+          <td><span class="myatt-type-badge ${typeClass}">${typeText}</span></td>
+          <td><span class="myatt-status-badge ${statusClass}">${statusText}</span></td>
+          <td class="myatt-time-cell">${classStart}</td>
+          <td class="myatt-time-cell ${checkinClass}">${checkinTime}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      // Update chips
+      const total = r.data.length;
+      document.getElementById('myatt-present').textContent = present;
+      document.getElementById('myatt-late').textContent    = late;
+      document.getElementById('myatt-absent').textContent  = absent;
+      document.getElementById('myatt-total').textContent   = total;
+
+      // Attendance rate bar
+      const rate     = total > 0 ? Math.round((present + late) / total * 100) : 0;
+      const fill     = document.getElementById('myatt-rate-fill');
+      const rateText = document.getElementById('myatt-rate-text');
+      fill.style.width       = rate + '%';
+      fill.style.background  = rate >= 80 ? '#1a7a45' : rate >= 70 ? '#e67e22' : '#c0392b';
+      rateText.textContent   = rate + '%';
+      rateText.style.color   = rate >= 80 ? '#1a7a45' : rate >= 70 ? '#e67e22' : '#c0392b';
+      rateWrap.classList.add('show');
+
+      empty.style.display = 'none';
+      table.classList.add('show');
+      showToast(`พบ ${total} รายการ ✓`);
+    } else {
+      empty.textContent = r.message || 'ยังไม่มีประวัติการเข้าเรียน';
+      empty.style.display = 'block';
+      ['myatt-present','myatt-late','myatt-absent','myatt-total'].forEach(id => {
+        document.getElementById(id).textContent = '0';
+      });
+    }
+  } catch (e) {
+    empty.textContent = '❌ Server ไม่ตอบสนอง';
+    showToast('❌ Server ไม่ตอบสนอง', true);
+  } finally {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> โหลดข้อมูล`;
+    btn.disabled = false;
+  }
+}
+
 let nfcReader = null;
 let nfcActive = false;
 

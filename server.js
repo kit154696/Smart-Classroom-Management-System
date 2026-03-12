@@ -378,3 +378,63 @@ app.get('/api/attendance/log/:course_id', async (req, res) => {
     res.status(500).json({ success: false, message: e.message });
   }
 });
+
+// ─────────────────────────────────────────────────────────────
+// GET /api/attendance/myhistory/:student_id?course=CS101
+// นักศึกษาดูประวัติการเข้าเรียนของตัวเอง
+// ─────────────────────────────────────────────────────────────
+app.get('/api/attendance/myhistory/:student_id', async (req, res) => {
+  const { student_id } = req.params;
+  const course_filter  = req.query.course || null;
+
+  try {
+    let sql = `
+      SELECT
+        a.attendance_id,
+        a.attendance_date,
+        a.checkin_time,
+        a.status,
+        sc.study_time        AS class_start_time,
+        sc.day_of_week,
+        c.course_id,
+        c.course_name,
+        CASE
+          WHEN a.checkin_time IS NOT NULL AND a.status = 'late' THEN
+            GREATEST(0, ROUND((TIME_TO_SEC(a.checkin_time)
+              - TIME_TO_SEC(SUBSTRING_INDEX(sc.study_time,'-',1))) / 60))
+          ELSE 0
+        END AS minutes_late
+      FROM Attendance a
+      JOIN Schedule sc ON a.schedule_id = sc.schedule_id
+      JOIN Course   c  ON sc.course_id  = c.course_id
+      WHERE a.student_id = ?
+    `;
+    const params = [student_id];
+
+    if (course_filter) {
+      sql += ' AND c.course_id = ?';
+      params.push(course_filter);
+    }
+
+    sql += ' ORDER BY a.attendance_date DESC, a.checkin_time DESC';
+
+    const rows = await query(sql, params);
+    res.json({
+      success: true,
+      student_id,
+      count: rows.length,
+      data: rows.map(r => ({
+        attendance_date:  r.attendance_date,
+        course_id:        r.course_id,
+        course_name:      r.course_name,
+        class_start_time: r.class_start_time ? r.class_start_time.split('-')[0].trim() : null,
+        day_of_week:      r.day_of_week,
+        checkin_time:     r.checkin_time || null,
+        status:           r.status,
+        minutes_late:     Number(r.minutes_late) || 0
+      }))
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
