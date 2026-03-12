@@ -893,6 +893,303 @@
 .back-btn {
   transition: transform 0.2s, background 0.2s;
 }
+
+/* ========== NFC CHECK-IN SCREEN ========== */
+.nfc-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px 16px;
+}
+
+.nfc-ring-outer {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nfc-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid var(--kku-red);
+  opacity: 0;
+  animation: nfcPulse 2s ease-out infinite;
+}
+.nfc-ring:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s; }
+.nfc-ring:nth-child(2) { width: 160px; height: 160px; animation-delay: 0.4s; }
+.nfc-ring:nth-child(3) { width: 120px; height: 120px; animation-delay: 0.8s; }
+
+@keyframes nfcPulse {
+  0%   { opacity: 0.8; transform: scale(0.7); }
+  100% { opacity: 0;   transform: scale(1.2); }
+}
+
+.nfc-icon-circle {
+  width: 96px;
+  height: 96px;
+  background: var(--kku-red);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 24px rgba(139,48,32,0.35);
+  z-index: 1;
+  transition: transform 0.2s;
+}
+.nfc-icon-circle svg { width: 52px; height: 52px; fill: none; stroke: white; stroke-width: 2; }
+
+.nfc-status-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--kku-red);
+  text-align: center;
+}
+
+.nfc-status-sub {
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+  margin-top: -16px;
+}
+
+.nfc-result-card {
+  background: #fff;
+  border: 2px solid var(--kku-border);
+  border-radius: 14px;
+  padding: 20px 28px;
+  width: 100%;
+  max-width: 420px;
+  display: none;
+  animation: scaleIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+.nfc-result-card.show { display: block; }
+.nfc-result-card.success { border-color: #1a7a45; background: #f0faf4; }
+.nfc-result-card.late    { border-color: #e67e22; background: #fef9f0; }
+.nfc-result-card.error   { border-color: #c0392b; background: #fdf0ef; }
+
+.nfc-result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+}
+.nfc-result-row:last-child { border-bottom: none; }
+.nfc-result-row .label { color: #666; }
+.nfc-result-row .value { font-weight: 700; color: #222; }
+.nfc-result-row .value.on-time { color: #1a7a45; }
+.nfc-result-row .value.late    { color: #e67e22; }
+
+.nfc-manual-section {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.nfc-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  color: #aaa;
+  font-size: 13px;
+}
+.nfc-divider::before, .nfc-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+
+.nfc-manual-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.nfc-manual-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid var(--kku-border);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: 'Sarabun', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.nfc-manual-input:focus { border-color: var(--kku-red); }
+.nfc-manual-btn {
+  background: var(--kku-red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Sarabun', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.nfc-manual-btn:hover { background: var(--kku-dark); transform: translateY(-1px); }
+
+.nfc-reading {
+  animation: nfcReadPulse 0.6s ease infinite alternate;
+}
+@keyframes nfcReadPulse {
+  from { transform: scale(1); }
+  to   { transform: scale(1.08); }
+}
+
+/* ========== ATTENDANCE LOG SCREEN ========== */
+.attlog-filter {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px 0;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.attlog-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attlog-filter-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.attlog-select, .attlog-date {
+  padding: 9px 12px;
+  border: 2px solid var(--kku-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Sarabun', sans-serif;
+  background: #fff;
+  outline: none;
+  min-width: 130px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.attlog-select:focus, .attlog-date:focus { border-color: var(--kku-red); }
+
+.attlog-search-btn {
+  background: var(--kku-red);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Sarabun', sans-serif;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.attlog-search-btn:hover { background: var(--kku-dark); transform: translateY(-1px); }
+
+.attlog-summary {
+  display: flex;
+  gap: 12px;
+  padding: 14px 24px;
+  flex-wrap: wrap;
+}
+
+.attlog-stat {
+  flex: 1;
+  min-width: 90px;
+  background: #fff;
+  border: 2px solid #eee;
+  border-radius: 10px;
+  padding: 12px 16px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.attlog-stat.present { border-color: #1a7a45; background: #f0faf4; }
+.attlog-stat.late    { border-color: #e67e22; background: #fef9f0; }
+.attlog-stat.absent  { border-color: #c0392b; background: #fdf0ef; }
+
+.attlog-stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+.attlog-stat.present .attlog-stat-num { color: #1a7a45; }
+.attlog-stat.late    .attlog-stat-num { color: #e67e22; }
+.attlog-stat.absent  .attlog-stat-num { color: #c0392b; }
+
+.attlog-stat-label {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.attlog-table-wrap {
+  flex: 1;
+  overflow-x: auto;
+  padding: 0 16px 16px;
+}
+
+.attlog-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  display: none;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.attlog-table.show { display: table; }
+.attlog-table th {
+  background: var(--kku-red);
+  color: white;
+  padding: 11px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: center;
+  white-space: nowrap;
+}
+.attlog-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: center;
+  font-size: 13px;
+}
+.attlog-table tr:last-child td { border-bottom: none; }
+.attlog-table tr:hover td { background: #fef5f4; }
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.status-badge.on-time { background: #e8f5e9; color: #1a7a45; }
+.status-badge.late    { background: #fff3e0; color: #e67e22; }
+.status-badge.absent  { background: #fce4e4; color: #c0392b; }
+
+.attlog-empty {
+  text-align: center;
+  padding: 40px;
+  color: #aaa;
+  font-size: 15px;
+}
 .back-btn:hover {
   transform: translateX(-3px);
   background: rgba(255,255,255,0.35);
@@ -1070,10 +1367,8 @@
     </div>
   </div>
 
-  <div class="main-content">
-    <button class="big-btn" onclick="navigate('screen-grades')">ตรวจสอบเกรด</button>
-    <button class="big-btn" onclick="navigate('screen-scoring')">ลงคะแนน</button>
-    <button class="big-btn" onclick="navigate('screen-schedule')">ตารางเรียน</button>
+  <div class="main-content" id="dashboard-btns">
+    <!-- Buttons rendered dynamically by renderDashboard() based on role -->
   </div>
   <div class="footer"></div>
 </div>
@@ -1390,6 +1685,21 @@
         </div>
       </div>
     </div>
+    <!-- Total Score Display -->
+    <div id="total-score-bar" style="
+      display:flex; align-items:center; justify-content:space-between;
+      background:#f5f0ef; border:2px solid var(--kku-border);
+      border-radius:8px; padding:14px 20px; margin-bottom:4px;
+      transition: all 0.3s;
+    ">
+      <span style="font-size:16px;font-weight:700;color:#555;">คะแนนรวม</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:200px;height:12px;background:#ddd;border-radius:999px;overflow:hidden;">
+          <div id="total-bar" style="height:100%;width:0%;background:var(--kku-red);border-radius:999px;transition:all 0.4s cubic-bezier(0.22,1,0.36,1);"></div>
+        </div>
+        <span id="total-score-display" style="font-size:22px;font-weight:800;color:var(--kku-red);min-width:60px;text-align:right;">0 / 100</span>
+      </div>
+    </div>
     <div class="scoring-btns">
       <button onclick="saveScore()">SAVE / บันทึก</button>
       <button onclick="editScore()">EDIT / แก้ไข</button>
@@ -1404,14 +1714,204 @@
 </div>
 
 <!-- ============================================================ -->
+<!-- SCREEN 10: NFC CHECK-IN (นักศึกษาเช็คชื่อ) -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-nfc">
+  <div class="topbar"></div>
+  <div class="navbar" style="position:relative;">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator" style="font-size:20px;">เช็คชื่อ NFC</span>
+    <button class="hamburger-btn" onclick="toggleMenu('menu-nfc')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="16" y2="16"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="menu-nfc">
+      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
+      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
+      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
+      <button onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="nfc-wrapper">
+    <!-- NFC Tap animation -->
+    <div class="nfc-ring-outer" id="nfc-ring-outer">
+      <div class="nfc-ring"></div>
+      <div class="nfc-ring"></div>
+      <div class="nfc-ring"></div>
+      <div class="nfc-icon-circle" id="nfc-icon-circle">
+        <!-- NFC wave icon -->
+        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 34c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M24 28a4 4 0 0 0 0-8" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <circle cx="24" cy="24" r="2" fill="white"/>
+          <path d="M14 10C9.03 13.17 6 18.24 6 24s3.03 10.83 8 14" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M34 10c4.97 3.17 8 8.24 8 14s-3.03 10.83-8 14" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="nfc-status-text" id="nfc-status-text">แตะบัตรนักศึกษาที่หลัง<br>มือถือเพื่อเช็คชื่อ</div>
+    <div class="nfc-status-sub" id="nfc-status-sub">ระบบพร้อมอ่านบัตร NFC</div>
+
+    <!-- Result card -->
+    <div class="nfc-result-card" id="nfc-result-card">
+      <div class="nfc-result-row">
+        <span class="label">👤 รหัสนักศึกษา</span>
+        <span class="value" id="nfc-res-id">-</span>
+      </div>
+      <div class="nfc-result-row">
+        <span class="label">📛 ชื่อ</span>
+        <span class="value" id="nfc-res-name">-</span>
+      </div>
+      <div class="nfc-result-row">
+        <span class="label">🕐 เวลาเช็คชื่อ</span>
+        <span class="value" id="nfc-res-time">-</span>
+      </div>
+      <div class="nfc-result-row">
+        <span class="label">📌 สถานะ</span>
+        <span class="value" id="nfc-res-status">-</span>
+      </div>
+    </div>
+
+    <!-- Manual fallback -->
+    <div class="nfc-manual-section">
+      <div class="nfc-divider">หรือกรอก ID ด้วยตนเอง</div>
+      <div class="nfc-manual-row">
+        <input class="nfc-manual-input" id="nfc-manual-id" type="text" placeholder="เช่น STU001" maxlength="10">
+        <button class="nfc-manual-btn" onclick="manualCheckin()">เช็คชื่อ</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="back-btn" onclick="stopNFC();navigate('screen-dashboard')">
+      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 11: ATTENDANCE LOG (อาจารย์/Admin ดูการเข้าเรียน) -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-attlog">
+  <div class="topbar"></div>
+  <div class="navbar" style="position:relative;">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator" style="font-size:18px;">บันทึกการเข้าเรียน</span>
+    <button class="hamburger-btn" onclick="toggleMenu('menu-attlog')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="16" y2="16"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="menu-attlog">
+      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
+      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
+      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
+      <button onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="attlog-filter">
+    <div class="attlog-filter-group">
+      <label>รหัสวิชา</label>
+      <select class="attlog-select" id="attlog-course">
+        <option value="">-- เลือกวิชา --</option>
+        <option value="CS101">CS101</option>
+        <option value="CS102">CS102</option>
+        <option value="CS103">CS103</option>
+      </select>
+    </div>
+    <div class="attlog-filter-group">
+      <label>วันที่</label>
+      <input class="attlog-date" id="attlog-date" type="date">
+    </div>
+    <button class="attlog-search-btn" onclick="loadAttLog()">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      ค้นหา
+    </button>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="attlog-summary">
+    <div class="attlog-stat present">
+      <div class="attlog-stat-num" id="stat-present">0</div>
+      <div class="attlog-stat-label">✅ มาทัน</div>
+    </div>
+    <div class="attlog-stat late">
+      <div class="attlog-stat-num" id="stat-late">0</div>
+      <div class="attlog-stat-label">⏰ มาสาย</div>
+    </div>
+    <div class="attlog-stat absent">
+      <div class="attlog-stat-num" id="stat-absent">0</div>
+      <div class="attlog-stat-label">❌ ขาด</div>
+    </div>
+    <div class="attlog-stat">
+      <div class="attlog-stat-num" id="stat-total" style="color:var(--kku-red)">0</div>
+      <div class="attlog-stat-label">👥 รวม</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="attlog-table-wrap">
+    <div class="attlog-empty" id="attlog-empty">เลือกวิชาและวันที่ แล้วกด ค้นหา</div>
+    <table class="attlog-table" id="attlog-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>รหัสนักศึกษา</th>
+          <th>ชื่อ-สกุล</th>
+          <th>เวลาเช็คชื่อ</th>
+          <th>เวลาเรียน</th>
+          <th>สถานะ</th>
+          <th>ช้า (นาที)</th>
+        </tr>
+      </thead>
+      <tbody id="attlog-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <button class="back-btn" onclick="navigate('screen-dashboard')">
+      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
 <!-- JAVASCRIPT -->
 <!-- ============================================================ -->
 <script>
 // ═══════════════════════════════════════════════
 // CONFIG — ✅ Railway Production API
 // ═══════════════════════════════════════════════
-const API = 'https://smart-classroom-management-system-production.up.railway.app/api';
-let currentUser = null;
+const API = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000/api'
+  : 'https://smart-classroom-management-system-production.up.railway.app/api';
 
 // ─── Navigation with animation ──────────────────
 function navigate(screenId) {
@@ -1517,6 +2017,7 @@ async function doLogin() {
         bar.style.cssText += ';display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;padding:0 10px;';
       }
       showToast('ยินดีต้อนรับ ' + r.name + ' ✓');
+      renderDashboard();
       setTimeout(() => navigate('screen-dashboard'), 1200);
     } else {
       showToast(r.message || 'Username หรือ Password ไม่ถูกต้อง', true);
@@ -1662,6 +2163,9 @@ async function loadStudentInfo() {
   }
 }
 
+// ─── Max per field ────────────────────────────
+const SCORE_MAX = { attend: 20, attitude: 10, homework: 20, midterm: 30, final: 40, quiz: 20 };
+
 function getScorePayload() {
   return {
     student_id:    document.getElementById('scoring-userid').value.trim().toUpperCase(),
@@ -1679,9 +2183,64 @@ function calcGrade(t) {
   return t>=80?'A':t>=75?'B+':t>=70?'B':t>=65?'C+':t>=60?'C':t>=55?'D+':t>=50?'D':'F';
 }
 
+// ─── Real-time total update ────────────────────
+function updateTotal() {
+  const vals = ['attend','attitude','homework','midterm','final','quiz'];
+  let total = 0;
+  vals.forEach(f => {
+    const el  = document.getElementById('sc-' + f);
+    const max = SCORE_MAX[f];
+    let v = parseFloat(el.value) || 0;
+    // clamp per-field max
+    if (v > max) { v = max; el.value = max; }
+    if (v < 0)   { v = 0;   el.value = 0; }
+    total += v;
+  });
+
+  // clamp total to 100
+  const display = document.getElementById('total-score-display');
+  const bar     = document.getElementById('total-bar');
+  const barWrap = document.getElementById('total-score-bar');
+
+  const pct = Math.min(total / 100 * 100, 100);
+  bar.style.width = pct + '%';
+
+  if (total > 100) {
+    display.textContent = total + ' / 100 ⚠️';
+    display.style.color = '#c0392b';
+    bar.style.background = '#c0392b';
+    barWrap.style.borderColor = '#c0392b';
+    barWrap.style.background  = '#fdf0ef';
+  } else if (total >= 80) {
+    display.textContent = total + ' / 100';
+    display.style.color = '#1a7a45';
+    bar.style.background = '#1a7a45';
+    barWrap.style.borderColor = 'var(--kku-border)';
+    barWrap.style.background  = '#f5f0ef';
+  } else {
+    display.textContent = total + ' / 100';
+    display.style.color = 'var(--kku-red)';
+    bar.style.background = 'var(--kku-red)';
+    barWrap.style.borderColor = 'var(--kku-border)';
+    barWrap.style.background  = '#f5f0ef';
+  }
+  return total;
+}
+
+// ─── Validate total <= 100 ─────────────────────
+function validateTotal() {
+  const total = updateTotal();
+  if (total > 100) {
+    showToast('❌ คะแนนรวมเกิน 100! (' + total + ')', true);
+    return false;
+  }
+  return true;
+}
+
 async function saveScore() {
   const d = getScorePayload();
   if (!d.student_id) { showToast('กรุณากรอก User ID', true); return; }
+  if (!validateTotal()) return;
   try {
     const r = await callAPI('POST', '/score', d);
     showToast(r.success ? 'บันทึกคะแนนสำเร็จ ✓' : r.message, !r.success);
@@ -1693,15 +2252,26 @@ async function editScore() { await loadStudentInfo(); }
 async function submitScore() {
   const d = getScorePayload();
   if (!d.student_id) { showToast('กรุณากรอก User ID', true); return; }
+  if (!validateTotal()) return;
   try {
     const r = await callAPI('POST', '/score', d);
     if (r.success) {
-      const vals = [d.attend_score, d.attitude_score, d.homework_score, d.midterm_score, d.final_score, d.quiz_score];
-      const total = vals.reduce((a,b) => a+b, 0);
-      showToast(`ยืนยันแล้ว ✓  รวม: ${total}  เกรด: ${calcGrade(total)}`);
+      const total = updateTotal();
+      showToast('ยืนยันแล้ว ✓  รวม: ' + total + '  เกรด: ' + calcGrade(total));
     } else { showToast(r.message, true); }
   } catch { showToast('❌ Server ไม่ตอบสนอง', true); }
 }
+
+// ─── Attach listeners to all score inputs ──────
+document.addEventListener('DOMContentLoaded', () => {
+  ['sc-attend','sc-attitude','sc-homework','sc-midterm','sc-final','sc-quiz'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateTotal);
+  });
+  // Set today's date in attendance log date picker
+  const dp = document.getElementById('attlog-date');
+  if (dp) dp.value = new Date().toISOString().split('T')[0];
+});
 
 // ─── Enter key ──────────────────────────────
 document.addEventListener('keydown', e => {
@@ -1711,7 +2281,269 @@ document.addEventListener('keydown', e => {
   if (id === 'screen-register') doRegister();
   if (id === 'screen-grades')   checkGrade();
   if (id === 'screen-schedule') checkSchedule();
+  if (id === 'screen-nfc')      manualCheckin();
+  if (id === 'screen-attlog')   loadAttLog();
 });
+
+// ═══════════════════════════════════════════════
+// DASHBOARD — Role-aware buttons
+// ═══════════════════════════════════════════════
+function renderDashboard() {
+  const role = currentUser ? currentUser.role : '';
+  const container = document.getElementById('dashboard-btns');
+  if (!container) return;
+
+  // Common button for all
+  let html = `<button class="big-btn" onclick="navigate('screen-grades')">ตรวจสอบเกรด</button>`;
+  html    += `<button class="big-btn" onclick="navigate('screen-schedule')">ตารางเรียน</button>`;
+
+  if (role === 'student') {
+    html += `<button class="big-btn" onclick="openNFC()">📲 เช็คชื่อ NFC</button>`;
+  }
+  if (role === 'teacher' || role === 'admin') {
+    html += `<button class="big-btn" onclick="navigate('screen-scoring')">ลงคะแนน</button>`;
+    html += `<button class="big-btn" onclick="navigate('screen-attlog')">📋 บันทึกการเข้าเรียน</button>`;
+  }
+
+  container.innerHTML = html;
+  // Re-apply stagger animation
+  [...container.children].forEach((btn, i) => {
+    btn.style.animation = `slideInRight 0.4s cubic-bezier(0.22,1,0.36,1) ${i * 0.08}s both`;
+  });
+}
+
+// ═══════════════════════════════════════════════
+// NFC CHECK-IN
+// ═══════════════════════════════════════════════
+let nfcReader = null;
+let nfcActive = false;
+
+function openNFC() {
+  navigate('screen-nfc');
+  setTimeout(startNFC, 400);
+}
+
+async function startNFC() {
+  const statusText = document.getElementById('nfc-status-text');
+  const statusSub  = document.getElementById('nfc-status-sub');
+  const icon       = document.getElementById('nfc-icon-circle');
+
+  // Reset result card
+  const card = document.getElementById('nfc-result-card');
+  card.className = 'nfc-result-card';
+
+  if (!('NDEFReader' in window)) {
+    statusText.innerHTML = '⚠️ เบราว์เซอร์นี้ไม่รองรับ NFC';
+    statusSub.textContent = 'กรุณาใช้ Chrome บน Android หรือกรอก ID ด้วยตนเอง';
+    icon.style.background = '#aaa';
+    return;
+  }
+
+  try {
+    nfcReader = new NDEFReader();
+    await nfcReader.scan();
+    nfcActive = true;
+
+    statusText.innerHTML = 'แตะบัตรนักศึกษา<br>ที่หลังมือถือ';
+    statusSub.textContent = '🔵 กำลังรอสัญญาณ NFC...';
+    icon.classList.add('nfc-reading');
+    icon.style.background = 'var(--kku-red)';
+
+    nfcReader.addEventListener('reading', ({ message }) => {
+      for (const record of message.records) {
+        const decoder = new TextDecoder();
+        let studentId = '';
+        try {
+          studentId = decoder.decode(record.data).trim().toUpperCase();
+        } catch {
+          studentId = '';
+        }
+        if (studentId) {
+          processCheckin(studentId, 'nfc');
+          return;
+        }
+      }
+      showToast('⚠️ ไม่พบข้อมูล NFC ในบัตรนี้', true);
+    });
+
+    nfcReader.addEventListener('readingerror', () => {
+      showToast('❌ อ่านบัตรไม่ได้ กรุณาลองใหม่', true);
+    });
+
+  } catch (err) {
+    if (err.name === 'NotAllowedError') {
+      statusText.innerHTML = '🔒 ไม่ได้รับอนุญาตใช้ NFC';
+      statusSub.textContent = 'กรุณาอนุญาต NFC ในการตั้งค่าเบราว์เซอร์';
+    } else {
+      statusText.innerHTML = '❌ เปิด NFC ไม่สำเร็จ';
+      statusSub.textContent = err.message || 'กรุณากรอก ID ด้วยตนเอง';
+    }
+    icon.style.background = '#aaa';
+  }
+}
+
+function stopNFC() {
+  nfcActive = false;
+  nfcReader = null;
+}
+
+async function manualCheckin() {
+  const input = document.getElementById('nfc-manual-id');
+  const val   = input.value.trim().toUpperCase();
+  if (!val) { showToast('กรุณากรอก Student ID', true); return; }
+  input.value = '';
+  await processCheckin(val, 'manual');
+}
+
+async function processCheckin(studentId, source) {
+  const statusText = document.getElementById('nfc-status-text');
+  const statusSub  = document.getElementById('nfc-status-sub');
+  const icon       = document.getElementById('nfc-icon-circle');
+  const card       = document.getElementById('nfc-result-card');
+
+  statusText.textContent = '⏳ กำลังบันทึก...';
+  statusSub.textContent  = studentId;
+  icon.style.background  = '#f0a000';
+  icon.classList.remove('nfc-reading');
+
+  const now      = new Date();
+  const timeStr  = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr  = now.toISOString().split('T')[0];
+
+  try {
+    const r = await callAPI('POST', '/attendance/nfc', {
+      student_id: studentId,
+      date:       dateStr,
+      checkin_time: now.toTimeString().split(' ')[0],
+      source
+    });
+
+    // Show result card
+    document.getElementById('nfc-res-id').textContent   = studentId;
+    document.getElementById('nfc-res-name').textContent = r.data?.student_name || r.name || studentId;
+    document.getElementById('nfc-res-time').textContent = timeStr;
+
+    const statusEl = document.getElementById('nfc-res-status');
+    if (r.success) {
+      const isLate     = r.data?.is_late;
+      const minsLate   = r.data?.minutes_late || 0;
+      statusEl.className = 'value ' + (isLate ? 'late' : 'on-time');
+      statusEl.textContent = isLate
+        ? `⏰ มาสาย ${minsLate} นาที`
+        : '✅ มาทัน';
+
+      card.className = 'nfc-result-card show ' + (isLate ? 'late' : 'success');
+      statusText.textContent = isLate ? `⏰ บันทึกแล้ว — มาสาย` : '✅ เช็คชื่อสำเร็จ';
+      statusSub.textContent  = timeStr;
+      icon.style.background  = isLate ? '#e67e22' : '#1a7a45';
+      showToast((isLate ? '⏰ มาสาย ' + minsLate + ' นาที' : '✅ เช็คชื่อสำเร็จ — ' + timeStr));
+    } else {
+      statusEl.className   = 'value';
+      statusEl.textContent = '⚠️ ' + (r.message || 'เกิดข้อผิดพลาด');
+      card.className       = 'nfc-result-card show error';
+      statusText.textContent = '⚠️ ไม่สำเร็จ';
+      statusSub.textContent  = r.message || '';
+      icon.style.background  = '#c0392b';
+      showToast(r.message || 'เกิดข้อผิดพลาด', true);
+    }
+  } catch {
+    document.getElementById('nfc-res-id').textContent     = studentId;
+    document.getElementById('nfc-res-name').textContent   = '-';
+    document.getElementById('nfc-res-time').textContent   = timeStr;
+    document.getElementById('nfc-res-status').textContent = '❌ Server ไม่ตอบสนอง';
+    card.className       = 'nfc-result-card show error';
+    statusText.textContent = '❌ Server ไม่ตอบสนอง';
+    statusSub.textContent  = 'กรุณาลองใหม่';
+    icon.style.background  = '#c0392b';
+    showToast('❌ Server ไม่ตอบสนอง', true);
+  }
+
+  // Resume NFC after 3 sec
+  if (nfcActive) {
+    setTimeout(() => {
+      statusText.innerHTML = 'แตะบัตรใบถัดไป<br>เพื่อเช็คชื่อ';
+      statusSub.textContent = '🔵 กำลังรอสัญญาณ NFC...';
+      icon.style.background = 'var(--kku-red)';
+      icon.classList.add('nfc-reading');
+    }, 3000);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// ATTENDANCE LOG (Teacher / Admin)
+// ═══════════════════════════════════════════════
+async function loadAttLog() {
+  const course = document.getElementById('attlog-course').value;
+  const date   = document.getElementById('attlog-date').value;
+  const empty  = document.getElementById('attlog-empty');
+  const table  = document.getElementById('attlog-table');
+  const tbody  = document.getElementById('attlog-tbody');
+  const btn    = document.querySelector('.attlog-search-btn');
+
+  if (!course) { showToast('กรุณาเลือกวิชา', true); return; }
+  if (!date)   { showToast('กรุณาเลือกวันที่', true); return; }
+
+  btn.innerHTML = '<span class="spinner"></span> กำลังโหลด...';
+  btn.disabled  = true;
+  empty.textContent = '⏳ กำลังดึงข้อมูล...';
+  empty.style.display = 'block';
+  table.classList.remove('show');
+
+  try {
+    const r = await callAPI('GET', `/attendance/log/${course}?date=${date}`);
+
+    if (r.success && r.data && r.data.length > 0) {
+      let present = 0, late = 0, absent = 0;
+      tbody.innerHTML = '';
+
+      r.data.forEach((row, i) => {
+        const isLate   = row.status === 'late';
+        const isAbsent = row.status === 'absent';
+        const badgeClass = isAbsent ? 'absent' : isLate ? 'late' : 'on-time';
+        const badgeText  = isAbsent ? '❌ ขาด' : isLate ? '⏰ มาสาย' : '✅ มาทัน';
+
+        if (isAbsent) absent++;
+        else if (isLate) late++;
+        else present++;
+
+        const tr = document.createElement('tr');
+        tr.style.animation = `fadeInUp 0.3s ease ${i * 0.04}s both`;
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td><b>${row.student_id}</b></td>
+          <td style="text-align:left;">${row.student_name || '-'}</td>
+          <td>${row.checkin_time || '-'}</td>
+          <td>${row.class_start_time || '-'}</td>
+          <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+          <td>${row.minutes_late > 0 ? '<b style="color:#e67e22">+' + row.minutes_late + '</b>' : '-'}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('stat-present').textContent = present;
+      document.getElementById('stat-late').textContent    = late;
+      document.getElementById('stat-absent').textContent  = absent;
+      document.getElementById('stat-total').textContent   = r.data.length;
+
+      empty.style.display = 'none';
+      table.classList.add('show');
+      showToast(`พบ ${r.data.length} รายการ ✓`);
+    } else {
+      empty.textContent = r.message || `ไม่พบข้อมูลวันที่ ${date}`;
+      empty.style.display = 'block';
+      ['stat-present','stat-late','stat-absent','stat-total'].forEach(id => {
+        document.getElementById(id).textContent = '0';
+      });
+      showToast('ไม่พบข้อมูล', true);
+    }
+  } catch {
+    empty.textContent = '❌ Server ไม่ตอบสนอง';
+    showToast('❌ Server ไม่ตอบสนอง', true);
+  } finally {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> ค้นหา`;
+    btn.disabled = false;
+  }
+}
+
 </script>
 </body>
 </html>
