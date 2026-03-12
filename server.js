@@ -230,7 +230,7 @@ app.get('/api/student/:student_id', async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // NFC CHECK-IN API
 // Attendance schema จริง:
-//   student_id, course_id, status (Present/Late/Absent), attendance_date, check_in_time
+//   student_id, course_id, status (Present/Late/Absent), attendance_date, checkin_time
 // ═══════════════════════════════════════════════════════════
 
 app.post('/api/attendance/nfc', async (req, res) => {
@@ -282,10 +282,10 @@ app.post('/api/attendance/nfc', async (req, res) => {
 
     if (courseId) {
       await query(`
-        INSERT INTO Attendance (student_id, course_id, attendance_date, check_in_time, status)
+        INSERT INTO Attendance (student_id, course_id, attendance_date, checkin_time, status)
         VALUES (?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
-          check_in_time = VALUES(check_in_time),
+          checkin_time = VALUES(checkin_time),
           status        = VALUES(status)
       `, [student_id, courseId, date, checkin_time, status]);
     }
@@ -332,16 +332,16 @@ app.get('/api/attendance/log/:course_id', async (req, res) => {
       SELECT
         s.student_id,
         s.student_name,
-        a.check_in_time,
+        a.checkin_time,
         a.status           AS att_status,
         CASE
           WHEN a.attendance_id IS NULL THEN 'Absent'
           ELSE a.status
         END                AS status,
         CASE
-          WHEN a.check_in_time IS NOT NULL THEN
+          WHEN a.checkin_time IS NOT NULL THEN
             GREATEST(0, ROUND(
-              (TIME_TO_SEC(a.check_in_time) - TIME_TO_SEC(?)) / 60
+              (TIME_TO_SEC(a.checkin_time) - TIME_TO_SEC(?)) / 60
             ))
           ELSE 0
         END                AS minutes_late
@@ -354,7 +354,7 @@ app.get('/api/attendance/log/:course_id', async (req, res) => {
       WHERE e.course_id = ?
       ORDER BY
         FIELD(IFNULL(a.status,'Absent'), 'Absent','Late','Present'),
-        a.check_in_time ASC
+        a.checkin_time ASC
     `, [classStartTime || '00:00:00', date, course_id]);
 
     res.json({
@@ -362,7 +362,7 @@ app.get('/api/attendance/log/:course_id', async (req, res) => {
       data: rows.map(r => ({
         student_id:       r.student_id,
         student_name:     r.student_name,
-        checkin_time:     r.check_in_time || null,
+        checkin_time:     r.checkin_time || null,
         class_start_time: classStartTime,
         status:           r.status,
         minutes_late:     Math.round(Number(r.minutes_late) || 0)
@@ -385,15 +385,15 @@ app.get('/api/attendance/myhistory/:student_id', async (req, res) => {
       SELECT
         a.attendance_id,
         a.attendance_date,
-        a.check_in_time   AS checkin_time,
+        a.checkin_time   AS checkin_time,
         a.status,
         sc.study_time     AS class_start_raw,
         c.course_id,
         c.course_name,
         CASE
-          WHEN a.check_in_time IS NOT NULL AND a.status = 'Late' THEN
+          WHEN a.checkin_time IS NOT NULL AND a.status = 'Late' THEN
             GREATEST(0, ROUND(
-              (TIME_TO_SEC(a.check_in_time)
+              (TIME_TO_SEC(a.checkin_time)
                - TIME_TO_SEC(SUBSTRING_INDEX(SUBSTRING_INDEX(sc.study_time,' ',2),' ',-1))) / 60
             ))
           ELSE 0
@@ -410,7 +410,7 @@ app.get('/api/attendance/myhistory/:student_id', async (req, res) => {
       params.push(course_filter);
     }
 
-    sql += ' ORDER BY a.attendance_date DESC, a.check_in_time DESC';
+    sql += ' ORDER BY a.attendance_date DESC, a.checkin_time DESC';
 
     const rows = await query(sql, params);
     res.json({
