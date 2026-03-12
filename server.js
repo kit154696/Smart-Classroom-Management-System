@@ -257,3 +257,124 @@ app.get('/api/student/:student_id', async (req, res) => {
 app.listen(port, () => {
   console.log(`🚀 Backend Server กำลังรันอยู่ที่ http://localhost:${port}`);
 });
+// ─────────────────────────────────────────────────────────────
+// POST /api/attendance/nfc — บันทึกการเข้าเรียนผ่าน NFC
+// body: { student_id, date, checkin_time, source }
+// ─────────────────────────────────────────────────────────────
+app.post('/api/attendance/nfc', async (req, res) => {
+  const { student_id, date, checkin_time, source } = req.body;
+  if (!student_id || !date || !checkin_time)
+    return res.status(400).json({ success: false, message: 'กรุณาส่ง student_id, date และ checkin_time' });
+
+  try {
+    const stuRows = await query(
+      'SELECT s.student_id, s.student_name FROM Student s WHERE s.student_id = ?',
+      [student_id]
+    );
+    if (stuRows.length === 0)
+      return res.status(404).json({ success: false, message: 'ไม่พบนักศึกษา ' + student_id });
+
+    const student = stuRows[0];
+    const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+    const dayOfWeek = dayNames[new Date(date).getDay()];
+
+    const schedRows = await query(`
+      SELECT sc.schedule_id, sc.course_id, sc.study_time, sc.day_of_week
+      FROM Schedule sc
+      JOIN Enrollment e ON e.course_id = sc.course_id
+      WHERE e.student_id = ? AND sc.day_of_week = ?
+      LIMIT 1
+    `, [student_id, dayOfWeek]);
+
+    let scheduleId = null, classStart = null, isLate = false, minutesLate = 0;
+
+    if (schedRows.length > 0) {
+      scheduleId = schedRows[0].schedule_id;
+      classStart = schedRows[0].study_time.split('-')[0].trim();
+      const [ch, cm] = checkin_time.split(':').map(Number);
+      const [sh, sm] = classStart.split(':').map(Number);
+      minutesLate = (ch * 60 + cm) - (sh * 60 + sm);
+      isLate = minutesLate > 15;
+    }
+
+    const status = isLate ? 'late' : 'present';
+
+    if (scheduleId) {
+      await query(`
+        INSERT INTO Attendance (student_id, schedule_id, attendance_date, checkin_time, status)
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE checkin_time = VALUES(checkin_time), status = VALUES(status)
+      `, [student_id, scheduleId, date, checkin_time, status]);
+    }
+
+    res.json({
+      success: true,
+      message: isLate ? 'มาสาย ' + minutesLate + ' นาที' : 'มาทัน',
+      data: {
+        student_id, student_name: student.student_name,
+        checkin_time, class_start_time: classStart,
+        status, is_late: isLate,
+        minutes_late: Math.max(0, minutesLate),
+        source: source || 'nfc', date
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// GET /api/attendance/log/:course_id?date=YYYY-MM-DD
+// อาจารย์/Admin ดูรายชื่อพร้อมเวลาและสถานะ
+// ─────────────────────────────────────────────────────────────
+app.get('/api/attendance/log/:course_id', async (req, res) => {
+  const { course_id } = req.params;
+  const date = req.query.date;
+  if (!date)
+    return res.status(400).json({ success: false, message: 'กรุณาส่ง ?date=YYYY-MM-DD' });
+
+  try {
+    const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+    const dayOfWeek = dayNames[new Date(date).getDay()];
+
+    const rows = await query(`
+      SELECT
+        s.student_id, s.student_name,
+        sc.study_time AS class_start_time,
+        a.checkin_time,
+        CASE
+          WHEN a.attendance_id IS NULL THEN 'absent'
+          WHEN a.status = 'late'       THEN 'late'
+          ELSE 'present'
+        END AS status,
+        CASE
+          WHEN a.checkin_time IS NOT NULL THEN
+            GREATEST(0, (TIME_TO_SEC(a.checkin_time) - TIME_TO_SEC(SUBSTRING_INDEX(sc.study_time,'-',1))) / 60)
+          ELSE 0
+        END AS minutes_late
+      FROM Enrollment e
+      JOIN Student s ON s.student_id = e.student_id
+      LEFT JOIN Schedule sc ON sc.course_id = e.course_id AND sc.day_of_week = ?
+      LEFT JOIN Attendance a
+             ON a.student_id = s.student_id
+            AND a.schedule_id = sc.schedule_id
+            AND a.attendance_date = ?
+      WHERE e.course_id = ?
+      ORDER BY FIELD(status,'absent','late','present'), a.checkin_time ASC
+    `, [dayOfWeek, date, course_id]);
+
+    res.json({
+      success: true, course_id, date, count: rows.length,
+      data: rows.map(r => ({
+        student_id:       r.student_id,
+        student_name:     r.student_name,
+        checkin_time:     r.checkin_time || null,
+        class_start_time: r.class_start_time ? r.class_start_time.split('-')[0].trim() : null,
+        status:           r.status,
+        minutes_late:     Math.round(Number(r.minutes_late) || 0)
+      }))
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
