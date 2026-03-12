@@ -230,7 +230,7 @@ app.get('/api/student/:student_id', async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // NFC CHECK-IN API
 // Attendance schema จริง:
-//   student_id, course_id, status (Present/Late/Absent), attendance_date, check_in_time
+//   student_id, course_id, status (Present/Late/Absent), attendance_date, checkin_time
 // ═══════════════════════════════════════════════════════════
 
 app.post('/api/attendance/nfc', async (req, res) => {
