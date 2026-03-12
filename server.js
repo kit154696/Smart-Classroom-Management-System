@@ -11,24 +11,26 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname)); // serve index.html
 
-// ─── 1. เชื่อมต่อ MySQL ──────────────────────────────────
-const db = mysql.createConnection({
-  host:     process.env.MYSQLHOST,
-  user:     process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
-  port:     process.env.MYSQLPORT || 3306
-});
-db.connect((err) => {
-  if (err) { console.error('❌ เชื่อมต่อฐานข้อมูลไม่สำเร็จ:', err.message); return; }
-  console.log('✅ เชื่อมต่อฐานข้อมูล MySQL สำเร็จแล้ว!');
-});
+// ─── 1. เชื่อมต่อ MySQL (Pool — ป้องกัน connection หลุด) ──
+const pool = mysql.createPool({
+  host:                  process.env.MYSQLHOST     || 'localhost',
+  user:                  process.env.MYSQLUSER     || 'root',
+  password:              process.env.MYSQLPASSWORD || '0812667717asdFGH-',
+  database:              process.env.MYSQLDATABASE || 'smart_classroom',
+  port:                  process.env.MYSQLPORT     || 3306,
+  waitForConnections:    true,
+  connectionLimit:       10,
+  queueLimit:            0,
+  enableKeepAlive:       true,
+  keepAliveInitialDelay: 0
+}).promise();
+
+pool.getConnection()
+  .then(conn => { console.log('✅ เชื่อมต่อ MySQL Pool สำเร็จ!'); conn.release(); })
+  .catch(err => console.error('❌ เชื่อมต่อไม่สำเร็จ:', err.message));
 
 // ─── Helper ───────────────────────────────────────────────
-const query = (sql, params = []) =>
-  new Promise((res, rej) =>
-    db.query(sql, params, (err, rows) => err ? rej(err) : res(rows))
-  );
+const query = (sql, params = []) => pool.query(sql, params).then(([rows]) => rows);
 
 // ─── 2. หน้าหลัก ─────────────────────────────────────────
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
