@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Classroom Management System - KKU</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --kku-red: #8B3020;
+    --kku-dark: #6B2418;
+    --kku-light: #f9f5f4;
+    --kku-border: #d4a99a;
+    --gray-bg: #d9d9d9;
+    --white: #ffffff;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--white);
+    min-height: 100vh;
+  }
+
+  /* ========== LAYOUT ========== */
+  .screen { display: none; flex-direction: column; min-height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ========== TOPBAR ========== */
+  .topbar {
+    background: var(--kku-red);
+    height: 10px;
+    width: 100%;
+  }
+
+  /* ========== NAVBAR ========== */
+  .navbar {
+    background: var(--white);
+    border-bottom: 2px solid #e0e0e0;
+    padding: 0 24px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    position: relative;
+    z-index: 10;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    padding: 6px 16px;
+    background: #fff;
+  }
+
+  .kku-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--kku-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .kku-icon svg { width: 22px; height: 22px; fill: white; }
+
+  .nav-brand {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .nav-kku {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--kku-red);
+    letter-spacing: 1px;
+  }
+
+  .nav-sub {
+    font-size: 10px;
+    color: var(--kku-red);
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+
+  .nav-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--kku-red);
+    letter-spacing: 0.5px;
+  }
+
+  .nav-title-th {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--kku-red);
+  }
+
+  .hamburger-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2.5px solid var(--kku-red);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .hamburger-btn svg { width: 22px; height: 22px; stroke: var(--kku-red); }
+
+  /* ========== FOOTER ========== */
+  .footer {
+    background: var(--kku-red);
+    height: 60px;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+
+  .back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .back-btn svg { width: 20px; height: 20px; stroke: white; fill: none; }
+
+  /* ========== DROPDOWN MENU ========== */
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 72px;
+    right: 0;
+    width: 280px;
+    background: var(--kku-red);
+    border: 3px solid var(--kku-red);
+    z-index: 100;
+    box-shadow: -4px 4px 16px rgba(0,0,0,0.2);
+  }
+
+  .dropdown-menu.open { display: block; }
+
+  .dropdown-menu button {
+    display: block;
+    width: 100%;
+    padding: 18px 20px;
+    background: white;
+    border: 3px solid var(--kku-red);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--kku-red);
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+  }
+
+  .dropdown-menu button:hover { background: #fef0ee; }
+
+  /* ========== MAIN CONTENT ========== */
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 24px;
+  }
+
+  /* ========== LANDING PAGE ========== */
+  #screen-landing .main-content { gap: 32px; }
+
+  .hero-banner {
+    background: var(--kku-red);
+    border-radius: 8px;
+    padding: 20px 48px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .hero-banner .kku-logo-white {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-banner .kku-circle {
+    width: 50px;
+    height: 50px;
+    border: 2px solid white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-banner .kku-circle svg { width: 28px; height: 28px; fill: white; }
+
+  .hero-banner .kku-text-white {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .hero-banner .kku-text-white span:first-child {
+    font-size: 16px; font-weight: 800; color: white; letter-spacing: 1px;
+  }
+
+  .hero-banner .kku-text-white span:last-child {
+    font-size: 9px; color: rgba(255,255,255,0.85); letter-spacing: 2px; font-weight: 600;
+  }
+
+  .hero-banner .hero-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 0.5px;
+  }
+
+  /* ========== BIG BUTTONS ========== */
+  .big-btn {
+    background: var(--kku-red);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 20px 0;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    max-width: 340px;
+    box-shadow: 0 4px 12px rgba(139,48,32,0.35);
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .big-btn:hover { background: var(--kku-dark); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139,48,32,0.4); }
+  .big-btn:active { transform: translateY(0); }
+
+  /* ========== FORM FIELDS ========== */
+  .field-row {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    max-width: 540px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 3px 8px rgba(139,48,32,0.15);
+  }
+
+  .field-label {
+    background: var(--kku-red);
+    color: white;
+    font-weight: 700;
+    font-size: 17px;
+    padding: 16px 20px;
+    white-space: nowrap;
+    min-width: 150px;
+    display: flex;
+    align-items: center;
+    font-family: 'Sarabun', sans-serif;
+  }
+
+  .field-input {
+    flex: 1;
+    border: 2px solid var(--kku-red);
+    border-left: none;
+    padding: 16px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 16px;
+    outline: none;
+    color: #333;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .field-input:focus { border-color: var(--kku-dark); background: #fef8f7; }
+
+  .divider-line {
+    width: 100%;
+    max-width: 540px;
+    height: 1.5px;
+    background: var(--kku-border);
+    margin: 8px 0;
+  }
+
+  /* ========== AUTH BUTTONS ========== */
+  .auth-btn {
+    background: var(--kku-red);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 18px 0;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    max-width: 540px;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    box-shadow: 0 3px 10px rgba(139,48,32,0.25);
+  }
+
+  .auth-btn:hover { background: var(--kku-dark); }
+
+  .social-btn {
+    background: var(--kku-red);
+    color: white;
+    border: none;
+    border-radius: 0;
+    padding: 18px 0;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    width: 100%;
+    max-width: 540px;
+    letter-spacing: 1px;
+    transition: background 0.2s;
+    margin: 2px 0;
+  }
+
+  .social-btn:hover { background: var(--kku-dark); }
+
+  /* ========== DASHBOARD ========== */
+  #screen-dashboard .navbar { position: relative; }
+
+  /* ========== ACCOUNT PAGE ========== */
+  .account-layout {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+  }
+
+  .account-sidebar {
+    width: 220px;
+    background: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .profile-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: var(--kku-red);
+    border: 3px solid #555;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .profile-circle svg { width: 70px; height: 70px; fill: rgba(255,255,255,0.5); }
+
+  .name-bar {
+    background: var(--kku-red);
+    width: 100%;
+    height: 44px;
+    border-radius: 4px;
+  }
+
+  .settings-btn {
+    background: var(--kku-red);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 0;
+    width: 100%;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .settings-btn:hover { background: var(--kku-dark); }
+
+  .account-content {
+    flex: 1;
+    background: white;
+    padding: 30px;
+  }
+
+  /* ========== HELP PAGE ========== */
+  .help-content {
+    flex: 1;
+    padding: 24px;
+  }
+
+  .help-box {
+    background: var(--gray-bg);
+    border-radius: 4px;
+    width: 100%;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  /* ========== GRADE / SCHEDULE PAGES ========== */
+  .query-page-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 40px;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .result-box {
+    background: var(--gray-bg);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 900px;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .result-box-inner {
+    width: 100%;
+    padding: 20px;
+  }
+
+  /* Grade table */
+  .grade-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    display: none;
+  }
+
+  .grade-table.show { display: table; }
+
+  .grade-table th {
+    background: var(--kku-red);
+    color: white;
+    padding: 12px 16px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .grade-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+  }
+
+  .grade-table tr:nth-child(even) { background: #f9f9f9; }
+
+  /* Schedule table */
+  .schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    display: none;
+  }
+
+  .schedule-table.show { display: table; }
+  .schedule-table th { background: var(--kku-red); color: white; padding: 10px 12px; font-weight: 700; font-size: 14px; }
+  .schedule-table td { padding: 10px 12px; border: 1px solid #ddd; text-align: center; }
+  .schedule-table tr:nth-child(even) { background: #fef5f4; }
+
+  /* ========== SCORING PAGE ========== */
+  .scoring-layout {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 30px;
+    gap: 16px;
+  }
+
+  .scoring-inner {
+    display: flex;
+    gap: 24px;
+    flex: 1;
+    align-items: flex-start;
+  }
+
+  .scoring-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 220px;
+    flex-shrink: 0;
+  }
+
+  .photo-placeholder {
+    width: 220px;
+    height: 220px;
+    background: var(--gray-bg);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 13px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .photo-placeholder svg { width: 50px; height: 50px; fill: #aaa; }
+
+  .userid-box {
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 2px solid var(--kku-red);
+    box-shadow: 0 2px 6px rgba(139,48,32,0.12);
+  }
+
+  .userid-label {
+    background: white;
+    border-right: 2px solid var(--kku-red);
+    padding: 10px 12px;
+    font-weight: 700;
+    font-size: 15px;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .userid-input {
+    flex: 1;
+    background: var(--kku-red);
+    border: none;
+    outline: none;
+    padding: 10px 12px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px;
+    color: white;
+  }
+
+  .userid-input::placeholder { color: rgba(255,255,255,0.6); }
+
+  .name-display-box {
+    border: 2px solid var(--kku-red);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: #333;
+    font-weight: 600;
+    background: white;
+    min-height: 40px;
+  }
+
+  .scoring-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .score-field {
+    display: flex;
+    align-items: stretch;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(139,48,32,0.12);
+  }
+
+  .score-label {
+    background: var(--kku-red);
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px 20px;
+    min-width: 180px;
+    display: flex;
+    align-items: center;
+    font-family: 'Sarabun', sans-serif;
+  }
+
+  .score-input {
+    flex: 1;
+    border: 2px solid var(--kku-red);
+    border-left: none;
+    padding: 14px 16px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 16px;
+    outline: none;
+    color: #333;
+  }
+
+  .score-input:focus { background: #fef8f7; }
+
+  .scoring-btns {
+    display: flex;
+    gap: 16px;
+    padding: 8px 0;
+  }
+
+  .scoring-btns button {
+    flex: 1;
+    padding: 18px 0;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--kku-red);
+    color: white;
+    letter-spacing: 0.5px;
+    box-shadow: 0 3px 10px rgba(139,48,32,0.25);
+    transition: all 0.2s;
+  }
+
+  .scoring-btns button:hover { background: var(--kku-dark); transform: translateY(-1px); }
+
+  /* ========== TOAST ========== */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #2d6a4f;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Sarabun', sans-serif;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: #c0392b; }
+
+  /* ========== NAVBAR TITLE PAGE INDICATOR ========== */
+  .page-indicator {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--kku-red);
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 600px) {
+    .hero-banner { padding: 16px 20px; flex-direction: column; text-align: center; }
+    .scoring-inner { flex-direction: column; }
+    .scoring-left { width: 100%; }
+    .photo-placeholder { width: 100%; height: 160px; }
+    .field-label { min-width: 120px; font-size: 15px; }
+    .big-btn { font-size: 18px; }
+    .navbar { padding: 0 14px; }
+    .nav-title { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 1: LANDING -->
+<!-- ============================================================ -->
+<div class="screen active" id="screen-landing">
+  <div class="topbar"></div>
+  <div style="background:var(--kku-red); padding: 14px 30px; display:flex; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:6px; padding:10px 28px; display:flex; align-items:center; gap:14px; max-width:700px; width:100%;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:40px;height:40px;background:var(--kku-red);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--kku-red);letter-spacing:1px;">🏛 KKU มหาวิทยาลัยขอนแก่น</div>
+          <div style="font-size:9px;color:var(--kku-red);letter-spacing:2px;font-weight:600;">KHON KAEN UNIVERSITY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="hero-banner">
+      <div class="hero-title">Smart Classroom Management System</div>
+    </div>
+    <button class="big-btn" onclick="navigate('screen-login')">เข้าสู่ระบบ</button>
+    <button class="big-btn" onclick="navigate('screen-register')">ลงชื่อเข้าใช้</button>
+  </div>
+  <div class="footer"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 2: REGISTER -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-register">
+  <div class="topbar"></div>
+  <div class="navbar">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator">Register : ลงชื่อเข้าใช้</span>
+  </div>
+
+  <div class="main-content">
+    <div class="field-row">
+      <div class="field-label">Username :</div>
+      <input class="field-input" id="reg-username" type="text" placeholder="กรอก username">
+    </div>
+    <div class="field-row">
+      <div class="field-label">Password :</div>
+      <input class="field-input" id="reg-password" type="password" placeholder="กรอก password">
+    </div>
+    <div class="field-row">
+      <div class="field-label">Password :</div>
+      <input class="field-input" id="reg-confirm" type="password" placeholder="ยืนยัน password">
+    </div>
+    <button class="auth-btn" onclick="doRegister()">Continue / ดำเนินการต่อ</button>
+    <div class="divider-line"></div>
+    <button class="social-btn" onclick="showToast('เชื่อมต่อ KKUMAIL...')">KKUMAIL</button>
+    <button class="social-btn" onclick="showToast('เชื่อมต่อ THAI ID...')">THAI ID</button>
+  </div>
+  <div class="footer">
+    <button class="back-btn" onclick="navigate('screen-landing')">
+      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 3: LOGIN -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-login">
+  <div class="topbar"></div>
+  <div class="navbar">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator">Login : เข้าสู่ระบบ</span>
+  </div>
+
+  <div class="main-content">
+    <div class="field-row">
+      <div class="field-label">Username :</div>
+      <input class="field-input" id="login-username" type="text" placeholder="กรอก username">
+    </div>
+    <div class="field-row">
+      <div class="field-label">Password :</div>
+      <input class="field-input" id="login-password" type="password" placeholder="กรอก password">
+    </div>
+    <button class="auth-btn" onclick="doLogin()">Continue / ดำเนินการต่อ</button>
+    <div class="divider-line"></div>
+    <button class="social-btn" onclick="showToast('เชื่อมต่อ KKUMAIL...')">KKUMAIL</button>
+    <button class="social-btn" onclick="showToast('เชื่อมต่อ THAI ID...')">THAI ID</button>
+  </div>
+  <div class="footer">
+    <button class="back-btn" onclick="navigate('screen-landing')">
+      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 4: DASHBOARD -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-dashboard">
+  <div class="topbar"></div>
+  <div class="navbar" style="position:relative;">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="nav-title">Smart Classroom Management System</span>
+    <button class="hamburger-btn" onclick="toggleMenu('menu-dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="16" y2="16"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="menu-dashboard">
+      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
+      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
+      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
+      <button onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <button class="big-btn" onclick="navigate('screen-grades')">ตรวจสอบเกรด</button>
+    <button class="big-btn" onclick="navigate('screen-scoring')">ลงคะแนน</button>
+    <button class="big-btn" onclick="navigate('screen-schedule')">ตารางเรียน</button>
+  </div>
+  <div class="footer"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 5: ACCOUNT -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-account">
+  <div class="topbar"></div>
+  <div class="navbar" style="position:relative;">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator" style="font-size:20px;">บัญชี</span>
+    <button class="hamburger-btn" onclick="toggleMenu('menu-account')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="16" y2="16"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="menu-account">
+      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
+      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
+      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
+      <button onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="account-layout">
+    <div class="account-sidebar">
+      <div class="profile-circle">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="name-bar" id="account-name-bar"></div>
+      <button class="settings-btn">ตั้งค่า</button>
+    </div>
+    <div class="account-content">
+      <div style="padding:20px 0;">
+        <h3 style="color:var(--kku-red);font-size:20px;margin-bottom:20px;font-weight:700;">ข้อมูลบัญชีผู้ใช้</h3>
+        <table style="border-collapse:collapse;width:100%;max-width:500px;">
+          <tr>
+            <td style="padding:10px 16px;background:#f5f0ef;font-weight:700;color:#444;border:1px solid #ddd;width:140px;">Username</td>
+            <td style="padding:10px 16px;border:1px solid #ddd;" id="acc-username">-</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 16px;background:#f5f0ef;font-weight:700;color:#444;border:1px solid #ddd;">บทบาท</td>
+            <td style="padding:10px 16px;border:1px solid #ddd;" id="acc-role">-</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 16px;background:#f5f0ef;font-weight:700;color:#444;border:1px solid #ddd;">สถานะ</td>
+            <td style="padding:10px 16px;border:1px solid #ddd;color:green;font-weight:700;">Active ✓</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="footer"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 6: HELP -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-help">
+  <div class="topbar"></div>
+  <div class="navbar" style="position:relative;">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator" style="font-size:20px;">ช่วยเหลือ</span>
+    <button class="hamburger-btn" onclick="toggleMenu('menu-help')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="16" y2="16"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="menu-help">
+      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
+      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
+      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
+      <button onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="help-content">
+    <div class="help-box">
+      <div style="text-align:center;">
+        <div style="font-size:48px;margin-bottom:12px;">❓</div>
+        <div style="font-size:20px;font-weight:700;color:#666;margin-bottom:8px;">ศูนย์ช่วยเหลือ</div>
+        <div style="font-size:15px;color:#888;">ติดต่อ: support@kku.ac.th | โทร: 043-009-700</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 7: CHECK GRADES -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-grades">
+  <div class="topbar"></div>
+  <div class="navbar" style="position:relative;">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator" style="font-size:20px;">ตรวจสอบเกรด</span>
+    <button class="hamburger-btn" onclick="toggleMenu('menu-grades')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="16" y2="16"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="menu-grades">
+      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
+      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
+      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
+      <button onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="query-page-content">
+    <div class="field-row" style="max-width:700px;">
+      <div class="field-label">User ID :</div>
+      <input class="field-input" id="grade-userid" type="text" placeholder="กรอก User ID เช่น STU001">
+    </div>
+    <button class="auth-btn" style="max-width:320px;" onclick="checkGrade()">SUBMIT / ยืนยัน</button>
+    <div class="result-box" id="grade-result-box">
+      <div class="result-box-inner">
+        <table class="grade-table" id="grade-table">
+          <thead>
+            <tr>
+              <th>รหัสวิชา</th>
+              <th>ชื่อวิชา</th>
+              <th>เวลาเข้าเรียน</th>
+              <th>จิตพิสัย</th>
+              <th>ส่งงาน</th>
+              <th>กลางภาค</th>
+              <th>ปลายภาค</th>
+              <th>รวม</th>
+              <th>เกรด</th>
+            </tr>
+          </thead>
+          <tbody id="grade-tbody"></tbody>
+        </table>
+        <div id="grade-empty" style="text-align:center;color:#aaa;font-size:16px;padding:40px;">ป้อน User ID แล้วกด SUBMIT เพื่อดูเกรด</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <button class="back-btn" onclick="navigate('screen-dashboard')">
+      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 8: SCHEDULE -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-schedule">
+  <div class="topbar"></div>
+  <div class="navbar" style="position:relative;">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator" style="font-size:20px;">ตารางเรียน</span>
+    <button class="hamburger-btn" onclick="toggleMenu('menu-schedule')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="16" y2="16"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="menu-schedule">
+      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
+      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
+      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
+      <button onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="query-page-content">
+    <div class="field-row" style="max-width:700px;">
+      <div class="field-label">User ID :</div>
+      <input class="field-input" id="schedule-userid" type="text" placeholder="กรอก User ID เช่น STU001">
+    </div>
+    <button class="auth-btn" style="max-width:320px;" onclick="checkSchedule()">SUBMIT / ยืนยัน</button>
+    <div class="result-box" id="schedule-result-box">
+      <div class="result-box-inner">
+        <table class="schedule-table" id="schedule-table">
+          <thead>
+            <tr>
+              <th>วัน</th>
+              <th>เวลา</th>
+              <th>รหัสวิชา</th>
+              <th>ชื่อวิชา</th>
+              <th>อาจารย์</th>
+              <th>ห้อง</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-tbody"></tbody>
+        </table>
+        <div id="schedule-empty" style="text-align:center;color:#aaa;font-size:16px;padding:40px;">ป้อน User ID แล้วกด SUBMIT เพื่อดูตารางเรียน</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <button class="back-btn" onclick="navigate('screen-dashboard')">
+      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 9: SCORING (ลงคะแนน) -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-scoring">
+  <div class="topbar"></div>
+  <div class="navbar" style="position:relative;">
+    <div class="nav-logo">
+      <div class="kku-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="nav-brand">
+        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
+        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+      </div>
+    </div>
+    <span class="page-indicator" style="font-size:20px;">ลงคะแนน</span>
+    <button class="hamburger-btn" onclick="toggleMenu('menu-scoring')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="16" y2="16"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="menu-scoring">
+      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
+      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
+      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
+      <button onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div class="scoring-layout">
+    <div class="scoring-inner">
+      <!-- LEFT -->
+      <div class="scoring-left">
+        <div class="photo-placeholder" id="scoring-photo">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span style="font-size:12px;color:#aaa;">รูปนักศึกษา</span>
+        </div>
+        <div class="userid-box">
+          <div class="userid-label">User ID :</div>
+          <input class="userid-input" id="scoring-userid" type="text" placeholder="เช่น STU001" onchange="loadStudentInfo()">
+        </div>
+        <div class="name-display-box" id="scoring-name">ชื่อ-นามสกุล</div>
+      </div>
+      <!-- RIGHT -->
+      <div class="scoring-right">
+        <div class="score-field">
+          <div class="score-label">เวลาเข้าเรียน :</div>
+          <input class="score-input" id="sc-attend" type="number" min="0" max="20" placeholder="0-20">
+        </div>
+        <div class="score-field">
+          <div class="score-label">จิตพิสัย :</div>
+          <input class="score-input" id="sc-attitude" type="number" min="0" max="10" placeholder="0-10">
+        </div>
+        <div class="score-field">
+          <div class="score-label">ส่งงาน :</div>
+          <input class="score-input" id="sc-homework" type="number" min="0" max="20" placeholder="0-20">
+        </div>
+        <div class="score-field">
+          <div class="score-label">สอบกลางภาค :</div>
+          <input class="score-input" id="sc-midterm" type="number" min="0" max="30" placeholder="0-30">
+        </div>
+        <div class="score-field">
+          <div class="score-label">สอบปลายภาค:</div>
+          <input class="score-input" id="sc-final" type="number" min="0" max="40" placeholder="0-40">
+        </div>
+        <div class="score-field">
+          <div class="score-label">สอบเก็บคะแนน :</div>
+          <input class="score-input" id="sc-quiz" type="number" min="0" max="20" placeholder="0-20">
+        </div>
+      </div>
+    </div>
+    <div class="scoring-btns">
+      <button onclick="saveScore()">SAVE / บันทึก</button>
+      <button onclick="editScore()">EDIT / แก้ไข</button>
+      <button onclick="submitScore()">SUBMIT / ยืนยัน</button>
+    </div>
+  </div>
+  <div class="footer">
+    <button class="back-btn" onclick="navigate('screen-dashboard')">
+      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT -->
+<!-- ============================================================ -->
+<script>
+// ===== MOCK DATABASE =====
+const db = {
+  users: [
+    { id: 'STU001', username: 'student1', password: '1234', role: 'นักศึกษา', name: 'นายสมชาย ใจดี' },
+    { id: 'STU002', username: 'student2', password: '1234', role: 'นักศึกษา', name: 'นางสาวสมหญิง รักเรียน' },
+    { id: 'TCH001', username: 'teacher1', password: 'teach', role: 'อาจารย์', name: 'อ.ดร.วิชัย สอนดี' },
+    { id: 'ADM001', username: 'admin',    password: 'admin', role: 'ผู้ดูแลระบบ', name: 'Admin KKU' },
+  ],
+  grades: {
+    STU001: [
+      { code:'SC001', name:'ฐานข้อมูล', attend:18, attitude:9, hw:17, mid:25, final:33, quiz:15 },
+      { code:'SC002', name:'การโปรแกรม', attend:20, attitude:10, hw:18, mid:28, final:36, quiz:18 },
+      { code:'SC003', name:'โครงสร้างข้อมูล', attend:15, attitude:8, hw:14, mid:22, final:28, quiz:12 },
+    ],
+    STU002: [
+      { code:'SC001', name:'ฐานข้อมูล', attend:20, attitude:10, hw:20, mid:30, final:38, quiz:19 },
+      { code:'SC004', name:'เครือข่ายคอมพิวเตอร์', attend:17, attitude:9, hw:15, mid:24, final:31, quiz:14 },
+    ]
+  },
+  schedules: {
+    STU001: [
+      { day:'จันทร์', time:'08:00-10:00', code:'SC001', name:'ฐานข้อมูล', teacher:'อ.วิชัย', room:'SC201' },
+      { day:'อังคาร', time:'10:00-12:00', code:'SC002', name:'การโปรแกรม', teacher:'อ.สมศักดิ์', room:'SC301' },
+      { day:'พุธ',   time:'13:00-15:00', code:'SC003', name:'โครงสร้างข้อมูล', teacher:'อ.มาลี', room:'SC102' },
+    ],
+    STU002: [
+      { day:'จันทร์', time:'08:00-10:00', code:'SC001', name:'ฐานข้อมูล', teacher:'อ.วิชัย', room:'SC201' },
+      { day:'พฤหัสฯ', time:'09:00-11:00', code:'SC004', name:'เครือข่ายคอมพิวเตอร์', teacher:'อ.ชาญ', room:'SC402' },
+    ]
+  },
+  scores: {}
+};
+
+let currentUser = null;
+
+// ===== NAVIGATION =====
+function navigate(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  closeMenus();
+  window.scrollTo(0, 0);
+}
+
+// ===== HAMBURGER MENU =====
+function toggleMenu(menuId) {
+  const menu = document.getElementById(menuId);
+  const isOpen = menu.classList.contains('open');
+  closeMenus();
+  if (!isOpen) menu.classList.add('open');
+}
+
+function closeMenus() {
+  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.hamburger-btn') && !e.target.closest('.dropdown-menu')) {
+    closeMenus();
+  }
+});
+
+// ===== TOAST =====
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => { t.className = 'toast'; }, 2800);
+}
+
+// ===== REGISTER =====
+function doRegister() {
+  const u = document.getElementById('reg-username').value.trim();
+  const p = document.getElementById('reg-password').value;
+  const c = document.getElementById('reg-confirm').value;
+  if (!u || !p) { showToast('กรุณากรอกข้อมูลให้ครบ', true); return; }
+  if (p !== c)  { showToast('รหัสผ่านไม่ตรงกัน', true); return; }
+  if (db.users.find(x => x.username === u)) { showToast('Username นี้มีอยู่แล้ว', true); return; }
+  const newId = 'STU' + String(db.users.length + 1).padStart(3, '0');
+  db.users.push({ id: newId, username: u, password: p, role: 'นักศึกษา', name: u });
+  showToast('ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ ✓');
+  setTimeout(() => navigate('screen-login'), 1500);
+}
+
+// ===== LOGIN =====
+function doLogin() {
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  const user = db.users.find(x => x.username === u && x.password === p);
+  if (!user) { showToast('Username หรือ Password ไม่ถูกต้อง', true); return; }
+  currentUser = user;
+  document.getElementById('acc-username').textContent = user.username;
+  document.getElementById('acc-role').textContent = user.role;
+  document.getElementById('account-name-bar').textContent = user.name;
+  document.getElementById('account-name-bar').style.cssText += ';display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;padding:0 10px;';
+  showToast('ยินดีต้อนรับ ' + user.name + ' ✓');
+  setTimeout(() => navigate('screen-dashboard'), 1200);
+}
+
+// ===== LOGOUT =====
+function doLogout() {
+  currentUser = null;
+  closeMenus();
+  showToast('ออกจากระบบแล้ว');
+  setTimeout(() => navigate('screen-landing'), 1000);
+}
+
+// ===== CHECK GRADE =====
+function calcGrade(total) {
+  if (total >= 80) return 'A';
+  if (total >= 75) return 'B+';
+  if (total >= 70) return 'B';
+  if (total >= 65) return 'C+';
+  if (total >= 60) return 'C';
+  if (total >= 55) return 'D+';
+  if (total >= 50) return 'D';
+  return 'F';
+}
+
+function checkGrade() {
+  const uid = document.getElementById('grade-userid').value.trim().toUpperCase();
+  const table = document.getElementById('grade-table');
+  const tbody = document.getElementById('grade-tbody');
+  const empty = document.getElementById('grade-empty');
+  const data = db.grades[uid];
+
+  if (!uid) { showToast('กรุณากรอก User ID', true); return; }
+  if (!data) {
+    table.classList.remove('show');
+    empty.textContent = '⚠️ ไม่พบข้อมูลของ User ID: ' + uid;
+    empty.style.display = 'block';
+    showToast('ไม่พบ User ID: ' + uid, true);
+    return;
+  }
+
+  tbody.innerHTML = '';
+  data.forEach(r => {
+    const total = r.attend + r.attitude + r.hw + r.mid + r.final + r.quiz;
+    const grade = calcGrade(total);
+    const gradeColor = grade === 'A' ? '#2d6a4f' : grade === 'F' ? '#c0392b' : '#333';
+    tbody.innerHTML += `<tr>
+      <td><b>${r.code}</b></td>
+      <td>${r.name}</td>
+      <td>${r.attend}</td>
+      <td>${r.attitude}</td>
+      <td>${r.hw}</td>
+      <td>${r.mid}</td>
+      <td>${r.final}</td>
+      <td><b>${total}</b></td>
+      <td><b style="color:${gradeColor};font-size:17px;">${grade}</b></td>
+    </tr>`;
+  });
+
+  empty.style.display = 'none';
+  table.classList.add('show');
+  showToast('พบข้อมูลเกรดของ ' + uid + ' ✓');
+}
+
+// ===== CHECK SCHEDULE =====
+function checkSchedule() {
+  const uid = document.getElementById('schedule-userid').value.trim().toUpperCase();
+  const table = document.getElementById('schedule-table');
+  const tbody = document.getElementById('schedule-tbody');
+  const empty = document.getElementById('schedule-empty');
+  const data = db.schedules[uid];
+
+  if (!uid) { showToast('กรุณากรอก User ID', true); return; }
+  if (!data) {
+    table.classList.remove('show');
+    empty.textContent = '⚠️ ไม่พบตารางเรียนของ User ID: ' + uid;
+    empty.style.display = 'block';
+    showToast('ไม่พบ User ID: ' + uid, true);
+    return;
+  }
+
+  tbody.innerHTML = '';
+  data.forEach(r => {
+    tbody.innerHTML += `<tr>
+      <td><b>${r.day}</b></td>
+      <td>${r.time}</td>
+      <td>${r.code}</td>
+      <td>${r.name}</td>
+      <td>${r.teacher}</td>
+      <td>${r.room}</td>
+    </tr>`;
+  });
+
+  empty.style.display = 'none';
+  table.classList.add('show');
+  showToast('พบตารางเรียนของ ' + uid + ' ✓');
+}
+
+// ===== SCORING =====
+function loadStudentInfo() {
+  const uid = document.getElementById('scoring-userid').value.trim().toUpperCase();
+  const user = db.users.find(u => u.id === uid);
+  const nameEl = document.getElementById('scoring-name');
+  if (user) {
+    nameEl.textContent = user.name;
+    nameEl.style.color = '#222';
+    // Load existing scores if any
+    if (db.scores[uid]) {
+      const s = db.scores[uid];
+      document.getElementById('sc-attend').value   = s.attend   || '';
+      document.getElementById('sc-attitude').value = s.attitude || '';
+      document.getElementById('sc-homework').value = s.hw       || '';
+      document.getElementById('sc-midterm').value  = s.mid      || '';
+      document.getElementById('sc-final').value    = s.final    || '';
+      document.getElementById('sc-quiz').value     = s.quiz     || '';
+    }
+  } else {
+    nameEl.textContent = uid ? '⚠️ ไม่พบ User ID นี้' : 'ชื่อ-นามสกุล';
+    nameEl.style.color = uid ? '#c0392b' : '#aaa';
+  }
+}
+
+function getScoreData() {
+  const uid = document.getElementById('scoring-userid').value.trim().toUpperCase();
+  if (!uid) { showToast('กรุณากรอก User ID', true); return null; }
+  const user = db.users.find(u => u.id === uid);
+  if (!user) { showToast('ไม่พบ User ID: ' + uid, true); return null; }
+  return {
+    uid,
+    attend:   parseFloat(document.getElementById('sc-attend').value)   || 0,
+    attitude: parseFloat(document.getElementById('sc-attitude').value) || 0,
+    hw:       parseFloat(document.getElementById('sc-homework').value) || 0,
+    mid:      parseFloat(document.getElementById('sc-midterm').value)  || 0,
+    final:    parseFloat(document.getElementById('sc-final').value)    || 0,
+    quiz:     parseFloat(document.getElementById('sc-quiz').value)     || 0,
+  };
+}
+
+function saveScore() {
+  const d = getScoreData(); if (!d) return;
+  db.scores[d.uid] = d;
+  // Also update grades
+  if (!db.grades[d.uid]) db.grades[d.uid] = [];
+  showToast('บันทึกคะแนนแล้ว ✓');
+}
+
+function editScore() {
+  const uid = document.getElementById('scoring-userid').value.trim().toUpperCase();
+  if (!uid || !db.scores[uid]) { showToast('ไม่พบข้อมูลที่บันทึกไว้', true); return; }
+  const s = db.scores[uid];
+  document.getElementById('sc-attend').value   = s.attend;
+  document.getElementById('sc-attitude').value = s.attitude;
+  document.getElementById('sc-homework').value = s.hw;
+  document.getElementById('sc-midterm').value  = s.mid;
+  document.getElementById('sc-final').value    = s.final;
+  document.getElementById('sc-quiz').value     = s.quiz;
+  showToast('โหลดข้อมูลเพื่อแก้ไขแล้ว ✓');
+}
+
+function submitScore() {
+  const d = getScoreData(); if (!d) return;
+  db.scores[d.uid] = d;
+  const total = d.attend + d.attitude + d.hw + d.mid + d.final + d.quiz;
+  const grade = calcGrade(total);
+  showToast(`ยืนยันคะแนนแล้ว | รวม: ${total} คะแนน | เกรด: ${grade} ✓`);
+}
+
+// ===== KEYBOARD ENTER SUPPORT =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const active = document.querySelector('.screen.active');
+    if (active.id === 'screen-login')    doLogin();
+    if (active.id === 'screen-register') doRegister();
+    if (active.id === 'screen-grades')   checkGrade();
+    if (active.id === 'screen-schedule') checkSchedule();
+  }
+});
+</script>
+
+</body>
+</html>
