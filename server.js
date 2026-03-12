@@ -471,26 +471,5 @@ app.get('/api/attendance/myhistory/:student_id', async (req, res) => {
       sql += ' AND c.course_id = ?';
       params.push(course_filter);
     }
-
-    sql += ' ORDER BY a.attendance_date DESC, a.checkin_time DESC';
-
-    const rows = await query(sql, params);
-    res.json({
-      success: true,
-      student_id,
-      count: rows.length,
-      data: rows.map(r => ({
-        attendance_date:  r.attendance_date,
-        course_id:        r.course_id,
-        course_name:      r.course_name,
-        class_start_time: r.class_start_time ? r.class_start_time.split('-')[0].trim() : null,
-        day_of_week:      r.day_of_week,
-        checkin_time:     r.checkin_time || null,
-        status:           r.status,
-        minutes_late:     Number(r.minutes_late) || 0
-      }))
-    });
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
-  }
+  } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
