@@ -281,13 +281,14 @@ app.post('/api/attendance/nfc', async (req, res) => {
     const status = isLate ? 'Late' : 'Present';
 
     if (courseId) {
+      const scheduleId = schedRows[0].schedule_id;
       await query(`
-        INSERT INTO Attendance (student_id, course_id, attendance_date, checkin_time, status)
+        INSERT INTO Attendance (student_id, schedule_id, attendance_date, checkin_time, status)
         VALUES (?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           checkin_time = VALUES(checkin_time),
           status        = VALUES(status)
-      `, [student_id, courseId, date, checkin_time, status]);
+      `, [student_id, scheduleId, date, checkin_time, status]);
     }
 
     res.json({
@@ -347,9 +348,10 @@ app.get('/api/attendance/log/:course_id', async (req, res) => {
         END                AS minutes_late
       FROM Enrollment e
       JOIN Student s ON s.student_id = e.student_id
+      LEFT JOIN Schedule sch2 ON sch2.course_id = e.course_id
       LEFT JOIN Attendance a
-             ON a.student_id     = s.student_id
-            AND a.course_id      = e.course_id
+             ON a.student_id      = s.student_id
+            AND a.schedule_id     = sch2.schedule_id
             AND a.attendance_date = ?
       WHERE e.course_id = ?
       ORDER BY
@@ -399,14 +401,14 @@ app.get('/api/attendance/myhistory/:student_id', async (req, res) => {
           ELSE 0
         END AS minutes_late
       FROM Attendance a
-      JOIN Course   c  ON a.course_id  = c.course_id
-      LEFT JOIN Schedule sc ON sc.course_id = c.course_id
+      JOIN Schedule sc ON a.schedule_id = sc.schedule_id
+      JOIN Course   c  ON sc.course_id  = c.course_id
       WHERE a.student_id = ?
     `;
     const params = [student_id];
 
     if (course_filter) {
-      sql += ' AND a.course_id = ?';
+      sql += ' AND sc.course_id = ?';
       params.push(course_filter);
     }
 
