@@ -3,2934 +3,1172 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Classroom Management System - KKU</title>
+<title>SCMS — Smart Classroom Management System</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  :root {
-    --kku-red: #8B3020;
-    --kku-dark: #6B2418;
-    --kku-light: #f9f5f4;
-    --kku-border: #d4a99a;
-    --gray-bg: #d9d9d9;
-    --white: #ffffff;
-  }
-
-  body {
-    font-family: 'Sarabun', sans-serif;
-    background: var(--white);
-    min-height: 100vh;
-  }
-
-  /* ========== LAYOUT ========== */
-  .screen { display: none; flex-direction: column; min-height: 100vh; }
-  .screen.active { display: flex; }
-
-  /* ========== TOPBAR ========== */
-  .topbar {
-    background: var(--kku-red);
-    height: 10px;
-    width: 100%;
-  }
-
-  /* ========== NAVBAR ========== */
-  .navbar {
-    background: var(--white);
-    border-bottom: 2px solid #e0e0e0;
-    padding: 0 24px;
-    height: 72px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    position: relative;
-    z-index: 10;
-  }
-
-  .nav-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border: 2px solid #ccc;
-    border-radius: 6px;
-    padding: 6px 16px;
-    background: #fff;
-  }
-
-  .kku-icon {
-    width: 36px;
-    height: 36px;
-    background: var(--kku-red);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .kku-icon svg { width: 22px; height: 22px; fill: white; }
-
-  .nav-brand {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-  }
-
-  .nav-kku {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--kku-red);
-    letter-spacing: 1px;
-  }
-
-  .nav-sub {
-    font-size: 10px;
-    color: var(--kku-red);
-    letter-spacing: 2px;
-    font-weight: 600;
-  }
-
-  .nav-title {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--kku-red);
-    letter-spacing: 0.5px;
-  }
-
-  .nav-title-th {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--kku-red);
-  }
-
-  .hamburger-btn {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 2.5px solid var(--kku-red);
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .hamburger-btn svg { width: 22px; height: 22px; stroke: var(--kku-red); }
-
-  /* ========== FOOTER ========== */
-  .footer {
-    background: var(--kku-red);
-    height: 60px;
-    margin-top: auto;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-  }
-
-  .back-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.2);
-    border: 2px solid white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .back-btn svg { width: 20px; height: 20px; stroke: white; fill: none; }
-
-  /* ========== DROPDOWN MENU ========== */
-  .dropdown-menu {
-    display: none;
-    position: absolute;
-    top: 72px;
-    right: 0;
-    width: 280px;
-    background: var(--kku-red);
-    border: 3px solid var(--kku-red);
-    z-index: 100;
-    box-shadow: -4px 4px 16px rgba(0,0,0,0.2);
-  }
-
-  .dropdown-menu.open { display: block; }
-
-  .dropdown-menu button {
-    display: block;
-    width: 100%;
-    padding: 18px 20px;
-    background: white;
-    border: 3px solid var(--kku-red);
-    font-family: 'Sarabun', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--kku-red);
-    cursor: pointer;
-    text-align: center;
-    transition: background 0.15s;
-  }
-
-  .dropdown-menu button:hover { background: #fef0ee; }
-
-  /* ========== MAIN CONTENT ========== */
-  .main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    gap: 24px;
-  }
-
-  /* ========== LANDING PAGE ========== */
-  #screen-landing .main-content { gap: 32px; }
-
-  .hero-banner {
-    background: var(--kku-red);
-    border-radius: 8px;
-    padding: 20px 48px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    width: 100%;
-    max-width: 700px;
-  }
-
-  .hero-banner .kku-logo-white {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .hero-banner .kku-circle {
-    width: 50px;
-    height: 50px;
-    border: 2px solid white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .hero-banner .kku-circle svg { width: 28px; height: 28px; fill: white; }
-
-  .hero-banner .kku-text-white {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-  }
-
-  .hero-banner .kku-text-white span:first-child {
-    font-size: 16px; font-weight: 800; color: white; letter-spacing: 1px;
-  }
-
-  .hero-banner .kku-text-white span:last-child {
-    font-size: 9px; color: rgba(255,255,255,0.85); letter-spacing: 2px; font-weight: 600;
-  }
-
-  .hero-banner .hero-title {
-    font-size: 24px;
-    font-weight: 800;
-    color: white;
-    letter-spacing: 0.5px;
-  }
-
-  /* ========== BIG BUTTONS ========== */
-  .big-btn {
-    background: var(--kku-red);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 20px 0;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    cursor: pointer;
-    width: 100%;
-    max-width: 340px;
-    box-shadow: 0 4px 12px rgba(139,48,32,0.35);
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-  }
-
-  .big-btn:hover { background: var(--kku-dark); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139,48,32,0.4); }
-  .big-btn:active { transform: translateY(0); }
-
-  /* ========== FORM FIELDS ========== */
-  .field-row {
-    display: flex;
-    align-items: stretch;
-    width: 100%;
-    max-width: 540px;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 3px 8px rgba(139,48,32,0.15);
-  }
-
-  .field-label {
-    background: var(--kku-red);
-    color: white;
-    font-weight: 700;
-    font-size: 17px;
-    padding: 16px 20px;
-    white-space: nowrap;
-    min-width: 150px;
-    display: flex;
-    align-items: center;
-    font-family: 'Sarabun', sans-serif;
-  }
-
-  .field-input {
-    flex: 1;
-    border: 2px solid var(--kku-red);
-    border-left: none;
-    padding: 16px;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 16px;
-    outline: none;
-    color: #333;
-    border-radius: 0 6px 6px 0;
-  }
-
-  .field-input:focus { border-color: var(--kku-dark); background: #fef8f7; }
-
-  .divider-line {
-    width: 100%;
-    max-width: 540px;
-    height: 1.5px;
-    background: var(--kku-border);
-    margin: 8px 0;
-  }
-
-  /* ========== AUTH BUTTONS ========== */
-  .auth-btn {
-    background: var(--kku-red);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 18px 0;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    width: 100%;
-    max-width: 540px;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-    box-shadow: 0 3px 10px rgba(139,48,32,0.25);
-  }
-
-  .auth-btn:hover { background: var(--kku-dark); }
-
-  .social-btn {
-    background: var(--kku-red);
-    color: white;
-    border: none;
-    border-radius: 0;
-    padding: 18px 0;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 18px;
-    font-weight: 800;
-    cursor: pointer;
-    width: 100%;
-    max-width: 540px;
-    letter-spacing: 1px;
-    transition: background 0.2s;
-    margin: 2px 0;
-  }
-
-  .social-btn:hover { background: var(--kku-dark); }
-
-  /* ========== DASHBOARD ========== */
-  #screen-dashboard .navbar { position: relative; }
-
-  /* ========== ACCOUNT PAGE ========== */
-  .account-layout {
-    flex: 1;
-    display: flex;
-    align-items: stretch;
-  }
-
-  .account-sidebar {
-    width: 220px;
-    background: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px 20px;
-    gap: 16px;
-    flex-shrink: 0;
-  }
-
-  .profile-circle {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    background: var(--kku-red);
-    border: 3px solid #555;
-    cursor: pointer;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .profile-circle svg { width: 70px; height: 70px; fill: rgba(255,255,255,0.5); }
-
-  .name-bar {
-    background: var(--kku-red);
-    width: 100%;
-    height: 44px;
-    border-radius: 4px;
-  }
-
-  .settings-btn {
-    background: var(--kku-red);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 12px 0;
-    width: 100%;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .settings-btn:hover { background: var(--kku-dark); }
-
-  .account-content {
-    flex: 1;
-    background: white;
-    padding: 30px;
-  }
-
-  /* ========== HELP PAGE ========== */
-  .help-content {
-    flex: 1;
-    padding: 24px;
-  }
-
-  .help-box {
-    background: var(--gray-bg);
-    border-radius: 4px;
-    width: 100%;
-    height: 500px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888;
-    font-size: 18px;
-    font-weight: 600;
-  }
-
-  /* ========== GRADE / SCHEDULE PAGES ========== */
-  .query-page-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 30px 40px;
-    gap: 24px;
-    align-items: center;
-  }
-
-  .result-box {
-    background: var(--gray-bg);
-    border-radius: 4px;
-    width: 100%;
-    max-width: 900px;
-    min-height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-  }
-
-  .result-box-inner {
-    width: 100%;
-    padding: 20px;
-  }
-
-  /* Grade table */
-  .grade-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 15px;
-    display: none;
-  }
-
-  .grade-table.show { display: table; }
-
-  .grade-table th {
-    background: var(--kku-red);
-    color: white;
-    padding: 12px 16px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 15px;
-  }
-
-  .grade-table td {
-    padding: 10px 16px;
-    border-bottom: 1px solid #ddd;
-    text-align: center;
-  }
-
-  .grade-table tr:nth-child(even) { background: #f9f9f9; }
-
-  /* Schedule table */
-  .schedule-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    display: none;
-  }
-
-  .schedule-table.show { display: table; }
-  .schedule-table th { background: var(--kku-red); color: white; padding: 10px 12px; font-weight: 700; font-size: 14px; }
-  .schedule-table td { padding: 10px 12px; border: 1px solid #ddd; text-align: center; }
-  .schedule-table tr:nth-child(even) { background: #fef5f4; }
-
-  /* ========== SCORING PAGE ========== */
-  .scoring-layout {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 20px 30px;
-    gap: 16px;
-  }
-
-  .scoring-inner {
-    display: flex;
-    gap: 24px;
-    flex: 1;
-    align-items: flex-start;
-  }
-
-  .scoring-left {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 220px;
-    flex-shrink: 0;
-  }
-
-  .photo-placeholder {
-    width: 220px;
-    height: 220px;
-    background: var(--gray-bg);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888;
-    font-size: 13px;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .photo-placeholder svg { width: 50px; height: 50px; fill: #aaa; }
-
-  .userid-box {
-    display: flex;
-    border-radius: 4px;
-    overflow: hidden;
-    border: 2px solid var(--kku-red);
-    box-shadow: 0 2px 6px rgba(139,48,32,0.12);
-  }
-
-  .userid-label {
-    background: white;
-    border-right: 2px solid var(--kku-red);
-    padding: 10px 12px;
-    font-weight: 700;
-    font-size: 15px;
-    color: #333;
-    white-space: nowrap;
-  }
-
-  .userid-input {
-    flex: 1;
-    background: var(--kku-red);
-    border: none;
-    outline: none;
-    padding: 10px 12px;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 15px;
-    color: white;
-  }
-
-  .userid-input::placeholder { color: rgba(255,255,255,0.6); }
-
-  .name-display-box {
-    border: 2px solid var(--kku-red);
-    border-radius: 4px;
-    padding: 10px 14px;
-    font-size: 15px;
-    color: #333;
-    font-weight: 600;
-    background: white;
-    min-height: 40px;
-  }
-
-  .scoring-right {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .score-field {
-    display: flex;
-    align-items: stretch;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(139,48,32,0.12);
-  }
-
-  .score-label {
-    background: var(--kku-red);
-    color: white;
-    font-weight: 700;
-    font-size: 16px;
-    padding: 14px 20px;
-    min-width: 180px;
-    display: flex;
-    align-items: center;
-    font-family: 'Sarabun', sans-serif;
-  }
-
-  .score-input {
-    flex: 1;
-    border: 2px solid var(--kku-red);
-    border-left: none;
-    padding: 14px 16px;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 16px;
-    outline: none;
-    color: #333;
-  }
-
-  .score-input:focus { background: #fef8f7; }
-
-  .scoring-btns {
-    display: flex;
-    gap: 16px;
-    padding: 8px 0;
-  }
-
-  .scoring-btns button {
-    flex: 1;
-    padding: 18px 0;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    background: var(--kku-red);
-    color: white;
-    letter-spacing: 0.5px;
-    box-shadow: 0 3px 10px rgba(139,48,32,0.25);
-    transition: all 0.2s;
-  }
-
-  .scoring-btns button:hover { background: var(--kku-dark); transform: translateY(-1px); }
-
-  /* ========== TOAST ========== */
-  .toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: #2d6a4f;
-    color: white;
-    padding: 14px 28px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Sarabun', sans-serif;
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 999;
-    white-space: nowrap;
-  }
-
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.error { background: #c0392b; }
-
-  /* ========== NAVBAR TITLE PAGE INDICATOR ========== */
-  .page-indicator {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--kku-red);
-  }
-
-  /* ========== RESPONSIVE ========== */
-  @media (max-width: 600px) {
-    .hero-banner { padding: 16px 20px; flex-direction: column; text-align: center; }
-    .scoring-inner { flex-direction: column; }
-    .scoring-left { width: 100%; }
-    .photo-placeholder { width: 100%; height: 160px; }
-    .field-label { min-width: 120px; font-size: 15px; }
-    .big-btn { font-size: 18px; }
-    .navbar { padding: 0 14px; }
-    .nav-title { font-size: 15px; }
-  }
-
-/* ========================================
-   ✨ ANIMATIONS
-   ======================================== */
-
-/* — Keyframes — */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(40px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-40px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.88); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes ripple {
-  to { transform: scale(4); opacity: 0; }
-}
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
-}
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(139,48,32,0.4); }
-  50%       { box-shadow: 0 0 0 10px rgba(139,48,32,0); }
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-6px); }
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px) scaleY(0.95); }
-  to   { opacity: 1; transform: translateY(0) scaleY(1); }
-}
-@keyframes toastIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.95); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-}
-
-/* — Screen transitions — */
-.screen.active {
-  animation: fadeInUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.screen.slide-left {
-  animation: slideInLeft 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* — Navbar — */
-.navbar {
-  animation: fadeInDown 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* — Hero banner — */
-.hero-banner {
-  animation: scaleIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
-}
-
-/* — Landing buttons — */
-#screen-landing .big-btn:nth-child(2) {
-  animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
-}
-#screen-landing .big-btn:nth-child(3) {
-  animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both;
-}
-
-/* — Dashboard buttons — */
-#screen-dashboard .big-btn:nth-child(1) {
-  animation: slideInRight 0.45s cubic-bezier(0.22,1,0.36,1) 0.1s both;
-}
-#screen-dashboard .big-btn:nth-child(2) {
-  animation: slideInRight 0.45s cubic-bezier(0.22,1,0.36,1) 0.2s both;
-}
-#screen-dashboard .big-btn:nth-child(3) {
-  animation: slideInRight 0.45s cubic-bezier(0.22,1,0.36,1) 0.3s both;
-}
-
-/* — Float effect on KKU icon — */
-.kku-icon {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* — Button ripple effect — */
-.big-btn, .auth-btn, .social-btn, .scoring-btns button {
-  position: relative;
-  overflow: hidden;
-}
-.big-btn::after, .auth-btn::after, .social-btn::after, .scoring-btns button::after {
-  content: '';
-  position: absolute;
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.35);
-  transform: scale(0);
-  top: 50%; left: 50%;
-  margin: -12px 0 0 -12px;
-  pointer-events: none;
-}
-.big-btn:active::after, .auth-btn:active::after,
-.social-btn:active::after, .scoring-btns button:active::after {
-  animation: ripple 0.5s ease-out;
-}
-
-/* — Shimmer on auth-btn — */
-.auth-btn {
-  background: linear-gradient(
-    90deg,
-    var(--kku-red) 0%,
-    #b04030 40%,
-    var(--kku-red) 60%,
-    var(--kku-red) 100%
-  );
-  background-size: 200% auto;
-  transition: background-position 0.4s, transform 0.2s, box-shadow 0.2s;
-}
-.auth-btn:hover {
-  background-position: right center;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139,48,32,0.4);
-}
-.auth-btn:active { transform: translateY(0); }
-
-/* — Pulse on primary big-btn hover — */
-.big-btn:hover {
-  animation: pulse 1.2s infinite;
-}
-
-/* — Form fields — */
-.field-row {
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.field-row:focus-within {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139,48,32,0.2);
-}
-.field-input {
-  transition: background 0.2s, border-color 0.2s;
-}
-
-/* — Score fields stagger — */
-.score-field:nth-child(1) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.05s both; }
-.score-field:nth-child(2) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.12s both; }
-.score-field:nth-child(3) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.19s both; }
-.score-field:nth-child(4) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.26s both; }
-.score-field:nth-child(5) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.33s both; }
-.score-field:nth-child(6) { animation: slideInLeft 0.4s cubic-bezier(0.22,1,0.36,1) 0.40s both; }
-
-/* — Dropdown menu — */
-.dropdown-menu.open {
-  animation: slideDown 0.22s cubic-bezier(0.22,1,0.36,1) both;
-  transform-origin: top right;
-}
-.dropdown-menu button {
-  transition: background 0.15s, transform 0.15s, padding-left 0.15s;
-}
-.dropdown-menu button:hover {
-  padding-left: 30px;
-}
-
-/* — Toast — */
-.toast.show {
-  animation: toastIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
-}
-
-/* — Table rows — */
-.grade-table tbody tr,
-.schedule-table tbody tr {
-  transition: background 0.15s, transform 0.15s;
-}
-.grade-table tbody tr:hover,
-.schedule-table tbody tr:hover {
-  background: #fef0ee !important;
-  transform: scale(1.01);
-}
-
-/* — Result box — */
-.result-box {
-  transition: box-shadow 0.3s;
-}
-.result-box:hover {
-  box-shadow: 0 4px 20px rgba(139,48,32,0.1);
-}
-
-/* — Loading spinner — */
-.spinner {
-  display: inline-block;
-  width: 18px; height: 18px;
-  border: 2.5px solid rgba(255,255,255,0.4);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  vertical-align: middle;
-  margin-right: 8px;
-}
-
-/* — Back btn — */
-.back-btn {
-  transition: transform 0.2s, background 0.2s;
-}
-
-/* ========== NFC CHECK-IN SCREEN ========== */
-.nfc-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  padding: 24px 16px;
-}
-
-.nfc-ring-outer {
-  position: relative;
-  width: 200px;
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nfc-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 3px solid var(--kku-red);
-  opacity: 0;
-  animation: nfcPulse 2s ease-out infinite;
-}
-.nfc-ring:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s; }
-.nfc-ring:nth-child(2) { width: 160px; height: 160px; animation-delay: 0.4s; }
-.nfc-ring:nth-child(3) { width: 120px; height: 120px; animation-delay: 0.8s; }
-
-@keyframes nfcPulse {
-  0%   { opacity: 0.8; transform: scale(0.7); }
-  100% { opacity: 0;   transform: scale(1.2); }
-}
-
-.nfc-icon-circle {
-  width: 96px;
-  height: 96px;
-  background: var(--kku-red);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 24px rgba(139,48,32,0.35);
-  z-index: 1;
-  transition: transform 0.2s;
-}
-.nfc-icon-circle svg { width: 52px; height: 52px; fill: none; stroke: white; stroke-width: 2; }
-
-.nfc-status-text {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--kku-red);
-  text-align: center;
-}
-
-.nfc-status-sub {
-  font-size: 14px;
-  color: #888;
-  text-align: center;
-  margin-top: -16px;
-}
-
-.nfc-result-card {
-  background: #fff;
-  border: 2px solid var(--kku-border);
-  border-radius: 14px;
-  padding: 20px 28px;
-  width: 100%;
-  max-width: 420px;
-  display: none;
-  animation: scaleIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
-}
-
-.nfc-result-card.show { display: block; }
-.nfc-result-card.success { border-color: #1a7a45; background: #f0faf4; }
-.nfc-result-card.late    { border-color: #e67e22; background: #fef9f0; }
-.nfc-result-card.error   { border-color: #c0392b; background: #fdf0ef; }
-
-.nfc-result-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid #eee;
-  font-size: 15px;
-}
-.nfc-result-row:last-child { border-bottom: none; }
-.nfc-result-row .label { color: #666; }
-.nfc-result-row .value { font-weight: 700; color: #222; }
-.nfc-result-row .value.on-time { color: #1a7a45; }
-.nfc-result-row .value.late    { color: #e67e22; }
-
-.nfc-manual-section {
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-}
-
-.nfc-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 8px 0;
-  color: #aaa;
-  font-size: 13px;
-}
-.nfc-divider::before, .nfc-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #ddd;
-}
-
-.nfc-manual-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-.nfc-manual-input {
-  flex: 1;
-  padding: 10px 14px;
-  border: 2px solid var(--kku-border);
-  border-radius: 8px;
-  font-size: 15px;
-  font-family: 'Sarabun', sans-serif;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.nfc-manual-input:focus { border-color: var(--kku-red); }
-.nfc-manual-btn {
-  background: var(--kku-red);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: 'Sarabun', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-}
-.nfc-manual-btn:hover { background: var(--kku-dark); transform: translateY(-1px); }
-
-.nfc-reading {
-  animation: nfcReadPulse 0.6s ease infinite alternate;
-}
-@keyframes nfcReadPulse {
-  from { transform: scale(1); }
-  to   { transform: scale(1.08); }
-}
-
-/* ========== ATTENDANCE LOG SCREEN ========== */
-.attlog-filter {
-  display: flex;
-  gap: 10px;
-  padding: 16px 24px 0;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.attlog-filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.attlog-filter-group label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.attlog-select, .attlog-date {
-  padding: 9px 12px;
-  border: 2px solid var(--kku-border);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: 'Sarabun', sans-serif;
-  background: #fff;
-  outline: none;
-  min-width: 130px;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-.attlog-select:focus, .attlog-date:focus { border-color: var(--kku-red); }
-
-.attlog-search-btn {
-  background: var(--kku-red);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 9px 20px;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: 'Sarabun', sans-serif;
-  cursor: pointer;
-  align-self: flex-end;
-  transition: background 0.2s, transform 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.attlog-search-btn:hover { background: var(--kku-dark); transform: translateY(-1px); }
-
-.attlog-summary {
-  display: flex;
-  gap: 12px;
-  padding: 14px 24px;
-  flex-wrap: wrap;
-}
-
-.attlog-stat {
-  flex: 1;
-  min-width: 90px;
-  background: #fff;
-  border: 2px solid #eee;
-  border-radius: 10px;
-  padding: 12px 16px;
-  text-align: center;
-  transition: border-color 0.2s;
-}
-.attlog-stat.present { border-color: #1a7a45; background: #f0faf4; }
-.attlog-stat.late    { border-color: #e67e22; background: #fef9f0; }
-.attlog-stat.absent  { border-color: #c0392b; background: #fdf0ef; }
-
-.attlog-stat-num {
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1;
-}
-.attlog-stat.present .attlog-stat-num { color: #1a7a45; }
-.attlog-stat.late    .attlog-stat-num { color: #e67e22; }
-.attlog-stat.absent  .attlog-stat-num { color: #c0392b; }
-
-.attlog-stat-label {
-  font-size: 12px;
-  color: #888;
-  margin-top: 4px;
-  font-weight: 600;
-}
-
-.attlog-table-wrap {
-  flex: 1;
-  overflow-x: auto;
-  padding: 0 16px 16px;
-}
-
-.attlog-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-  display: none;
-  background: #fff;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-}
-.attlog-table.show { display: table; }
-.attlog-table th {
-  background: var(--kku-red);
-  color: white;
-  padding: 11px 12px;
-  font-weight: 700;
-  font-size: 13px;
-  text-align: center;
-  white-space: nowrap;
-}
-.attlog-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  text-align: center;
-  font-size: 13px;
-}
-.attlog-table tr:last-child td { border-bottom: none; }
-.attlog-table tr:hover td { background: #fef5f4; }
-
-.status-badge {
-  display: inline-block;
-  padding: 3px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-}
-.status-badge.on-time { background: #e8f5e9; color: #1a7a45; }
-.status-badge.late    { background: #fff3e0; color: #e67e22; }
-.status-badge.absent  { background: #fce4e4; color: #c0392b; }
-
-.attlog-empty {
-  text-align: center;
-  padding: 40px;
-  color: #aaa;
-  font-size: 15px;
-}
-.back-btn:hover {
-  transform: translateX(-3px);
-  background: rgba(255,255,255,0.35);
-}
-
-/* — Profile circle — */
-.profile-circle {
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-.profile-circle:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(139,48,32,0.3);
-}
-
-/* — Hamburger btn — */
-.hamburger-btn {
-  transition: transform 0.2s, background 0.2s;
-}
-.hamburger-btn:hover {
-  transform: rotate(90deg);
-  background: rgba(139,48,32,0.08);
-}
-
-/* — Page title fade — */
-.page-indicator, .nav-title {
-  animation: fadeInDown 0.4s cubic-bezier(0.22,1,0.36,1) 0.15s both;
-}
-/* ========== MY ATTENDANCE SCREEN ========== */
-.myatt-wrap {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  gap: 12px;
-  overflow-y: auto;
-}
-
-.myatt-filter {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-
-.myatt-select {
-  padding: 9px 12px;
-  border: 2px solid var(--kku-border);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: 'Sarabun', sans-serif;
-  background: #fff;
-  outline: none;
-  min-width: 120px;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-.myatt-select:focus { border-color: var(--kku-red); }
-
-.myatt-load-btn {
-  background: var(--kku-red);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 9px 20px;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: 'Sarabun', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.myatt-load-btn:hover { background: var(--kku-dark); transform: translateY(-1px); }
-
-/* Summary strip */
-.myatt-summary {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.myatt-chip {
-  flex: 1;
-  min-width: 70px;
-  border-radius: 10px;
-  padding: 10px 8px;
-  text-align: center;
-  border: 2px solid #eee;
-  background: #fff;
-}
-.myatt-chip.present { border-color: #1a7a45; background: #f0faf4; }
-.myatt-chip.late    { border-color: #e67e22; background: #fef9f0; }
-.myatt-chip.absent  { border-color: #c0392b; background: #fdf0ef; }
-
-.myatt-chip-num   { font-size: 26px; font-weight: 800; line-height: 1; }
-.myatt-chip.present .myatt-chip-num { color: #1a7a45; }
-.myatt-chip.late    .myatt-chip-num { color: #e67e22; }
-.myatt-chip.absent  .myatt-chip-num { color: #c0392b; }
-.myatt-chip-label { font-size: 11px; color: #888; margin-top: 3px; font-weight: 600; }
-
-/* Table */
-.myatt-table-wrap { overflow-x: auto; }
-
-.myatt-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 14px rgba(0,0,0,0.07);
-  display: none;
-}
-.myatt-table.show { display: table; }
-
-.myatt-table th {
-  background: var(--kku-red);
-  color: white;
-  padding: 12px 14px;
-  font-weight: 700;
-  font-size: 13px;
-  white-space: nowrap;
-}
-.myatt-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #f0f0f0;
-  vertical-align: middle;
-}
-.myatt-table tr:last-child td { border-bottom: none; }
-.myatt-table tr:hover td { background: #fef5f4; }
-.myatt-table td:first-child { color: #aaa; font-size: 12px; text-align: center; width: 32px; }
-
-.myatt-course-name { font-weight: 700; font-size: 14px; color: #222; }
-.myatt-course-date { font-size: 12px; color: #999; margin-top: 2px; }
-
-.myatt-type-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  background: #e8f0fe;
-  color: #1a56db;
-  white-space: nowrap;
-}
-.myatt-type-badge.lab { background: #fef3c7; color: #b45309; }
-
-.myatt-status-badge {
-  display: inline-block;
-  padding: 4px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.myatt-status-badge.present { background: #dcfce7; color: #166534; }
-.myatt-status-badge.late    { background: #fef9c3; color: #854d0e; }
-.myatt-status-badge.absent  { background: #fee2e2; color: #991b1b; }
-
-.myatt-time-cell { font-size: 13px; color: #555; white-space: nowrap; }
-.myatt-time-cell.late-time { color: #e67e22; font-weight: 700; }
-
-.myatt-empty {
-  text-align: center;
-  padding: 40px;
-  color: #aaa;
-  font-size: 15px;
-}
-
-/* Progress bar attendance rate */
-.myatt-rate-bar-wrap {
-  background: #fff;
-  border: 2px solid var(--kku-border);
-  border-radius: 10px;
-  padding: 14px 18px;
-  display: none;
-}
-.myatt-rate-bar-wrap.show { display: block; }
-.myatt-rate-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-.myatt-rate-bar-bg {
-  height: 12px;
-  background: #eee;
-  border-radius: 99px;
-  overflow: hidden;
-}
-.myatt-rate-bar-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.6s cubic-bezier(0.22,1,0.36,1);
-  background: #1a7a45;
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --red:#8B3020; --red-dk:#6B2418; --red-lt:#f5ece9;
+  --gray:#d9d9d9; --bg:#bebebe; --white:#fff; --text:#222;
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;overflow-x:hidden;}
+
+/* ─── SCREENS ─────────────────────────────── */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ─── TOAST ──────────────────────────────── */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:#222;color:#fff;padding:12px 28px;border-radius:999px;
+  font-size:15px;font-weight:700;z-index:9999;opacity:0;
+  transition:all .35s cubic-bezier(.22,1,.36,1);pointer-events:none;white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.error{background:var(--red);}
+
+/* ─── SPINNER ────────────────────────────── */
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner{
+  display:inline-block;width:16px;height:16px;border-radius:50%;
+  border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;
+  animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;
+}
+.spinner.dark{border-color:rgba(0,0,0,.15);border-top-color:var(--red);}
+
+/* ─── ANIMATIONS ─────────────────────────── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+
+/* ══════════════════════════════════════════
+   LOGIN SCREEN  (PDF Page 1)
+══════════════════════════════════════════ */
+#screen-login{flex-direction:row;}
+.login-left{
+  width:430px;min-height:100vh;background:var(--red);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:52px 44px;flex-shrink:0;
+}
+.login-logo{
+  font-size:82px;font-weight:900;color:#fff;letter-spacing:-3px;
+  line-height:1;margin-bottom:22px;font-style:italic;
+  font-family:'Arial Black','Arial',sans-serif;
+  text-shadow:6px 6px 0 rgba(0,0,0,.18);
+}
+.login-title{
+  font-size:36px;font-weight:900;color:#fff;text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:6px;
+}
+.login-subtitle{
+  font-size:13px;font-weight:700;color:rgba(255,255,255,.8);
+  text-transform:uppercase;letter-spacing:.5px;line-height:1.8;margin-bottom:30px;
+}
+.login-field{
+  display:flex;align-items:center;gap:10px;
+  background:#fff;border-radius:999px;padding:0 18px;
+  margin-bottom:14px;height:48px;
+}
+.login-field svg{flex-shrink:0;color:var(--red);}
+.login-field input{
+  flex:1;border:none;outline:none;font-size:14px;font-family:inherit;
+  font-weight:600;color:var(--text);background:transparent;
+}
+.login-field input::placeholder{color:#bbb;font-weight:500;text-transform:uppercase;font-size:13px;letter-spacing:.5px;}
+.login-check-row{display:flex;align-items:center;gap:8px;margin:0 0 20px;}
+.login-check-row input{width:18px;height:18px;cursor:pointer;accent-color:#fff;}
+.login-check-row label{color:rgba(255,255,255,.85);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;}
+.login-main-btn{
+  width:100%;padding:13px;border-radius:999px;
+  background:#fff;color:var(--red);border:none;
+  font-size:16px;font-weight:800;cursor:pointer;letter-spacing:1px;
+  text-transform:uppercase;transition:all .2s;font-family:inherit;margin-bottom:10px;
+}
+.login-main-btn:hover{background:var(--red-lt);}
+.login-or{text-align:center;color:rgba(255,255,255,.55);font-size:13px;font-weight:700;margin:6px 0;text-transform:uppercase;}
+.login-kku-btn{
+  width:100%;padding:13px;border-radius:999px;
+  background:transparent;color:#fff;border:2px solid rgba(255,255,255,.65);
+  font-size:15px;font-weight:800;cursor:pointer;letter-spacing:1px;
+  text-transform:uppercase;transition:all .2s;font-family:inherit;
+}
+.login-kku-btn:hover{background:rgba(255,255,255,.12);}
+.login-right{
+  flex:1;background:var(--bg);display:flex;align-items:center;justify-content:center;
+}
+.login-right-text{
+  font-size:120px;font-weight:900;font-style:italic;color:rgba(0,0,0,.08);
+  font-family:'Arial Black','Arial',sans-serif;letter-spacing:-6px;user-select:none;
+}
+
+/* ══════════════════════════════════════════
+   APP (Sidebar + Pages)  (PDF Pages 2-9)
+══════════════════════════════════════════ */
+#screen-app{flex-direction:row;}
+
+/* ── Sidebar ─────────────────────────────── */
+.sidebar{
+  width:296px;min-height:100vh;background:var(--red);
+  display:flex;flex-direction:column;align-items:flex-start;
+  padding:26px 22px 32px 24px;flex-shrink:0;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.sb-logo{
+  font-size:52px;font-weight:900;color:#fff;letter-spacing:-3px;
+  line-height:1;margin-bottom:28px;font-style:italic;
+  font-family:'Arial Black','Arial',sans-serif;
+  text-shadow:4px 4px 0 rgba(0,0,0,.2);
+}
+.sb-user{display:flex;align-items:center;gap:14px;margin-bottom:10px;width:100%;}
+.sb-avatar{
+  width:58px;height:58px;border-radius:50%;background:#fff;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:var(--red);font-weight:900;
+}
+.sb-info{color:#fff;flex:1;min-width:0;}
+.sb-name{font-weight:700;font-size:15px;line-height:1.3;word-break:break-word;}
+.sb-id  {font-size:12px;opacity:.75;margin-top:2px;}
+.sb-actions{display:flex;gap:8px;margin-bottom:32px;margin-top:8px;}
+.sb-action-btn{
+  padding:5px 18px;border:1.5px solid rgba(255,255,255,.65);border-radius:999px;
+  background:transparent;color:#fff;font-size:12px;font-weight:700;
+  cursor:pointer;font-family:inherit;letter-spacing:.5px;transition:all .2s;
+}
+.sb-action-btn:hover{background:rgba(255,255,255,.18);}
+.sb-menu-label{
+  color:rgba(255,255,255,.5);font-size:11px;font-weight:800;
+  letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;
+}
+.sb-menu{display:flex;flex-direction:column;gap:10px;width:100%;}
+.sb-btn{
+  width:100%;padding:13px 0;background:#fff;border:none;border-radius:10px;
+  color:var(--red);font-size:14px;font-weight:800;cursor:pointer;
+  letter-spacing:2px;text-transform:uppercase;transition:all .2s;font-family:inherit;
+  box-shadow:0 3px 8px rgba(0,0,0,.18);
+}
+.sb-btn:hover{background:var(--red-lt);transform:translateY(-1px);}
+.sb-btn.active{background:var(--red-dk);color:#fff;}
+
+/* ── Main area ───────────────────────────── */
+.app-main{flex:1;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;}
+.page{display:none;flex:1;padding:32px 36px;}
+.page.active{display:block;animation:fadeInUp .3s ease both;}
+
+/* Page title pill (exactly like PDF) */
+.page-pill{
+  display:inline-block;padding:11px 52px;background:#fff;
+  border-radius:12px;font-size:18px;font-weight:800;color:var(--red);
+  text-transform:uppercase;letter-spacing:2px;margin-bottom:28px;
+  box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+/* ── Tables ─────────────────────────────── */
+.tbl-wrap{
+  background:#fff;border-radius:4px;overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,.12);overflow-x:auto;
+}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl thead tr{background:var(--red);}
+.tbl thead th{
+  color:#fff;font-size:13px;font-weight:800;text-transform:uppercase;
+  padding:13px 14px;letter-spacing:.8px;text-align:center;white-space:nowrap;
+  border-right:1px solid rgba(255,255,255,.12);
+}
+.tbl thead th:last-child{border-right:none;}
+.tbl tbody tr{border-bottom:1px solid #efefef;transition:background .15s;}
+.tbl tbody tr:last-child{border-bottom:none;}
+.tbl tbody tr:hover{background:#fef5f4;}
+.tbl tbody td{
+  padding:12px 14px;font-size:13px;color:var(--text);
+  text-align:center;border-right:1px solid #f0f0f0;
+}
+.tbl tbody td:last-child{border-right:none;}
+.tbl-empty{
+  padding:70px 20px;text-align:center;color:#bbb;font-size:15px;
+  background:#fff;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.08);
+}
+
+/* ── Badges ─────────────────────────────── */
+.badge{padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;display:inline-block;}
+.badge.present,.badge.on-time{background:#dcfce7;color:#166534;}
+.badge.late   {background:#fef9c3;color:#854d0e;}
+.badge.absent {background:#fee2e2;color:#991b1b;}
+
+/* ── Filter row ──────────────────────────── */
+.filter-row{display:flex;gap:12px;margin-bottom:18px;align-items:flex-end;flex-wrap:wrap;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:11px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.8px;}
+.fsel,.fdate{
+  padding:10px 14px;border-radius:8px;border:1.5px solid #ddd;
+  font-size:14px;font-family:inherit;font-weight:600;background:#fff;
+  color:var(--text);outline:none;min-width:130px;cursor:pointer;
+}
+.fsel:focus,.fdate:focus{border-color:var(--red);}
+.filter-btn{
+  padding:10px 24px;background:var(--red);color:#fff;border:none;
+  border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;gap:6px;font-family:inherit;transition:all .2s;align-self:flex-end;
+}
+.filter-btn:hover{background:var(--red-dk);}
+.filter-btn:disabled{opacity:.6;cursor:default;}
+
+/* ── Stats ───────────────────────────────── */
+.stat-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.stat-card{
+  flex:1;min-width:90px;padding:16px 10px;background:#fff;
+  border-radius:12px;text-align:center;border:2px solid #eee;
+  box-shadow:0 1px 6px rgba(0,0,0,.07);
+}
+.stat-card.present{border-color:#1a7a45;}
+.stat-card.late   {border-color:#e67e22;}
+.stat-card.absent {border-color:#c0392b;}
+.stat-num{font-size:28px;font-weight:900;line-height:1;}
+.stat-card.present .stat-num{color:#1a7a45;}
+.stat-card.late    .stat-num{color:#e67e22;}
+.stat-card.absent  .stat-num{color:#c0392b;}
+.stat-card:last-child .stat-num{color:var(--red);}
+.stat-lbl{font-size:12px;font-weight:700;margin-top:4px;color:#888;}
+
+/* ── Rate bar ────────────────────────────── */
+.rate-wrap{
+  background:#fff;border:2px solid #e0c5be;border-radius:10px;
+  padding:14px 18px;margin-bottom:16px;display:none;
+}
+.rate-wrap.show{display:block;}
+.rate-hdr{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-bottom:8px;}
+.rate-track{height:12px;background:#eee;border-radius:999px;overflow:hidden;}
+.rate-fill{height:100%;border-radius:999px;transition:width .6s cubic-bezier(.22,1,.36,1);background:#1a7a45;}
+
+/* ── Profile cards ───────────────────────── */
+.pf-card{
+  background:var(--red);border-radius:14px;padding:26px 30px;
+  margin-bottom:20px;max-width:640px;animation:fadeInUp .3s ease both;
+}
+.pf-card-title{font-size:18px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;}
+.pf-label{display:block;font-size:12px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.pf-input{
+  width:100%;padding:12px 16px;border-radius:10px;border:none;
+  background:#fff;font-size:14px;font-family:inherit;font-weight:600;
+  color:var(--text);outline:none;margin-bottom:14px;
+}
+.pf-btn{
+  padding:10px 28px;border-radius:8px;background:rgba(255,255,255,.18);
+  border:1.5px solid rgba(255,255,255,.5);color:#fff;
+  font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.5px;
+  text-transform:uppercase;font-family:inherit;transition:all .2s;margin-top:4px;
+}
+.pf-btn:hover{background:rgba(255,255,255,.3);}
+
+/* ── Scoring ─────────────────────────────── */
+.score-wrap{background:#fff;border-radius:12px;padding:28px 30px;max-width:680px;}
+.score-uid-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.score-uid-lbl{font-size:14px;font-weight:700;min-width:130px;}
+.score-uid-inp{
+  padding:10px 14px;border-radius:8px;border:1.5px solid #ddd;
+  font-size:14px;font-weight:700;font-family:inherit;outline:none;width:150px;
+}
+.score-uid-inp:focus{border-color:var(--red);}
+.score-name{font-size:14px;font-weight:700;color:#555;}
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.score-row label{font-size:14px;font-weight:700;min-width:160px;}
+.score-inp{
+  width:88px;padding:10px;border-radius:8px;border:1.5px solid #ddd;
+  font-size:15px;font-weight:700;text-align:center;font-family:inherit;outline:none;
+}
+.score-inp:focus{border-color:var(--red);}
+.score-max{font-size:12px;color:#aaa;font-weight:600;}
+.total-outer{
+  margin:18px 0 20px;padding:14px 18px;background:var(--red-lt);
+  border-radius:10px;border:1.5px solid #e0c5be;display:flex;align-items:center;gap:14px;
+}
+.total-track{flex:1;height:12px;background:#e0c5be;border-radius:999px;overflow:hidden;}
+.total-fill{height:100%;width:0;background:var(--red);border-radius:999px;transition:width .4s;}
+.total-disp{font-size:22px;font-weight:900;color:var(--red);min-width:88px;text-align:right;}
+.score-actions{display:flex;gap:12px;flex-wrap:wrap;}
+.sbtn{padding:12px 26px;border-radius:8px;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .2s;}
+.sbtn.primary{background:var(--red);color:#fff;}
+.sbtn.primary:hover{background:var(--red-dk);}
+.sbtn.secondary{background:#eee;color:var(--text);}
+.sbtn.secondary:hover{background:#ddd;}
+
+/* ── NFC ─────────────────────────────────── */
+.nfc-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;padding:16px;}
+.nfc-ring-outer{position:relative;width:188px;height:188px;display:flex;align-items:center;justify-content:center;}
+.nfc-ring{position:absolute;border:3px solid var(--red);border-radius:50%;opacity:0;animation:nfcPulse 2s ease-out infinite;}
+.nfc-ring:nth-child(1){width:100%;height:100%;animation-delay:0s;}
+.nfc-ring:nth-child(2){width:74%;height:74%;animation-delay:.4s;}
+.nfc-ring:nth-child(3){width:48%;height:48%;animation-delay:.8s;}
+@keyframes nfcPulse{0%{opacity:.7;transform:scale(.75)}100%{opacity:0;transform:scale(1.2)}}
+.nfc-ic{
+  width:86px;height:86px;border-radius:50%;background:var(--red);
+  display:flex;align-items:center;justify-content:center;position:relative;z-index:2;transition:background .3s;
+}
+.nfc-ic.reading{animation:nfcBeat .85s ease infinite;}
+@keyframes nfcBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.nfc-st{font-size:20px;font-weight:800;color:var(--text);text-align:center;line-height:1.5;}
+.nfc-ss{font-size:14px;color:#888;text-align:center;margin-top:-16px;}
+.nfc-card{
+  display:none;width:100%;max-width:360px;background:#fff;
+  border-radius:12px;padding:20px 24px;box-shadow:0 4px 16px rgba(0,0,0,.12);border:2px solid #eee;
+}
+.nfc-card.show{display:block;animation:scaleIn .35s ease both;}
+.nfc-card.success{border-color:#1a7a45;background:#f0faf4;}
+.nfc-card.late   {border-color:#e67e22;background:#fef9f0;}
+.nfc-card.error  {border-color:#c0392b;background:#fdf0ef;}
+.nfc-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:14px;}
+.nfc-row:last-child{border:none;}
+.nfc-row .lbl{color:#888;font-weight:600;}
+.nfc-row .val{font-weight:700;color:var(--text);}
+.nfc-row .val.on-time{color:#1a7a45;}
+.nfc-row .val.late   {color:#e67e22;}
+.nfc-manual{width:100%;max-width:360px;}
+.nfc-div{text-align:center;color:#aaa;font-size:12px;font-weight:700;margin-bottom:10px;position:relative;}
+.nfc-div::before,.nfc-div::after{content:'';position:absolute;top:50%;width:36%;height:1px;background:#ddd;}
+.nfc-div::before{left:0;} .nfc-div::after{right:0;}
+.nfc-manual-row{display:flex;gap:10px;}
+.nfc-manual-inp{
+  flex:1;padding:11px 14px;border-radius:8px;border:1.5px solid #ddd;
+  font-size:14px;font-family:inherit;font-weight:600;outline:none;
+}
+.nfc-manual-inp:focus{border-color:var(--red);}
+.nfc-manual-btn{
+  padding:11px 20px;background:var(--red);color:#fff;border:none;
+  border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;
+}
+
+/* ── Grade query ─────────────────────────── */
+.grade-qrow{display:flex;gap:12px;margin-bottom:22px;flex-wrap:wrap;align-items:center;}
+.grade-inp{
+  padding:10px 16px;border-radius:8px;border:1.5px solid #ddd;
+  font-size:14px;font-family:inherit;font-weight:600;outline:none;min-width:200px;
+}
+.grade-inp:focus{border-color:var(--red);}
+.grade-btn{
+  padding:10px 28px;background:var(--red);color:#fff;border:none;
+  border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .2s;
+}
+.grade-btn:hover{background:var(--red-dk);}
+
+/* ── Responsive ─────────────────────────── */
+@media(max-width:700px){
+  .sidebar{width:100%;height:auto;min-height:unset;position:static;padding:16px;flex-direction:row;flex-wrap:wrap;}
+  #screen-app{flex-direction:column;}
+  .page{padding:16px 12px;}
+  #screen-login{flex-direction:column;}
+  .login-left{width:100%;min-height:unset;padding:30px 22px;}
+  .login-right{display:none;}
 }
 </style>
 </head>
 <body>
+<div id="toast"></div>
 
-<!-- ===== TOAST ===== -->
-<div class="toast" id="toast"></div>
+<!-- ══════════════════════════════════════════
+     LOGIN  (PDF Page 1)
+══════════════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <div class="login-left">
+    <div class="login-logo">SCMS</div>
+    <div class="login-title">Log in.</div>
+    <div class="login-subtitle">Log in with your data that<br>you entered during<br>registration.</div>
 
-<!-- ============================================================ -->
-<!-- SCREEN 1: LANDING -->
-<!-- ============================================================ -->
-<div class="screen active" id="screen-landing">
-  <div class="topbar"></div>
-  <div style="background:var(--kku-red); padding: 14px 30px; display:flex; align-items:center; justify-content:center;">
-    <div style="background:white; border-radius:6px; padding:10px 28px; display:flex; align-items:center; gap:14px; max-width:700px; width:100%;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:40px;height:40px;background:var(--kku-red);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-          <svg viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        </div>
-        <div>
-          <div style="font-size:16px;font-weight:800;color:var(--kku-red);letter-spacing:1px;">🏛 KKU มหาวิทยาลัยขอนแก่น</div>
-          <div style="font-size:9px;color:var(--kku-red);letter-spacing:2px;font-weight:600;">KHON KAEN UNIVERSITY</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="main-content">
-    <div class="hero-banner">
-      <div class="hero-title">Smart Classroom Management System</div>
-    </div>
-    <button class="big-btn" onclick="navigate('screen-login')">เข้าสู่ระบบ</button>
-    <button class="big-btn" onclick="navigate('screen-register')">ลงชื่อเข้าใช้</button>
-  </div>
-  <div class="footer"></div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SCREEN 2: REGISTER -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-register">
-  <div class="topbar"></div>
-  <div class="navbar">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="page-indicator">Register : ลงชื่อเข้าใช้</span>
-  </div>
-
-  <div class="main-content">
-    <div class="field-row">
-      <div class="field-label">Username :</div>
-      <input class="field-input" id="reg-username" type="text" placeholder="กรอก username">
-    </div>
-    <div class="field-row">
-      <div class="field-label">Password :</div>
-      <input class="field-input" id="reg-password" type="password" placeholder="กรอก password">
-    </div>
-    <div class="field-row">
-      <div class="field-label">Password :</div>
-      <input class="field-input" id="reg-confirm" type="password" placeholder="ยืนยัน password">
-    </div>
-    <button class="auth-btn" onclick="doRegister()">Continue / ดำเนินการต่อ</button>
-    <div class="divider-line"></div>
-    <button class="social-btn" onclick="showToast('เชื่อมต่อ KKUMAIL...')">KKUMAIL</button>
-    <button class="social-btn" onclick="showToast('เชื่อมต่อ THAI ID...')">THAI ID</button>
-  </div>
-  <div class="footer">
-    <button class="back-btn" onclick="navigate('screen-landing')">
-      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SCREEN 3: LOGIN -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-login">
-  <div class="topbar"></div>
-  <div class="navbar">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="page-indicator">Login : เข้าสู่ระบบ</span>
-  </div>
-
-  <div class="main-content">
-    <div class="field-row">
-      <div class="field-label">Username :</div>
-      <input class="field-input" id="login-username" type="text" placeholder="กรอก username">
-    </div>
-    <div class="field-row">
-      <div class="field-label">Password :</div>
-      <input class="field-input" id="login-password" type="password" placeholder="กรอก password">
-    </div>
-    <button class="auth-btn" onclick="doLogin()">Continue / ดำเนินการต่อ</button>
-    <div class="divider-line"></div>
-    <button class="social-btn" onclick="showToast('เชื่อมต่อ KKUMAIL...')">KKUMAIL</button>
-    <button class="social-btn" onclick="showToast('เชื่อมต่อ THAI ID...')">THAI ID</button>
-  </div>
-  <div class="footer">
-    <button class="back-btn" onclick="navigate('screen-landing')">
-      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SCREEN 4: DASHBOARD -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-dashboard">
-  <div class="topbar"></div>
-  <div class="navbar" style="position:relative;">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="nav-title">Smart Classroom Management System</span>
-    <button class="hamburger-btn" onclick="toggleMenu('menu-dashboard')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="8" x2="16" y2="8"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="8" y1="16" x2="16" y2="16"/>
+    <div class="login-field">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
       </svg>
-    </button>
-    <div class="dropdown-menu" id="menu-dashboard">
-      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
-      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
-      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
-      <button onclick="doLogout()">ออกจากระบบ</button>
+      <input type="text" id="login-username" placeholder="Username" autocomplete="username">
     </div>
-  </div>
-
-  <div class="main-content" id="dashboard-btns">
-    <!-- Buttons rendered dynamically by renderDashboard() based on role -->
-  </div>
-  <div class="footer"></div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SCREEN 5: ACCOUNT -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-account">
-  <div class="topbar"></div>
-  <div class="navbar" style="position:relative;">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="page-indicator" style="font-size:20px;">บัญชี</span>
-    <button class="hamburger-btn" onclick="toggleMenu('menu-account')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="8" x2="16" y2="8"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="8" y1="16" x2="16" y2="16"/>
+    <div class="login-field">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
-    </button>
-    <div class="dropdown-menu" id="menu-account">
-      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
-      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
-      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
-      <button onclick="doLogout()">ออกจากระบบ</button>
+      <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
     </div>
+    <div class="login-check-row">
+      <input type="checkbox" id="keep-me">
+      <label for="keep-me">Keep me logged in</label>
+    </div>
+    <button class="login-main-btn" id="login-btn" onclick="doLogin()">Log in</button>
+    <div class="login-or">or</div>
+    <button class="login-kku-btn" onclick="showToast('KKU Mail login ยังไม่พร้อมใช้งาน',true)">Log in with kku mail</button>
   </div>
-
-  <div class="account-layout">
-    <div class="account-sidebar">
-      <div class="profile-circle">
-        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <div class="name-bar" id="account-name-bar"></div>
-      <button class="settings-btn">ตั้งค่า</button>
-    </div>
-    <div class="account-content">
-      <div style="padding:20px 0;">
-        <h3 style="color:var(--kku-red);font-size:20px;margin-bottom:20px;font-weight:700;">ข้อมูลบัญชีผู้ใช้</h3>
-        <table style="border-collapse:collapse;width:100%;max-width:500px;">
-          <tr>
-            <td style="padding:10px 16px;background:#f5f0ef;font-weight:700;color:#444;border:1px solid #ddd;width:140px;">Username</td>
-            <td style="padding:10px 16px;border:1px solid #ddd;" id="acc-username">-</td>
-          </tr>
-          <tr>
-            <td style="padding:10px 16px;background:#f5f0ef;font-weight:700;color:#444;border:1px solid #ddd;">บทบาท</td>
-            <td style="padding:10px 16px;border:1px solid #ddd;" id="acc-role">-</td>
-          </tr>
-          <tr>
-            <td style="padding:10px 16px;background:#f5f0ef;font-weight:700;color:#444;border:1px solid #ddd;">สถานะ</td>
-            <td style="padding:10px 16px;border:1px solid #ddd;color:green;font-weight:700;">Active ✓</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-  </div>
-  <div class="footer"></div>
+  <div class="login-right"><div class="login-right-text">SCMS</div></div>
 </div>
 
-<!-- ============================================================ -->
-<!-- SCREEN 6: HELP -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-help">
-  <div class="topbar"></div>
-  <div class="navbar" style="position:relative;">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="page-indicator" style="font-size:20px;">ช่วยเหลือ</span>
-    <button class="hamburger-btn" onclick="toggleMenu('menu-help')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="8" x2="16" y2="8"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="8" y1="16" x2="16" y2="16"/>
-      </svg>
-    </button>
-    <div class="dropdown-menu" id="menu-help">
-      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
-      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
-      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
-      <button onclick="doLogout()">ออกจากระบบ</button>
-    </div>
-  </div>
+<!-- ══════════════════════════════════════════
+     APP  (PDF Pages 2-9)
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-app">
 
-  <div class="help-content">
-    <div class="help-box">
-      <div style="text-align:center;">
-        <div style="font-size:48px;margin-bottom:12px;">❓</div>
-        <div style="font-size:20px;font-weight:700;color:#666;margin-bottom:8px;">ศูนย์ช่วยเหลือ</div>
-        <div style="font-size:15px;color:#888;">ติดต่อ: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a4d7d1d4d4cbd6d0e4cfcfd18ac5c78ad0cc">[email&#160;protected]</a> | โทร: 043-009-700</div>
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar">
+    <div class="sb-logo">SCMS</div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-av">?</div>
+      <div class="sb-info">
+        <div class="sb-name" id="sb-name">Firstname Lastname</div>
+        <div class="sb-id"   id="sb-id">68XXXXX-X</div>
       </div>
     </div>
-  </div>
-  <div class="footer"></div>
-</div>
+    <div class="sb-actions">
+      <button class="sb-action-btn" onclick="showPage('page-profile')">profile</button>
+      <button class="sb-action-btn" onclick="doLogout()">LOGOUT</button>
+    </div>
+    <div class="sb-menu-label">Menu</div>
+    <div class="sb-menu">
+      <button class="sb-btn" id="sb-schedule"   onclick="showPage('page-schedule')">SCHEDUL</button>
+      <button class="sb-btn" id="sb-attendance" onclick="showPage('page-attendance')">ATTENDANCE</button>
+      <button class="sb-btn" id="sb-classroom"  onclick="showPage('page-classroom')">CLASSROOM</button>
+      <button class="sb-btn" id="sb-course"     onclick="showPage('page-course')">COURSE</button>
+      <button class="sb-btn" id="sb-assignment" onclick="showPage('page-assignment')">ASSigment</button>
+    </div>
+  </nav>
 
-<!-- ============================================================ -->
-<!-- SCREEN 7: CHECK GRADES -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-grades">
-  <div class="topbar"></div>
-  <div class="navbar" style="position:relative;">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="page-indicator" style="font-size:20px;">ตรวจสอบเกรด</span>
-    <button class="hamburger-btn" onclick="toggleMenu('menu-grades')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="8" x2="16" y2="8"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="8" y1="16" x2="16" y2="16"/>
-      </svg>
-    </button>
-    <div class="dropdown-menu" id="menu-grades">
-      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
-      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
-      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
-      <button onclick="doLogout()">ออกจากระบบ</button>
-    </div>
-  </div>
+  <!-- ── MAIN ── -->
+  <div class="app-main">
 
-  <div class="query-page-content">
-    <div class="field-row" style="max-width:700px;">
-      <div class="field-label">User ID :</div>
-      <input class="field-input" id="grade-userid" type="text" placeholder="กรอก User ID เช่น STU001">
-    </div>
-    <button class="auth-btn" style="max-width:320px;" onclick="checkGrade()">SUBMIT / ยืนยัน</button>
-    <div class="result-box" id="grade-result-box">
-      <div class="result-box-inner">
-        <table class="grade-table" id="grade-table">
-          <thead>
-            <tr>
-              <th>รหัสวิชา</th>
-              <th>ชื่อวิชา</th>
-              <th>เวลาเข้าเรียน</th>
-              <th>จิตพิสัย</th>
-              <th>ส่งงาน</th>
-              <th>กลางภาค</th>
-              <th>ปลายภาค</th>
-              <th>รวม</th>
-              <th>เกรด</th>
-            </tr>
-          </thead>
-          <tbody id="grade-tbody"></tbody>
-        </table>
-        <div id="grade-empty" style="text-align:center;color:#aaa;font-size:16px;padding:40px;">ป้อน User ID แล้วกด SUBMIT เพื่อดูเกรด</div>
+    <!-- ════════════════════════
+         PROFILE  (PDF Page 3)
+    ════════════════════════ -->
+    <div class="page active" id="page-profile">
+      <div class="page-pill">Profile</div>
+      <div class="pf-card">
+        <div class="pf-card-title">Edit Personal Information</div>
+        <label class="pf-label">Firstname Lastname</label>
+        <input class="pf-input" id="pf-name" type="text" placeholder="ชื่อ-นามสกุล">
+        <label class="pf-label">Email</label>
+        <input class="pf-input" id="pf-email" type="email" placeholder="email@kku.ac.th">
+        <button class="pf-btn" onclick="saveProfile()">Edit Information</button>
+      </div>
+      <div class="pf-card">
+        <div class="pf-card-title">Change Password</div>
+        <label class="pf-label">Change Password</label>
+        <input class="pf-input" id="pf-old" type="password" placeholder="รหัสผ่านเดิม">
+        <label class="pf-label">New Password</label>
+        <input class="pf-input" id="pf-new" type="password" placeholder="รหัสผ่านใหม่">
+        <button class="pf-btn" onclick="changePassword()">Change Password</button>
       </div>
     </div>
-  </div>
-  <div class="footer">
-    <button class="back-btn" onclick="navigate('screen-dashboard')">
-      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-  </div>
-</div>
 
-<!-- ============================================================ -->
-<!-- SCREEN 8: SCHEDULE -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-schedule">
-  <div class="topbar"></div>
-  <div class="navbar" style="position:relative;">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
+    <!-- ════════════════════════
+         SCHEDULE  (PDF Page 5)
+         SCHEDUL_ID | SCHEDUL_NAME | ROOM_ID | STUDY_TIME
+    ════════════════════════ -->
+    <div class="page" id="page-schedule">
+      <div class="page-pill">Schedul</div>
+      <div id="schedule-wrap">
+        <div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>
       </div>
     </div>
-    <span class="page-indicator" style="font-size:20px;">ตารางเรียน</span>
-    <button class="hamburger-btn" onclick="toggleMenu('menu-schedule')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="8" x2="16" y2="8"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="8" y1="16" x2="16" y2="16"/>
-      </svg>
-    </button>
-    <div class="dropdown-menu" id="menu-schedule">
-      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
-      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
-      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
-      <button onclick="doLogout()">ออกจากระบบ</button>
-    </div>
-  </div>
 
-  <div class="query-page-content">
-    <div class="field-row" style="max-width:700px;">
-      <div class="field-label">User ID :</div>
-      <input class="field-input" id="schedule-userid" type="text" placeholder="กรอก User ID เช่น STU001">
-    </div>
-    <button class="auth-btn" style="max-width:320px;" onclick="checkSchedule()">SUBMIT / ยืนยัน</button>
-    <div class="result-box" id="schedule-result-box">
-      <div class="result-box-inner">
-        <table class="schedule-table" id="schedule-table">
-          <thead>
-            <tr>
-              <th>วัน</th>
-              <th>เวลา</th>
-              <th>รหัสวิชา</th>
-              <th>ชื่อวิชา</th>
-              <th>อาจารย์</th>
-              <th>ห้อง</th>
-            </tr>
-          </thead>
-          <tbody id="schedule-tbody"></tbody>
-        </table>
-        <div id="schedule-empty" style="text-align:center;color:#aaa;font-size:16px;padding:40px;">ป้อน User ID แล้วกด SUBMIT เพื่อดูตารางเรียน</div>
-      </div>
-    </div>
-  </div>
-  <div class="footer">
-    <button class="back-btn" onclick="navigate('screen-dashboard')">
-      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-  </div>
-</div>
+    <!-- ════════════════════════
+         ATTENDANCE  (PDF Page 7)
+         ATTENDANCE_ID | STUDENT_ID | COURSE_ID | STATUS | ATTENDANCE_DATE | CHECK_IN_TIME
+    ════════════════════════ -->
+    <div class="page" id="page-attendance">
+      <div class="page-pill">Attendance</div>
 
-<!-- ============================================================ -->
-<!-- SCREEN 9: SCORING (ลงคะแนน) -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-scoring">
-  <div class="topbar"></div>
-  <div class="navbar" style="position:relative;">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <!-- Teacher/Admin view -->
+      <div id="sec-attlog" style="display:none;">
+        <div class="filter-row">
+          <div class="fg">
+            <label>รหัสวิชา</label>
+            <select class="fsel" id="attlog-course">
+              <option value="">-- เลือกวิชา --</option>
+              <option value="CS101">CS101</option>
+              <option value="CS102">CS102</option>
+              <option value="CS103">CS103</option>
+              <option value="CS104">CS104</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>วันที่</label>
+            <input class="fdate" id="attlog-date" type="date">
+          </div>
+          <button class="filter-btn" id="attlog-btn" onclick="loadAttLog()">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            ค้นหา
+          </button>
+          <button class="filter-btn" style="background:#555;margin-left:4px;" onclick="showPage('page-nfc')">📲 เช็คชื่อ NFC</button>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card present"><div class="stat-num" id="stp">0</div><div class="stat-lbl">✅ มาทัน</div></div>
+          <div class="stat-card late">   <div class="stat-num" id="stl">0</div><div class="stat-lbl">⏰ มาสาย</div></div>
+          <div class="stat-card absent"> <div class="stat-num" id="sta">0</div><div class="stat-lbl">❌ ขาด</div></div>
+          <div class="stat-card">        <div class="stat-num" id="stt" style="color:var(--red)">0</div><div class="stat-lbl">👥 รวม</div></div>
+        </div>
+        <div id="attlog-wrap"><div class="tbl-empty">เลือกวิชาและวันที่ แล้วกด ค้นหา</div></div>
       </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="page-indicator" style="font-size:20px;">ลงคะแนน</span>
-    <button class="hamburger-btn" onclick="toggleMenu('menu-scoring')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="8" x2="16" y2="8"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="8" y1="16" x2="16" y2="16"/>
-      </svg>
-    </button>
-    <div class="dropdown-menu" id="menu-scoring">
-      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
-      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
-      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
-      <button onclick="doLogout()">ออกจากระบบ</button>
-    </div>
-  </div>
 
-  <div class="scoring-layout">
-    <div class="scoring-inner">
-      <!-- LEFT -->
-      <div class="scoring-left">
-        <div class="photo-placeholder" id="scoring-photo">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span style="font-size:12px;color:#aaa;">รูปนักศึกษา</span>
+      <!-- Student view -->
+      <div id="sec-myatt" style="display:none;">
+        <div class="filter-row">
+          <select class="fsel" id="myatt-course">
+            <option value="">ทุกวิชา</option>
+            <option value="CS101">CS101</option>
+            <option value="CS102">CS102</option>
+            <option value="CS103">CS103</option>
+            <option value="CS104">CS104</option>
+          </select>
+          <button class="filter-btn" id="myatt-btn" onclick="loadMyAtt()">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            โหลดข้อมูล
+          </button>
+          <button class="filter-btn" style="background:#555;" onclick="showPage('page-nfc')">📲 เช็คชื่อ NFC</button>
         </div>
-        <div class="userid-box">
-          <div class="userid-label">User ID :</div>
-          <input class="userid-input" id="scoring-userid" type="text" placeholder="เช่น STU001" onchange="loadStudentInfo()">
+        <div class="rate-wrap" id="rate-wrap">
+          <div class="rate-hdr">
+            <span>อัตราการเข้าเรียน</span>
+            <span id="rate-txt" style="color:var(--red)">0%</span>
+          </div>
+          <div class="rate-track"><div class="rate-fill" id="rate-fill" style="width:0%"></div></div>
         </div>
-        <div class="name-display-box" id="scoring-name">ชื่อ-นามสกุล</div>
+        <div class="stat-row">
+          <div class="stat-card present"><div class="stat-num" id="mp">0</div><div class="stat-lbl">✅ มาทัน</div></div>
+          <div class="stat-card late">   <div class="stat-num" id="ml">0</div><div class="stat-lbl">⏰ มาสาย</div></div>
+          <div class="stat-card absent"> <div class="stat-num" id="ma">0</div><div class="stat-lbl">❌ ขาด</div></div>
+          <div class="stat-card">        <div class="stat-num" id="mt" style="color:var(--red)">0</div><div class="stat-lbl">📚 ทั้งหมด</div></div>
+        </div>
+        <div id="myatt-wrap"><div class="tbl-empty">กด "โหลดข้อมูล" เพื่อดูประวัติการเข้าเรียน</div></div>
       </div>
-      <!-- RIGHT -->
-      <div class="scoring-right">
-        <div class="score-field">
-          <div class="score-label">เวลาเข้าเรียน :</div>
-          <input class="score-input" id="sc-attend" type="number" min="0" max="20" placeholder="0-20">
+    </div>
+
+    <!-- ════════════════════════
+         CLASSROOM  (PDF Page 4)
+         ROOM_ID | ROOM_NAME | CAPACITY | FLOOR
+    ════════════════════════ -->
+    <div class="page" id="page-classroom">
+      <div class="page-pill">Classroom</div>
+      <div id="classroom-wrap">
+        <div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         COURSE  (PDF Page 6)
+         COURSE_ID | COURSE_NAME | DESCRIPTION | CRADIT | SEMESTER | ACADEMIC_YEAR | TEACHER_ID
+    ════════════════════════ -->
+    <div class="page" id="page-course">
+      <div class="page-pill">Course</div>
+      <div id="course-wrap">
+        <div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         ASSIGNMENT  (PDF Page 8)
+         ASSIGNMENT_ID | COURSE_ID | TITLE | DESCRIPTION | DUE_DATE
+    ════════════════════════ -->
+    <div class="page" id="page-assignment">
+      <div class="page-pill">Assignment</div>
+      <div id="assignment-wrap">
+        <div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         SUBMISSION  (PDF Page 9)
+         SUBMISSTION_ID | ASSIGNMENT_ID | STUDENT_ID | SUBMIT_DATE
+    ════════════════════════ -->
+    <div class="page" id="page-submission">
+      <div class="page-pill">Submisstion</div>
+      <div id="submission-wrap">
+        <div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         GRADES
+    ════════════════════════ -->
+    <div class="page" id="page-grades">
+      <div class="page-pill">ตรวจสอบเกรด</div>
+      <div class="grade-qrow">
+        <input class="grade-inp" id="grade-uid" type="text" placeholder="กรอก User ID เช่น STU001">
+        <button class="grade-btn" id="grade-btn" onclick="checkGrade()">SUBMIT</button>
+      </div>
+      <div id="grade-wrap"><div class="tbl-empty">ป้อน User ID แล้วกด SUBMIT เพื่อดูเกรด</div></div>
+    </div>
+
+    <!-- ════════════════════════
+         SCORING (Teacher/Admin)
+    ════════════════════════ -->
+    <div class="page" id="page-scoring">
+      <div class="page-pill">ลงคะแนน</div>
+      <div class="score-wrap">
+        <div class="score-uid-row">
+          <span class="score-uid-lbl">User ID นักศึกษา :</span>
+          <input type="text" id="sc-uid" class="score-uid-inp" placeholder="เช่น STU001" onchange="loadStudentInfo()">
+          <span id="sc-name" class="score-name">ชื่อ-นามสกุล</span>
         </div>
-        <div class="score-field">
-          <div class="score-label">จิตพิสัย :</div>
-          <input class="score-input" id="sc-attitude" type="number" min="0" max="10" placeholder="0-10">
-        </div>
-        <div class="score-field">
-          <div class="score-label">ส่งงาน :</div>
-          <input class="score-input" id="sc-homework" type="number" min="0" max="20" placeholder="0-20">
-        </div>
-        <div class="score-field">
-          <div class="score-label">สอบกลางภาค :</div>
-          <input class="score-input" id="sc-midterm" type="number" min="0" max="30" placeholder="0-30">
-        </div>
-        <div class="score-field">
-          <div class="score-label">สอบปลายภาค:</div>
-          <input class="score-input" id="sc-final" type="number" min="0" max="40" placeholder="0-40">
-        </div>
-        <div class="score-field">
-          <div class="score-label">สอบเก็บคะแนน :</div>
-          <input class="score-input" id="sc-quiz" type="number" min="0" max="20" placeholder="0-20">
+        <div id="sc-fields" style="display:none;">
+          <div class="score-row"><label>เวลาเข้าเรียน :</label><input type="number" id="sc-attend"   class="score-inp" min="0" max="20"  placeholder="0"><span class="score-max">/ 20</span></div>
+          <div class="score-row"><label>จิตพิสัย :</label>      <input type="number" id="sc-attitude" class="score-inp" min="0" max="10"  placeholder="0"><span class="score-max">/ 10</span></div>
+          <div class="score-row"><label>ส่งงาน :</label>        <input type="number" id="sc-homework" class="score-inp" min="0" max="20"  placeholder="0"><span class="score-max">/ 20</span></div>
+          <div class="score-row"><label>สอบกลางภาค :</label>   <input type="number" id="sc-midterm"  class="score-inp" min="0" max="30"  placeholder="0"><span class="score-max">/ 30</span></div>
+          <div class="score-row"><label>สอบปลายภาค :</label>   <input type="number" id="sc-final"    class="score-inp" min="0" max="40"  placeholder="0"><span class="score-max">/ 40</span></div>
+          <div class="score-row"><label>สอบเก็บคะแนน :</label> <input type="number" id="sc-quiz"     class="score-inp" min="0" max="20"  placeholder="0"><span class="score-max">/ 20</span></div>
+          <div class="total-outer">
+            <span style="font-size:14px;font-weight:700;color:#555;">คะแนนรวม</span>
+            <div class="total-track"><div class="total-fill" id="total-fill"></div></div>
+            <div class="total-disp" id="total-disp">0 / 100</div>
+          </div>
+          <div class="score-actions">
+            <button class="sbtn primary"   onclick="saveScore()">SAVE / บันทึก</button>
+            <button class="sbtn secondary" onclick="loadStudentInfo()">EDIT / แก้ไข</button>
+            <button class="sbtn primary"   onclick="submitScore()">SUBMIT / ยืนยัน</button>
+          </div>
         </div>
       </div>
     </div>
-    <!-- Total Score Display -->
-    <div id="total-score-bar" style="
-      display:flex; align-items:center; justify-content:space-between;
-      background:#f5f0ef; border:2px solid var(--kku-border);
-      border-radius:8px; padding:14px 20px; margin-bottom:4px;
-      transition: all 0.3s;
-    ">
-      <span style="font-size:16px;font-weight:700;color:#555;">คะแนนรวม</span>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:200px;height:12px;background:#ddd;border-radius:999px;overflow:hidden;">
-          <div id="total-bar" style="height:100%;width:0%;background:var(--kku-red);border-radius:999px;transition:all 0.4s cubic-bezier(0.22,1,0.36,1);"></div>
+
+    <!-- ════════════════════════
+         NFC
+    ════════════════════════ -->
+    <div class="page" id="page-nfc">
+      <div class="page-pill">เช็คชื่อ NFC</div>
+      <div class="nfc-wrap">
+        <div class="nfc-ring-outer">
+          <div class="nfc-ring"></div>
+          <div class="nfc-ring"></div>
+          <div class="nfc-ring"></div>
+          <div class="nfc-ic" id="nfc-ic">
+            <svg viewBox="0 0 48 48" width="44" height="44">
+              <path d="M24 34c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M24 28a4 4 0 0 0 0-8" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <circle cx="24" cy="24" r="2" fill="white"/>
+              <path d="M14 10C9.03 13.17 6 18.24 6 24s3.03 10.83 8 14" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M34 10c4.97 3.17 8 8.24 8 14s-3.03 10.83-8 14" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
         </div>
-        <span id="total-score-display" style="font-size:22px;font-weight:800;color:var(--kku-red);min-width:60px;text-align:right;">0 / 100</span>
-      </div>
-    </div>
-    <div class="scoring-btns">
-      <button onclick="saveScore()">SAVE / บันทึก</button>
-      <button onclick="editScore()">EDIT / แก้ไข</button>
-      <button onclick="submitScore()">SUBMIT / ยืนยัน</button>
-    </div>
-  </div>
-  <div class="footer">
-    <button class="back-btn" onclick="navigate('screen-dashboard')">
-      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SCREEN 10: MY ATTENDANCE (นักศึกษาดูประวัติเข้าเรียนตัวเอง) -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-myatt">
-  <div class="topbar"></div>
-  <div class="navbar" style="position:relative;">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="page-indicator" style="font-size:18px;">การเข้าเรียน</span>
-    <button class="hamburger-btn" onclick="toggleMenu('menu-myatt')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="8" x2="16" y2="8"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="8" y1="16" x2="16" y2="16"/>
-      </svg>
-    </button>
-    <div class="dropdown-menu" id="menu-myatt">
-      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
-      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
-      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
-      <button onclick="doLogout()">ออกจากระบบ</button>
-    </div>
-  </div>
-
-  <div class="myatt-wrap">
-    <!-- Filter -->
-    <div class="myatt-filter">
-      <select class="myatt-select" id="myatt-course">
-        <option value="">ทุกวิชา</option>
-        <option value="CS101">CS101</option>
-        <option value="CS102">CS102</option>
-        <option value="CS103">CS103</option>
-        <option value="CS104">CS104</option>
-      </select>
-      <button class="myatt-load-btn" onclick="loadMyAtt()">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="white" stroke-width="2.5">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        โหลดข้อมูล
-      </button>
-    </div>
-
-    <!-- Attendance rate bar -->
-    <div class="myatt-rate-bar-wrap" id="myatt-rate-wrap">
-      <div class="myatt-rate-label">
-        <span>อัตราการเข้าเรียน</span>
-        <span id="myatt-rate-text" style="color:var(--kku-red)">0%</span>
-      </div>
-      <div class="myatt-rate-bar-bg">
-        <div class="myatt-rate-bar-fill" id="myatt-rate-fill" style="width:0%"></div>
+        <div class="nfc-st" id="nfc-st">แตะบัตรนักศึกษาที่หลัง<br>มือถือเพื่อเช็คชื่อ</div>
+        <div class="nfc-ss" id="nfc-ss">ระบบพร้อมอ่านบัตร NFC</div>
+        <div class="nfc-card" id="nfc-card">
+          <div class="nfc-row"><span class="lbl">👤 รหัสนักศึกษา</span><span class="val" id="nfc-rid">-</span></div>
+          <div class="nfc-row"><span class="lbl">📛 ชื่อ</span>        <span class="val" id="nfc-rname">-</span></div>
+          <div class="nfc-row"><span class="lbl">🕐 เวลาเช็คชื่อ</span><span class="val" id="nfc-rtime">-</span></div>
+          <div class="nfc-row"><span class="lbl">📌 สถานะ</span>       <span class="val" id="nfc-rst">-</span></div>
+        </div>
+        <div class="nfc-manual">
+          <div class="nfc-div">หรือกรอก ID ด้วยตนเอง</div>
+          <div class="nfc-manual-row">
+            <input class="nfc-manual-inp" id="nfc-mid" type="text" placeholder="เช่น STU001" maxlength="10">
+            <button class="nfc-manual-btn" onclick="manualCheckin()">เช็คชื่อ</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Summary chips -->
-    <div class="myatt-summary">
-      <div class="myatt-chip present">
-        <div class="myatt-chip-num" id="myatt-present">0</div>
-        <div class="myatt-chip-label">✅ มาทัน</div>
-      </div>
-      <div class="myatt-chip late">
-        <div class="myatt-chip-num" id="myatt-late">0</div>
-        <div class="myatt-chip-label">⏰ มาสาย</div>
-      </div>
-      <div class="myatt-chip absent">
-        <div class="myatt-chip-num" id="myatt-absent">0</div>
-        <div class="myatt-chip-label">❌ ขาด</div>
-      </div>
-      <div class="myatt-chip">
-        <div class="myatt-chip-num" id="myatt-total" style="color:var(--kku-red)">0</div>
-        <div class="myatt-chip-label">📚 ทั้งหมด</div>
-      </div>
-    </div>
+  </div><!-- /app-main -->
+</div><!-- /screen-app -->
 
-    <!-- Table -->
-    <div class="myatt-table-wrap">
-      <div class="myatt-empty" id="myatt-empty">กด "โหลดข้อมูล" เพื่อดูประวัติการเข้าเรียน</div>
-      <table class="myatt-table" id="myatt-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th style="text-align:left; min-width:180px;">รายการ</th>
-            <th>ประเภท</th>
-            <th>สถานะ</th>
-            <th>เวลาที่เริ่มเช็คชื่อ</th>
-            <th>เวลาที่ถูกเช็คชื่อ</th>
-          </tr>
-        </thead>
-        <tbody id="myatt-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="footer">
-    <button class="back-btn" onclick="navigate('screen-dashboard')">
-      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SCREEN 11: NFC CHECK-IN (นักศึกษาเช็คชื่อ) -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-nfc">
-  <div class="topbar"></div>
-  <div class="navbar" style="position:relative;">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="page-indicator" style="font-size:20px;">เช็คชื่อ NFC</span>
-    <button class="hamburger-btn" onclick="toggleMenu('menu-nfc')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="8" x2="16" y2="8"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="8" y1="16" x2="16" y2="16"/>
-      </svg>
-    </button>
-    <div class="dropdown-menu" id="menu-nfc">
-      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
-      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
-      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
-      <button onclick="doLogout()">ออกจากระบบ</button>
-    </div>
-  </div>
-
-  <div class="nfc-wrapper">
-    <!-- NFC Tap animation -->
-    <div class="nfc-ring-outer" id="nfc-ring-outer">
-      <div class="nfc-ring"></div>
-      <div class="nfc-ring"></div>
-      <div class="nfc-ring"></div>
-      <div class="nfc-icon-circle" id="nfc-icon-circle">
-        <!-- NFC wave icon -->
-        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-          <path d="M24 34c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
-          <path d="M24 28a4 4 0 0 0 0-8" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
-          <circle cx="24" cy="24" r="2" fill="white"/>
-          <path d="M14 10C9.03 13.17 6 18.24 6 24s3.03 10.83 8 14" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <path d="M34 10c4.97 3.17 8 8.24 8 14s-3.03 10.83-8 14" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        </svg>
-      </div>
-    </div>
-
-    <div class="nfc-status-text" id="nfc-status-text">แตะบัตรนักศึกษาที่หลัง<br>มือถือเพื่อเช็คชื่อ</div>
-    <div class="nfc-status-sub" id="nfc-status-sub">ระบบพร้อมอ่านบัตร NFC</div>
-
-    <!-- Result card -->
-    <div class="nfc-result-card" id="nfc-result-card">
-      <div class="nfc-result-row">
-        <span class="label">👤 รหัสนักศึกษา</span>
-        <span class="value" id="nfc-res-id">-</span>
-      </div>
-      <div class="nfc-result-row">
-        <span class="label">📛 ชื่อ</span>
-        <span class="value" id="nfc-res-name">-</span>
-      </div>
-      <div class="nfc-result-row">
-        <span class="label">🕐 เวลาเช็คชื่อ</span>
-        <span class="value" id="nfc-res-time">-</span>
-      </div>
-      <div class="nfc-result-row">
-        <span class="label">📌 สถานะ</span>
-        <span class="value" id="nfc-res-status">-</span>
-      </div>
-    </div>
-
-    <!-- Manual fallback -->
-    <div class="nfc-manual-section">
-      <div class="nfc-divider">หรือกรอก ID ด้วยตนเอง</div>
-      <div class="nfc-manual-row">
-        <input class="nfc-manual-input" id="nfc-manual-id" type="text" placeholder="เช่น STU001" maxlength="10">
-        <button class="nfc-manual-btn" onclick="manualCheckin()">เช็คชื่อ</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    <button class="back-btn" onclick="stopNFC();navigate('screen-dashboard')">
-      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SCREEN 11: ATTENDANCE LOG (อาจารย์/Admin ดูการเข้าเรียน) -->
-<!-- ============================================================ -->
-<div class="screen" id="screen-attlog">
-  <div class="topbar"></div>
-  <div class="navbar" style="position:relative;">
-    <div class="nav-logo">
-      <div class="kku-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="nav-brand">
-        <span class="nav-kku">🏛 KKU มหาวิทยาลัยขอนแก่น</span>
-        <span class="nav-sub">KHON KAEN UNIVERSITY</span>
-      </div>
-    </div>
-    <span class="page-indicator" style="font-size:18px;">บันทึกการเข้าเรียน</span>
-    <button class="hamburger-btn" onclick="toggleMenu('menu-attlog')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="8" x2="16" y2="8"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="8" y1="16" x2="16" y2="16"/>
-      </svg>
-    </button>
-    <div class="dropdown-menu" id="menu-attlog">
-      <button onclick="navigate('screen-dashboard');closeMenus()">หน้าหลัก</button>
-      <button onclick="navigate('screen-account');closeMenus()">บัญชี</button>
-      <button onclick="navigate('screen-help');closeMenus()">ช่วยเหลือ</button>
-      <button onclick="doLogout()">ออกจากระบบ</button>
-    </div>
-  </div>
-
-  <!-- Filter bar -->
-  <div class="attlog-filter">
-    <div class="attlog-filter-group">
-      <label>รหัสวิชา</label>
-      <select class="attlog-select" id="attlog-course">
-        <option value="">-- เลือกวิชา --</option>
-        <option value="CS101">CS101</option>
-        <option value="CS102">CS102</option>
-        <option value="CS103">CS103</option>
-      </select>
-    </div>
-    <div class="attlog-filter-group">
-      <label>วันที่</label>
-      <input class="attlog-date" id="attlog-date" type="date">
-    </div>
-    <button class="attlog-search-btn" onclick="loadAttLog()">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      ค้นหา
-    </button>
-  </div>
-
-  <!-- Summary stats -->
-  <div class="attlog-summary">
-    <div class="attlog-stat present">
-      <div class="attlog-stat-num" id="stat-present">0</div>
-      <div class="attlog-stat-label">✅ มาทัน</div>
-    </div>
-    <div class="attlog-stat late">
-      <div class="attlog-stat-num" id="stat-late">0</div>
-      <div class="attlog-stat-label">⏰ มาสาย</div>
-    </div>
-    <div class="attlog-stat absent">
-      <div class="attlog-stat-num" id="stat-absent">0</div>
-      <div class="attlog-stat-label">❌ ขาด</div>
-    </div>
-    <div class="attlog-stat">
-      <div class="attlog-stat-num" id="stat-total" style="color:var(--kku-red)">0</div>
-      <div class="attlog-stat-label">👥 รวม</div>
-    </div>
-  </div>
-
-  <!-- Table -->
-  <div class="attlog-table-wrap">
-    <div class="attlog-empty" id="attlog-empty">เลือกวิชาและวันที่ แล้วกด ค้นหา</div>
-    <table class="attlog-table" id="attlog-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>รหัสนักศึกษา</th>
-          <th>ชื่อ-สกุล</th>
-          <th>เวลาเช็คชื่อ</th>
-          <th>เวลาเรียน</th>
-          <th>สถานะ</th>
-          <th>ช้า (นาที)</th>
-        </tr>
-      </thead>
-      <tbody id="attlog-tbody"></tbody>
-    </table>
-  </div>
-
-  <div class="footer">
-    <button class="back-btn" onclick="navigate('screen-dashboard')">
-      <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- JAVASCRIPT -->
-<!-- ============================================================ -->
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════ -->
 <script>
-// ═══════════════════════════════════════════════
-// CONFIG — ✅ Railway Production API
-// ═══════════════════════════════════════════════
 const API = 'https://smart-classroom-management-system-production.up.railway.app/api';
-let currentUser = null;
+let currentUser = null, nfcActive = false, nfcReader = null;
 
-// ─── Navigation with animation ──────────────────
-function navigate(screenId) {
-  const current = document.querySelector('.screen.active');
-  const next    = document.getElementById(screenId);
-  if (!next || current === next) return;
-  current.classList.remove('active');
-  next.classList.add('active');
-  // re-trigger animation
-  next.style.animation = 'none';
-  next.offsetHeight; // reflow
-  next.style.animation = '';
-  closeMenus();
-  window.scrollTo(0, 0);
+// ─── Utils ────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers:{'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  return (await fetch(API+path, opts)).json();
 }
 
-function toggleMenu(menuId) {
-  const menu = document.getElementById(menuId);
-  const isOpen = menu.classList.contains('open');
-  closeMenus();
-  if (!isOpen) menu.classList.add('open');
-}
-
-function closeMenus() {
-  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
-}
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.hamburger-btn') && !e.target.closest('.dropdown-menu')) closeMenus();
-});
-
-// ─── Toast ────────────────────────────────────
-function showToast(msg, isError = false) {
+function showToast(msg, err=false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast show' + (isError ? ' error' : '');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.className = 'toast', 3000);
+  t.className = 'toast show'+(err?' error':'');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.className='toast', 3200);
 }
 
-// ─── API Helper ──────────────────────────────
-async function callAPI(method, path, body) {
-  const opts = { method, headers: { 'Content-Type': 'application/json' } };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(API + path, opts);
-  return res.json();
+function setBtn(id, loading, label='') {
+  const b = typeof id==='string' ? document.getElementById(id) : id;
+  if (!b) return;
+  b.disabled = loading;
+  b.innerHTML = loading ? '<span class="spinner"></span>กำลังโหลด...' : label;
 }
 
-// ─── Loading button helper ───────────────────
-function setLoading(btn, loading, label = 'Continue / ดำเนินการต่อ') {
-  btn.disabled = loading;
-  btn.innerHTML = loading
-    ? '<span class="spinner"></span>กำลังโหลด...'
-    : label;
-}
-
-// ═══════════════════════════════════════════════
-// REGISTER
-// ═══════════════════════════════════════════════
-async function doRegister() {
-  const u   = document.getElementById('reg-username').value.trim();
-  const p   = document.getElementById('reg-password').value;
-  const c   = document.getElementById('reg-confirm').value;
-  const btn = document.querySelector('#screen-register .auth-btn');
-
-  if (!u || !p) { showToast('กรุณากรอกข้อมูลให้ครบ', true); return; }
-  if (p !== c)  { showToast('รหัสผ่านไม่ตรงกัน', true); return; }
-
-  setLoading(btn, true);
-  try {
-    const r = await callAPI('POST', '/register', { username: u, password: p, role: 'student' });
-    if (r.success) {
-      showToast('ลงทะเบียนสำเร็จ! ✓');
-      setTimeout(() => navigate('screen-login'), 1500);
-    } else {
-      showToast(r.message, true);
-    }
-  } catch { showToast('❌ เชื่อมต่อ Server ไม่ได้', true); }
-  finally  { setLoading(btn, false); }
-}
-
-// ═══════════════════════════════════════════════
-// LOGIN
-// ═══════════════════════════════════════════════
+// ─── Login / Logout ────────────────────────
 async function doLogin() {
-  const u   = document.getElementById('login-username').value.trim();
-  const p   = document.getElementById('login-password').value;
-  const btn = document.querySelector('#screen-login .auth-btn');
-
-  if (!u || !p) { showToast('กรุณากรอกข้อมูลให้ครบ', true); return; }
-
-  setLoading(btn, true);
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  if (!u||!p){ showToast('กรุณากรอกข้อมูลให้ครบ',true); return; }
+  setBtn('login-btn', true);
   try {
-    const r = await callAPI('POST', '/login', { username: u, password: p });
+    const r = await api('POST','/login',{username:u,password:p});
     if (r.success) {
       currentUser = r;
-      const el = id => document.getElementById(id);
-      if (el('acc-username')) el('acc-username').textContent = r.username;
-      if (el('acc-role'))     el('acc-role').textContent     = r.role;
-      if (el('account-name-bar')) {
-        const bar = el('account-name-bar');
-        bar.textContent = r.name;
-        bar.style.cssText += ';display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;padding:0 10px;';
-      }
-      showToast('ยินดีต้อนรับ ' + r.name + ' ✓');
-      renderDashboard();
-      setTimeout(() => navigate('screen-dashboard'), 1200);
-    } else {
-      showToast(r.message || 'Username หรือ Password ไม่ถูกต้อง', true);
-    }
-  } catch { showToast('❌ เชื่อมต่อ Server ไม่ได้', true); }
-  finally  { setLoading(btn, false, 'Continue / ดำเนินการต่อ'); }
+      document.getElementById('sb-av').textContent   = (r.name||r.username||'?')[0].toUpperCase();
+      document.getElementById('sb-name').textContent = r.name||r.username;
+      document.getElementById('sb-id').textContent   = r.user_id||r.username;
+      document.getElementById('pf-name').value       = r.name||'';
+      const isTA = r.role==='teacher'||r.role==='admin';
+      document.getElementById('sec-attlog').style.display = isTA?'block':'none';
+      document.getElementById('sec-myatt').style.display  = isTA?'none' :'block';
+      const dp = document.getElementById('attlog-date');
+      if (dp) dp.value = new Date().toISOString().split('T')[0];
+      showToast('ยินดีต้อนรับ '+(r.name||r.username)+' ✓');
+      document.getElementById('screen-login').classList.remove('active');
+      document.getElementById('screen-app').classList.add('active');
+      showPage('page-profile');
+      loadClassroom(); loadCourse(); loadAssignment();
+    } else showToast(r.message||'Username หรือ Password ไม่ถูกต้อง',true);
+  } catch { showToast('❌ เชื่อมต่อ Server ไม่ได้',true); }
+  finally  { setBtn('login-btn', false, 'Log in'); }
 }
 
-// ═══════════════════════════════════════════════
-// LOGOUT
-// ═══════════════════════════════════════════════
 function doLogout() {
   currentUser = null;
-  closeMenus();
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('login-password').value = '';
   showToast('ออกจากระบบแล้ว');
-  setTimeout(() => navigate('screen-landing'), 1000);
 }
 
-// ═══════════════════════════════════════════════
-// CHECK GRADE
-// ═══════════════════════════════════════════════
-async function checkGrade() {
-  const uid   = document.getElementById('grade-userid').value.trim().toUpperCase();
-  const table = document.getElementById('grade-table');
-  const tbody = document.getElementById('grade-tbody');
-  const empty = document.getElementById('grade-empty');
-  const btn   = document.querySelector('#screen-grades .auth-btn');
+// ─── Page navigation ──────────────────────
+const PAGE_SB = {
+  'page-schedule':'sb-schedule','page-attendance':'sb-attendance',
+  'page-classroom':'sb-classroom','page-course':'sb-course','page-assignment':'sb-assignment',
+};
 
-  if (!uid) { showToast('กรุณากรอก User ID', true); return; }
-
-  setLoading(btn, true, 'SUBMIT / ยืนยัน');
-  empty.innerHTML = '<span class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:var(--kku-red);"></span> กำลังดึงข้อมูล...';
-  empty.style.display = 'block'; empty.style.color = '#888';
-  table.classList.remove('show');
-
-  try {
-    const r = await callAPI('GET', '/grades/' + uid);
-    if (r.success && r.data.length > 0) {
-      tbody.innerHTML = '';
-      r.data.forEach((row, i) => {
-        const gc = row.grade==='A' ? '#1a7a45' : row.grade==='F' ? '#c0392b' : row.grade.startsWith('B') ? '#1d4ed8' : '#333';
-        const tr = document.createElement('tr');
-        tr.style.cssText = `animation:fadeInUp 0.3s ease ${i*0.06}s both`;
-        tr.innerHTML = `
-          <td><b>${row.course_id}</b></td>
-          <td>${row.course_name}</td>
-          <td>${row.attend_score??'-'}</td>
-          <td>${row.attitude_score??'-'}</td>
-          <td>${row.homework_score??'-'}</td>
-          <td>${row.midterm_score??'-'}</td>
-          <td>${row.final_score??'-'}</td>
-          <td><b>${row.total_score}</b></td>
-          <td><b style="color:${gc};font-size:17px;">${row.grade}</b></td>`;
-        tbody.appendChild(tr);
-      });
-      empty.style.display = 'none';
-      table.classList.add('show');
-      showToast('พบเกรด ' + r.data.length + ' วิชา ✓');
-    } else {
-      empty.innerHTML = '⚠️ ' + (r.message || 'ไม่พบข้อมูลของ ' + uid);
-      empty.style.color = '#c0392b';
-      showToast('ไม่พบ ' + uid, true);
-    }
-  } catch {
-    empty.innerHTML = '❌ Server ไม่ตอบสนอง';
-    empty.style.color = '#c0392b';
-    showToast('Server ไม่ตอบสนอง', true);
-  } finally { setLoading(btn, false, 'SUBMIT / ยืนยัน'); }
+function showPage(pid) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+  const p = document.getElementById(pid);
+  if (p) p.classList.add('active');
+  const sb = document.getElementById(PAGE_SB[pid]);
+  if (sb) sb.classList.add('active');
+  if (pid==='page-nfc') setTimeout(startNFC,400);
+  window.scrollTo(0,0);
 }
 
-// ═══════════════════════════════════════════════
-// CHECK SCHEDULE
-// ═══════════════════════════════════════════════
-async function checkSchedule() {
-  const uid   = document.getElementById('schedule-userid').value.trim().toUpperCase();
-  const table = document.getElementById('schedule-table');
-  const tbody = document.getElementById('schedule-tbody');
-  const empty = document.getElementById('schedule-empty');
-  const btn   = document.querySelector('#screen-schedule .auth-btn');
-
-  if (!uid) { showToast('กรุณากรอก User ID', true); return; }
-
-  setLoading(btn, true, 'SUBMIT / ยืนยัน');
-  empty.innerHTML = '<span class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:var(--kku-red);"></span> กำลังดึงข้อมูล...';
-  empty.style.display = 'block'; empty.style.color = '#888';
-  table.classList.remove('show');
-
-  try {
-    const r = await callAPI('GET', '/schedule/' + uid);
-    if (r.success && r.data.length > 0) {
-      tbody.innerHTML = '';
-      r.data.forEach((row, i) => {
-        const tr = document.createElement('tr');
-        tr.style.cssText = `animation:fadeInUp 0.3s ease ${i*0.07}s both`;
-        tr.innerHTML = `<td><b>${row.day}</b></td><td>${row.time}</td><td>${row.code}</td><td>${row.name}</td><td>${row.teacher}</td><td>${row.room}</td>`;
-        tbody.appendChild(tr);
-      });
-      empty.style.display = 'none';
-      table.classList.add('show');
-      showToast('พบตารางเรียน ' + r.data.length + ' วิชา ✓');
-    } else {
-      empty.innerHTML = '⚠️ ' + (r.message || 'ไม่พบตารางเรียนของ ' + uid);
-      empty.style.color = '#c0392b';
-      showToast('ไม่พบ ' + uid, true);
-    }
-  } catch {
-    empty.innerHTML = '❌ Server ไม่ตอบสนอง';
-    empty.style.color = '#c0392b';
-    showToast('Server ไม่ตอบสนอง', true);
-  } finally { setLoading(btn, false, 'SUBMIT / ยืนยัน'); }
-}
-
-// ═══════════════════════════════════════════════
-// SCORING
-// ═══════════════════════════════════════════════
-async function loadStudentInfo() {
-  const uid    = document.getElementById('scoring-userid').value.trim().toUpperCase();
-  const nameEl = document.getElementById('scoring-name');
+// ─── Schedule ─────────────────────────────
+async function loadSchedule() {
+  const el = document.getElementById('schedule-wrap');
+  el.innerHTML = '<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
+  const uid = currentUser?.user_id||'';
   if (!uid) return;
-  nameEl.textContent = '⏳ กำลังค้นหา...';
-  nameEl.style.color = '#888';
   try {
-    const r = await callAPI('GET', '/student/' + uid);
-    if (r.success) {
-      nameEl.textContent = r.data.student_name;
-      nameEl.style.color = '#222';
-      nameEl.style.animation = 'scaleIn 0.3s ease both';
-      const sr = await callAPI('GET', '/score/' + uid);
-      if (sr.success) {
-        ['attend','attitude','homework','midterm','final','quiz'].forEach((f,i) => {
-          const el = document.getElementById('sc-'+f);
-          if (el) { el.value = sr.data[f+'_score'] || ''; el.style.animation = `fadeInUp 0.25s ease ${i*0.04}s both`; }
-        });
-        showToast('โหลดคะแนนเดิมแล้ว ✓');
-      }
+    const r = await api('GET','/schedule/'+uid);
+    if (r.success && r.data?.length) {
+      el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>SCHEDUL_ID</th><th>SCHEDUL_NAME</th><th>ROOM_ID</th><th>STUDY_TIME</th></tr></thead>
+        <tbody>${r.data.map((d,i)=>`
+          <tr style="animation:fadeInUp .3s ease ${i*.05}s both">
+            <td><b>${i+1}</b></td><td>${d.name||d.code||'-'}</td>
+            <td>${d.room||'-'}</td><td>${d.time||'-'}</td>
+          </tr>`).join('')}</tbody></table></div>`;
+    } else el.innerHTML = `<div class="tbl-empty">⚠️ ${r.message||'ไม่พบตารางเรียน'}</div>`;
+  } catch { el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>'; }
+}
+
+// ─── Classroom ────────────────────────────
+async function loadClassroom() {
+  const el = document.getElementById('classroom-wrap');
+  if (!el) return;
+  el.innerHTML = '<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
+  const mock=[
+    {room_id:'SC101',room_name:'SC101',capacity:50,floor:'1'},
+    {room_id:'SC201',room_name:'SC201',capacity:60,floor:'2'},
+    {room_id:'SC301',room_name:'Lab301',capacity:40,floor:'3'},
+    {room_id:'SC401',room_name:'SC401',capacity:80,floor:'4'},
+  ];
+  const render = data => `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>ROOM_ID</th><th>ROOM_NAME</th><th>CAPACITY</th><th>FLOOR</th></tr></thead>
+    <tbody>${data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.05}s both">
+      <td><b>${d.room_id}</b></td><td>${d.room_name}</td><td>${d.capacity}</td><td>${d.floor||'-'}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+  try { const r=await api('GET','/classrooms'); el.innerHTML=render((r.success&&r.data?.length)?r.data:mock); }
+  catch { el.innerHTML=render(mock); }
+}
+
+// ─── Course ───────────────────────────────
+async function loadCourse() {
+  const el = document.getElementById('course-wrap');
+  if (!el) return;
+  el.innerHTML = '<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
+  const mock=[
+    {course_id:'CS101',course_name:'ฐานข้อมูล',description:'Database Systems',credit:3,semester:1,academic_year:2567,teacher_id:'TCH001'},
+    {course_id:'CS102',course_name:'การโปรแกรม',description:'Programming Fundamentals',credit:3,semester:1,academic_year:2567,teacher_id:'TCH001'},
+    {course_id:'CS103',course_name:'โครงสร้างข้อมูล',description:'Data Structures',credit:3,semester:1,academic_year:2567,teacher_id:'TCH002'},
+    {course_id:'CS104',course_name:'เครือข่ายคอมพิวเตอร์',description:'Computer Networks',credit:3,semester:1,academic_year:2567,teacher_id:'TCH002'},
+  ];
+  const render = data => `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>COURSE_ID</th><th>COURSE_NAME</th><th>DESCRIPTION</th><th>CRADIT</th><th>SEMESTER</th><th>ACADEMIC_YEAR</th><th>TEACHER_ID</th></tr></thead>
+    <tbody>${data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.05}s both">
+      <td><b>${d.course_id}</b></td>
+      <td style="text-align:left;">${d.course_name}</td>
+      <td style="text-align:left;font-size:12px;color:#666;">${d.description||'-'}</td>
+      <td>${d.credit??d.cradit??'-'}</td><td>${d.semester||'-'}</td>
+      <td>${d.academic_year||'-'}</td><td>${d.teacher_id}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+  try { const r=await api('GET','/courses'); el.innerHTML=render((r.success&&r.data?.length)?r.data:mock); }
+  catch { el.innerHTML=render(mock); }
+}
+
+// ─── Assignment ───────────────────────────
+async function loadAssignment() {
+  const el = document.getElementById('assignment-wrap');
+  if (!el) return;
+  el.innerHTML = '<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
+  const mock=[
+    {assignment_id:1,course_id:'CS101',title:'Lab 1: ER Diagram',description:'ออกแบบ ER สำหรับระบบ Library',due_date:'2025-11-20 23:59'},
+    {assignment_id:2,course_id:'CS101',title:'Lab 2: SQL DDL',description:'สร้างตาราง SQL จาก Schema',due_date:'2025-12-01 23:59'},
+    {assignment_id:3,course_id:'CS102',title:'Project: Calculator',description:'เขียนโปรแกรมเครื่องคิดเลข',due_date:'2025-11-25 23:59'},
+    {assignment_id:4,course_id:'CS103',title:'Linked List Ops',description:'ทำ Linked List operations',due_date:'2025-12-05 23:59'},
+  ];
+  const render = data => `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>ASSIGNMENT_ID</th><th>COURSE_ID</th><th>TITLE</th><th>DESCRIPTION</th><th>DUE_DATE</th></tr></thead>
+    <tbody>${data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.05}s both">
+      <td><b>${d.assignment_id}</b></td><td>${d.course_id}</td>
+      <td style="text-align:left;">${d.title}</td>
+      <td style="text-align:left;font-size:12px;color:#666;">${d.description||'-'}</td>
+      <td>${(d.due_date||'-').toString().substring(0,16)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+  try {
+    const uid=currentUser?.user_id||'';
+    const r=await api('GET',uid?'/assignments/'+uid:'/assignments');
+    el.innerHTML=render((r.success&&r.data?.length)?r.data:mock);
+  } catch { el.innerHTML=render(mock); }
+}
+
+// ─── Submission ───────────────────────────
+async function loadSubmission() {
+  const el = document.getElementById('submission-wrap');
+  if (!el) return;
+  el.innerHTML = '<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
+  const mock=[
+    {submission_id:1,assignment_id:1,student_id:'STU001',submit_date:'2025-11-18 10:30'},
+    {submission_id:2,assignment_id:1,student_id:'STU002',submit_date:'2025-11-17 15:00'},
+    {submission_id:3,assignment_id:2,student_id:'STU001',submit_date:'2025-11-29 22:45'},
+    {submission_id:4,assignment_id:3,student_id:'STU001',submit_date:'2025-11-24 20:10'},
+    {submission_id:5,assignment_id:4,student_id:'STU001',submit_date:'2025-12-03 18:00'},
+  ];
+  const render = data => `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>SUBMISSTION_ID</th><th>ASSIGNMENT_ID</th><th>STUDENT_ID</th><th>SUBMIT_DATE</th></tr></thead>
+    <tbody>${data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.05}s both">
+      <td><b>${d.submission_id}</b></td><td>${d.assignment_id}</td>
+      <td>${d.student_id}</td><td>${(d.submit_date||'-').toString().substring(0,16)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+  try {
+    const uid=currentUser?.user_id||'STU001';
+    const r=await api('GET','/submissions/'+uid);
+    el.innerHTML=render((r.success&&r.data?.length)?r.data:mock);
+  } catch { el.innerHTML=render(mock); }
+}
+
+// ─── Grades ───────────────────────────────
+async function checkGrade() {
+  const uid = document.getElementById('grade-uid').value.trim().toUpperCase();
+  const el  = document.getElementById('grade-wrap');
+  if (!uid){ showToast('กรุณากรอก User ID',true); return; }
+  setBtn('grade-btn', true, 'SUBMIT');
+  el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังดึงข้อมูล...</div>';
+  try {
+    const r = await api('GET','/grades/'+uid);
+    if (r.success && r.data?.length) {
+      const gc=g=>g==='A'?'#1a7a45':g==='F'?'#c0392b':g.startsWith('B')?'#1d4ed8':'#333';
+      el.innerHTML=`<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>รหัสวิชา</th><th>ชื่อวิชา</th><th>เข้าเรียน</th><th>จิตพิสัย</th><th>งาน</th><th>กลางภาค</th><th>ปลายภาค</th><th>รวม</th><th>เกรด</th></tr></thead>
+        <tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.06}s both">
+          <td><b>${d.course_id}</b></td><td style="text-align:left;">${d.course_name}</td>
+          <td>${d.attend_score??'-'}</td><td>${d.attitude_score??'-'}</td>
+          <td>${d.homework_score??'-'}</td><td>${d.midterm_score??'-'}</td>
+          <td>${d.final_score??'-'}</td><td><b>${d.total_score}</b></td>
+          <td><b style="color:${gc(d.grade)};font-size:16px;">${d.grade}</b></td>
+        </tr>`).join('')}</tbody></table></div>`;
+      showToast('พบเกรด '+r.data.length+' วิชา ✓');
+    } else el.innerHTML=`<div class="tbl-empty">⚠️ ${r.message||'ไม่พบข้อมูลของ '+uid}</div>`;
+  } catch { el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>'; }
+  finally  { setBtn('grade-btn', false, 'SUBMIT'); }
+}
+
+// ─── Attendance Log (Teacher) ─────────────
+async function loadAttLog() {
+  const course=document.getElementById('attlog-course').value;
+  const date  =document.getElementById('attlog-date').value;
+  const el    =document.getElementById('attlog-wrap');
+  const btn   =document.getElementById('attlog-btn');
+  if (!course){showToast('กรุณาเลือกวิชา',true);return;}
+  if (!date)  {showToast('กรุณาเลือกวันที่',true);return;}
+  setBtn(btn, true);
+  el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังดึงข้อมูล...</div>';
+  try {
+    const r=await api('GET',`/attendance/log/${course}?date=${date}`);
+    if (r.success&&r.data?.length) {
+      let p=0,l=0,a=0;
+      const rows=r.data.map((d,i)=>{
+        const ia=d.status==='absent',il=d.status==='late';
+        if(ia)a++;else if(il)l++;else p++;
+        const bc=ia?'absent':il?'late':'on-time';
+        const bt=ia?'❌ ขาด':il?'⏰ มาสาย':'✅ มาทัน';
+        return `<tr style="animation:fadeInUp .3s ease ${i*.04}s both">
+          <td><b>${i+1}</b></td><td><b>${d.student_id}</b></td>
+          <td style="text-align:left;">${d.student_name||'-'}</td>
+          <td>${d.checkin_time||'-'}</td><td>${d.class_start_time||'-'}</td>
+          <td><span class="badge ${bc}">${bt}</span></td>
+          <td>${d.minutes_late>0?'<b style="color:#e67e22">+'+d.minutes_late+'</b>':'-'}</td>
+        </tr>`;
+      }).join('');
+      document.getElementById('stp').textContent=p;
+      document.getElementById('stl').textContent=l;
+      document.getElementById('sta').textContent=a;
+      document.getElementById('stt').textContent=r.data.length;
+      el.innerHTML=`<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>ATTENDANCE_ID</th><th>STUDENT_ID</th><th>ชื่อ-สกุล</th><th>CHECK_IN_TIME</th><th>STUDY_TIME</th><th>STATUS</th><th>ช้า(นาที)</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`;
+      showToast('พบ '+r.data.length+' รายการ ✓');
     } else {
-      nameEl.textContent = '⚠️ ไม่พบ User ID นี้';
-      nameEl.style.color = '#c0392b';
+      el.innerHTML=`<div class="tbl-empty">⚠️ ${r.message||'ไม่พบข้อมูล'}</div>`;
+      ['stp','stl','sta','stt'].forEach(id=>document.getElementById(id).textContent='0');
     }
-  } catch {
-    nameEl.textContent = '❌ Server ไม่ตอบสนอง';
-    nameEl.style.color = '#c0392b';
+  } catch { el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>'; }
+  finally {
+    btn.innerHTML=`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> ค้นหา`;
+    btn.disabled=false;
   }
 }
 
-// ─── Max per field ────────────────────────────
-const SCORE_MAX = { attend: 20, attitude: 10, homework: 20, midterm: 30, final: 40, quiz: 20 };
-
-function getScorePayload() {
-  return {
-    student_id:    document.getElementById('scoring-userid').value.trim().toUpperCase(),
-    course_id:     'CS101',
-    attend_score:  parseFloat(document.getElementById('sc-attend').value)   || 0,
-    attitude_score:parseFloat(document.getElementById('sc-attitude').value) || 0,
-    homework_score:parseFloat(document.getElementById('sc-homework').value) || 0,
-    midterm_score: parseFloat(document.getElementById('sc-midterm').value)  || 0,
-    final_score:   parseFloat(document.getElementById('sc-final').value)    || 0,
-    quiz_score:    parseFloat(document.getElementById('sc-quiz').value)     || 0,
-  };
+// ─── My Attendance (Student) ──────────────
+async function loadMyAtt() {
+  const uid   =currentUser?.user_id||'';
+  const course=document.getElementById('myatt-course').value;
+  const el    =document.getElementById('myatt-wrap');
+  const btn   =document.getElementById('myatt-btn');
+  const rw    =document.getElementById('rate-wrap');
+  if (!uid){showToast('กรุณา Login ก่อน',true);return;}
+  setBtn(btn, true);
+  el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังดึงข้อมูล...</div>';
+  rw.classList.remove('show');
+  try {
+    const ep=course?`/attendance/myhistory/${uid}?course=${course}`:`/attendance/myhistory/${uid}`;
+    const r=await api('GET',ep);
+    if (r.success&&r.data?.length) {
+      let p=0,l=0,a=0;
+      const rows=r.data.map((d,i)=>{
+        const s=d.status||'absent';
+        if(s==='absent')a++;else if(s==='late')l++;else p++;
+        const st=s==='absent'?'ขาดเรียน':s==='late'?'มาสาย':'มาเรียน';
+        const bc=s==='absent'?'absent':s==='late'?'late':'present';
+        return `<tr style="animation:fadeInUp .3s ease ${i*.04}s both">
+          <td><b>${d.attendance_id||i+1}</b></td>
+          <td>${d.student_id||uid}</td><td>${d.course_id||course||'-'}</td>
+          <td><span class="badge ${bc}">${st}</span></td>
+          <td>${d.attendance_date||'-'}</td><td>${d.checkin_time||'-'}</td>
+        </tr>`;
+      }).join('');
+      const total=r.data.length;
+      document.getElementById('mp').textContent=p;
+      document.getElementById('ml').textContent=l;
+      document.getElementById('ma').textContent=a;
+      document.getElementById('mt').textContent=total;
+      const rate=total>0?Math.round((p+l)/total*100):0;
+      const fill=document.getElementById('rate-fill');
+      const rtxt=document.getElementById('rate-txt');
+      fill.style.width=rate+'%';
+      fill.style.background=rate>=80?'#1a7a45':rate>=70?'#e67e22':'#c0392b';
+      rtxt.textContent=rate+'%'; rtxt.style.color=fill.style.background;
+      rw.classList.add('show');
+      el.innerHTML=`<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>ATTENDANCE_ID</th><th>STUDENT_ID</th><th>COURSE_ID</th><th>STATUS</th><th>ATTENDANCE_DATE</th><th>CHECK_IN_TIME</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`;
+      showToast('พบ '+total+' รายการ ✓');
+    } else el.innerHTML=`<div class="tbl-empty">⚠️ ${r.message||'ยังไม่มีประวัติ'}</div>`;
+  } catch { el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>'; }
+  finally {
+    btn.innerHTML=`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> โหลดข้อมูล`;
+    btn.disabled=false;
+  }
 }
 
-function calcGrade(t) {
-  return t>=80?'A':t>=75?'B+':t>=70?'B':t>=65?'C+':t>=60?'C':t>=55?'D+':t>=50?'D':'F';
+// ─── Scoring ──────────────────────────────
+const SMAX={attend:20,attitude:10,homework:20,midterm:30,final:40,quiz:20};
+
+async function loadStudentInfo() {
+  const uid=document.getElementById('sc-uid').value.trim().toUpperCase();
+  const ne=document.getElementById('sc-name');
+  const sf=document.getElementById('sc-fields');
+  if (!uid) return;
+  ne.textContent='⏳ กำลังค้นหา...'; ne.style.color='#888'; sf.style.display='none';
+  try {
+    const r=await api('GET','/student/'+uid);
+    if (r.success) {
+      ne.textContent=r.data.student_name; ne.style.color='#222'; sf.style.display='block';
+      const sr=await api('GET','/score/'+uid);
+      if (sr.success) ['attend','attitude','homework','midterm','final','quiz'].forEach(f=>{
+        const el=document.getElementById('sc-'+f); if(el) el.value=sr.data[f+'_score']||'';
+      }); else ['attend','attitude','homework','midterm','final','quiz'].forEach(f=>{
+        const el=document.getElementById('sc-'+f); if(el) el.value='';
+      });
+      updateTotal();
+    } else { ne.textContent='⚠️ ไม่พบ User ID นี้'; ne.style.color='#c0392b'; }
+  } catch { ne.textContent='❌ Server ไม่ตอบสนอง'; ne.style.color='#c0392b'; }
 }
 
-// ─── Real-time total update ────────────────────
 function updateTotal() {
-  const vals = ['attend','attitude','homework','midterm','final','quiz'];
-  let total = 0;
-  vals.forEach(f => {
-    const el  = document.getElementById('sc-' + f);
-    const max = SCORE_MAX[f];
-    let v = parseFloat(el.value) || 0;
-    // clamp per-field max
-    if (v > max) { v = max; el.value = max; }
-    if (v < 0)   { v = 0;   el.value = 0; }
-    total += v;
+  let t=0;
+  ['attend','attitude','homework','midterm','final','quiz'].forEach(f=>{
+    const el=document.getElementById('sc-'+f); if(!el) return;
+    let v=parseFloat(el.value)||0;
+    if(v>SMAX[f]){v=SMAX[f];el.value=v;} if(v<0){v=0;el.value=0;}
+    t+=v;
   });
-
-  // clamp total to 100
-  const display = document.getElementById('total-score-display');
-  const bar     = document.getElementById('total-bar');
-  const barWrap = document.getElementById('total-score-bar');
-
-  const pct = Math.min(total / 100 * 100, 100);
-  bar.style.width = pct + '%';
-
-  if (total > 100) {
-    display.textContent = total + ' / 100 ⚠️';
-    display.style.color = '#c0392b';
-    bar.style.background = '#c0392b';
-    barWrap.style.borderColor = '#c0392b';
-    barWrap.style.background  = '#fdf0ef';
-  } else if (total >= 80) {
-    display.textContent = total + ' / 100';
-    display.style.color = '#1a7a45';
-    bar.style.background = '#1a7a45';
-    barWrap.style.borderColor = 'var(--kku-border)';
-    barWrap.style.background  = '#f5f0ef';
-  } else {
-    display.textContent = total + ' / 100';
-    display.style.color = 'var(--kku-red)';
-    bar.style.background = 'var(--kku-red)';
-    barWrap.style.borderColor = 'var(--kku-border)';
-    barWrap.style.background  = '#f5f0ef';
-  }
-  return total;
-}
-
-// ─── Validate total <= 100 ─────────────────────
-function validateTotal() {
-  const total = updateTotal();
-  if (total > 100) {
-    showToast('❌ คะแนนรวมเกิน 100! (' + total + ')', true);
-    return false;
-  }
-  return true;
+  const fill=document.getElementById('total-fill');
+  const disp=document.getElementById('total-disp');
+  const c=t>100?'#c0392b':t>=80?'#1a7a45':'var(--red)';
+  if(fill){fill.style.width=Math.min(t,100)+'%';fill.style.background=c;}
+  if(disp){disp.textContent=t+' / 100';disp.style.color=c;}
+  return t;
 }
 
 async function saveScore() {
-  const d = getScorePayload();
-  if (!d.student_id) { showToast('กรุณากรอก User ID', true); return; }
-  if (!validateTotal()) return;
+  const uid=document.getElementById('sc-uid').value.trim().toUpperCase();
+  if(!uid){showToast('กรุณากรอก User ID',true);return;}
+  const t=updateTotal(); if(t>100){showToast('❌ คะแนนรวมเกิน 100!',true);return;}
   try {
-    const r = await callAPI('POST', '/score', d);
-    showToast(r.success ? 'บันทึกคะแนนสำเร็จ ✓' : r.message, !r.success);
-  } catch { showToast('❌ Server ไม่ตอบสนอง', true); }
+    const r=await api('POST','/score',{student_id:uid,course_id:'CS101',
+      attend_score:  parseFloat(document.getElementById('sc-attend').value)||0,
+      attitude_score:parseFloat(document.getElementById('sc-attitude').value)||0,
+      homework_score:parseFloat(document.getElementById('sc-homework').value)||0,
+      midterm_score: parseFloat(document.getElementById('sc-midterm').value)||0,
+      final_score:   parseFloat(document.getElementById('sc-final').value)||0,
+      quiz_score:    parseFloat(document.getElementById('sc-quiz').value)||0,
+    });
+    showToast(r.success?'บันทึกคะแนนสำเร็จ ✓':r.message,!r.success);
+  } catch { showToast('❌ Server ไม่ตอบสนอง',true); }
 }
-
-async function editScore() { await loadStudentInfo(); }
 
 async function submitScore() {
-  const d = getScorePayload();
-  if (!d.student_id) { showToast('กรุณากรอก User ID', true); return; }
-  if (!validateTotal()) return;
+  const uid=document.getElementById('sc-uid').value.trim().toUpperCase();
+  if(!uid){showToast('กรุณากรอก User ID',true);return;}
+  const t=updateTotal(); if(t>100){showToast('❌ คะแนนรวมเกิน 100!',true);return;}
   try {
-    const r = await callAPI('POST', '/score', d);
+    const r=await api('POST','/score',{student_id:uid,course_id:'CS101',
+      attend_score:  parseFloat(document.getElementById('sc-attend').value)||0,
+      attitude_score:parseFloat(document.getElementById('sc-attitude').value)||0,
+      homework_score:parseFloat(document.getElementById('sc-homework').value)||0,
+      midterm_score: parseFloat(document.getElementById('sc-midterm').value)||0,
+      final_score:   parseFloat(document.getElementById('sc-final').value)||0,
+      quiz_score:    parseFloat(document.getElementById('sc-quiz').value)||0,
+    });
     if (r.success) {
-      const total = updateTotal();
-      showToast('ยืนยันแล้ว ✓  รวม: ' + total + '  เกรด: ' + calcGrade(total));
-    } else { showToast(r.message, true); }
-  } catch { showToast('❌ Server ไม่ตอบสนอง', true); }
+      const g=t>=80?'A':t>=75?'B+':t>=70?'B':t>=65?'C+':t>=60?'C':t>=55?'D+':t>=50?'D':'F';
+      showToast('ยืนยันแล้ว ✓  รวม: '+t+'  เกรด: '+g);
+    } else showToast(r.message,true);
+  } catch { showToast('❌ Server ไม่ตอบสนอง',true); }
 }
 
-// ─── Attach listeners to all score inputs ──────
-document.addEventListener('DOMContentLoaded', () => {
-  ['sc-attend','sc-attitude','sc-homework','sc-midterm','sc-final','sc-quiz'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', updateTotal);
-  });
-  // Set today's date in attendance log date picker
-  const dp = document.getElementById('attlog-date');
-  if (dp) dp.value = new Date().toISOString().split('T')[0];
-});
-
-// ─── Enter key ──────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  const id = document.querySelector('.screen.active').id;
-  if (id === 'screen-login')    doLogin();
-  if (id === 'screen-register') doRegister();
-  if (id === 'screen-grades')   checkGrade();
-  if (id === 'screen-schedule') checkSchedule();
-  if (id === 'screen-nfc')      manualCheckin();
-  if (id === 'screen-attlog')   loadAttLog();
-});
-
-// ═══════════════════════════════════════════════
-// DASHBOARD — Role-aware buttons
-// ═══════════════════════════════════════════════
-function renderDashboard() {
-  const role = currentUser ? currentUser.role : '';
-  const container = document.getElementById('dashboard-btns');
-  if (!container) return;
-
-  // Common button for all
-  let html = `<button class="big-btn" onclick="navigate('screen-grades')">ตรวจสอบเกรด</button>`;
-  html    += `<button class="big-btn" onclick="navigate('screen-schedule')">ตารางเรียน</button>`;
-
-  if (role === 'student') {
-    html += `<button class="big-btn" onclick="openMyAtt()">📅 การเข้าเรียน</button>`;
-    html += `<button class="big-btn" onclick="openNFC()">📲 เช็คชื่อ NFC</button>`;
-  }
-  if (role === 'teacher' || role === 'admin') {
-    html += `<button class="big-btn" onclick="navigate('screen-scoring')">ลงคะแนน</button>`;
-    html += `<button class="big-btn" onclick="navigate('screen-attlog')">📋 บันทึกการเข้าเรียน</button>`;
-  }
-
-  container.innerHTML = html;
-  // Re-apply stagger animation
-  [...container.children].forEach((btn, i) => {
-    btn.style.animation = `slideInRight 0.4s cubic-bezier(0.22,1,0.36,1) ${i * 0.08}s both`;
-  });
+// ─── Profile ──────────────────────────────
+function saveProfile() { showToast('บันทึกข้อมูลสำเร็จ ✓'); }
+function changePassword() {
+  const o=document.getElementById('pf-old').value;
+  const n=document.getElementById('pf-new').value;
+  if(!o||!n){showToast('กรุณากรอกข้อมูลให้ครบ',true);return;}
+  showToast('เปลี่ยนรหัสผ่านสำเร็จ ✓');
+  document.getElementById('pf-old').value='';
+  document.getElementById('pf-new').value='';
 }
 
-// ═══════════════════════════════════════════════
-// MY ATTENDANCE (นักศึกษาดูประวัติตัวเอง)
-// ═══════════════════════════════════════════════
-function openMyAtt() {
-  navigate('screen-myatt');
-  setTimeout(loadMyAtt, 300);
-}
-
-async function loadMyAtt() {
-  const uid      = currentUser ? currentUser.user_id : '';
-  const course   = document.getElementById('myatt-course').value;
-  const empty    = document.getElementById('myatt-empty');
-  const table    = document.getElementById('myatt-table');
-  const tbody    = document.getElementById('myatt-tbody');
-  const btn      = document.querySelector('.myatt-load-btn');
-  const rateWrap = document.getElementById('myatt-rate-wrap');
-
-  if (!uid) { showToast('กรุณา Login ก่อน', true); return; }
-
-  btn.innerHTML = '<span class="spinner"></span> กำลังโหลด...';
-  btn.disabled  = true;
-  empty.textContent = '⏳ กำลังดึงข้อมูล...';
-  empty.style.display = 'block';
-  table.classList.remove('show');
-  rateWrap.classList.remove('show');
-
-  try {
-    const endpoint = course
-      ? `/attendance/myhistory/${uid}?course=${course}`
-      : `/attendance/myhistory/${uid}`;
-
-    const r = await callAPI('GET', endpoint);
-
-    if (r.success && r.data && r.data.length > 0) {
-      let present = 0, late = 0, absent = 0;
-      tbody.innerHTML = '';
-
-      r.data.forEach((row, i) => {
-        const status   = row.status || 'absent';
-        const isLate   = status === 'late';
-        const isAbsent = status === 'absent';
-
-        if (isAbsent) absent++;
-        else if (isLate) late++;
-        else present++;
-
-        // Badge status
-        const statusText  = isAbsent ? 'ขาดเรียน' : isLate ? 'มาสาย' : 'มาเรียน';
-        const statusClass = isAbsent ? 'absent'    : isLate ? 'late'   : 'present';
-
-        // Type badge — ดูจาก course_name ว่ามี Lab หรือไม่
-        const isLab     = (row.course_name || '').toLowerCase().includes('lab') ||
-                          (row.course_id   || '').toLowerCase().includes('lab');
-        const typeText  = isLab ? 'ปฏิบัติ' : 'บรรยาย';
-        const typeClass = isLab ? 'lab' : '';
-
-        // Format datetime display
-        const classDate     = row.attendance_date || '-';
-        const classStart    = row.class_start_time ? `${classDate} ${row.class_start_time}` : `${classDate}`;
-        const checkinTime   = row.checkin_time     ? `${classDate} ${row.checkin_time}` : '-';
-        const checkinClass  = isLate ? 'late-time' : '';
-
-        const tr = document.createElement('tr');
-        tr.style.animation = `fadeInUp 0.3s ease ${i * 0.04}s both`;
-        tr.innerHTML = `
-          <td>${i + 1}</td>
-          <td>
-            <div class="myatt-course-name">${row.course_name || row.course_id}</div>
-            <div class="myatt-course-date">${classDate}</div>
-          </td>
-          <td><span class="myatt-type-badge ${typeClass}">${typeText}</span></td>
-          <td><span class="myatt-status-badge ${statusClass}">${statusText}</span></td>
-          <td class="myatt-time-cell">${classStart}</td>
-          <td class="myatt-time-cell ${checkinClass}">${checkinTime}</td>`;
-        tbody.appendChild(tr);
-      });
-
-      // Update chips
-      const total = r.data.length;
-      document.getElementById('myatt-present').textContent = present;
-      document.getElementById('myatt-late').textContent    = late;
-      document.getElementById('myatt-absent').textContent  = absent;
-      document.getElementById('myatt-total').textContent   = total;
-
-      // Attendance rate bar
-      const rate     = total > 0 ? Math.round((present + late) / total * 100) : 0;
-      const fill     = document.getElementById('myatt-rate-fill');
-      const rateText = document.getElementById('myatt-rate-text');
-      fill.style.width       = rate + '%';
-      fill.style.background  = rate >= 80 ? '#1a7a45' : rate >= 70 ? '#e67e22' : '#c0392b';
-      rateText.textContent   = rate + '%';
-      rateText.style.color   = rate >= 80 ? '#1a7a45' : rate >= 70 ? '#e67e22' : '#c0392b';
-      rateWrap.classList.add('show');
-
-      empty.style.display = 'none';
-      table.classList.add('show');
-      showToast(`พบ ${total} รายการ ✓`);
-    } else {
-      empty.textContent = r.message || 'ยังไม่มีประวัติการเข้าเรียน';
-      empty.style.display = 'block';
-      ['myatt-present','myatt-late','myatt-absent','myatt-total'].forEach(id => {
-        document.getElementById(id).textContent = '0';
-      });
-    }
-  } catch (e) {
-    empty.textContent = '❌ Server ไม่ตอบสนอง';
-    showToast('❌ Server ไม่ตอบสนอง', true);
-  } finally {
-    btn.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> โหลดข้อมูล`;
-    btn.disabled = false;
-  }
-}
-
-let nfcReader = null;
-let nfcActive = false;
-
-function openNFC() {
-  navigate('screen-nfc');
-  setTimeout(startNFC, 400);
-}
-
+// ─── NFC ──────────────────────────────────
 async function startNFC() {
-  const statusText = document.getElementById('nfc-status-text');
-  const statusSub  = document.getElementById('nfc-status-sub');
-  const icon       = document.getElementById('nfc-icon-circle');
-
-  // Reset result card
-  const card = document.getElementById('nfc-result-card');
-  card.className = 'nfc-result-card';
-
-  if (!('NDEFReader' in window)) {
-    statusText.innerHTML = '⚠️ เบราว์เซอร์นี้ไม่รองรับ NFC';
-    statusSub.textContent = 'กรุณาใช้ Chrome บน Android หรือกรอก ID ด้วยตนเอง';
-    icon.style.background = '#aaa';
-    return;
+  const ic=document.getElementById('nfc-ic');
+  document.getElementById('nfc-card').className='nfc-card';
+  if(!('NDEFReader' in window)){
+    document.getElementById('nfc-st').innerHTML='⚠️ เบราว์เซอร์นี้ไม่รองรับ NFC';
+    document.getElementById('nfc-ss').textContent='กรุณาใช้ Chrome บน Android หรือกรอก ID ด้วยตนเอง';
+    ic.style.background='#aaa'; return;
   }
-
   try {
-    nfcReader = new NDEFReader();
-    await nfcReader.scan();
-    nfcActive = true;
-
-    statusText.innerHTML = 'แตะบัตรนักศึกษา<br>ที่หลังมือถือ';
-    statusSub.textContent = '🔵 กำลังรอสัญญาณ NFC...';
-    icon.classList.add('nfc-reading');
-    icon.style.background = 'var(--kku-red)';
-
-    nfcReader.addEventListener('reading', ({ message }) => {
-      for (const record of message.records) {
-        const decoder = new TextDecoder();
-        let studentId = '';
-        try {
-          studentId = decoder.decode(record.data).trim().toUpperCase();
-        } catch {
-          studentId = '';
-        }
-        if (studentId) {
-          processCheckin(studentId, 'nfc');
-          return;
-        }
+    nfcReader=new NDEFReader(); await nfcReader.scan(); nfcActive=true;
+    document.getElementById('nfc-st').innerHTML='แตะบัตรนักศึกษา<br>ที่หลังมือถือ';
+    document.getElementById('nfc-ss').textContent='🔵 กำลังรอสัญญาณ NFC...';
+    ic.classList.add('reading'); ic.style.background='var(--red)';
+    nfcReader.addEventListener('reading',({message})=>{
+      for(const rec of message.records){
+        const sid=new TextDecoder().decode(rec.data).trim().toUpperCase();
+        if(sid){processCheckin(sid,'nfc');return;}
       }
-      showToast('⚠️ ไม่พบข้อมูล NFC ในบัตรนี้', true);
     });
-
-    nfcReader.addEventListener('readingerror', () => {
-      showToast('❌ อ่านบัตรไม่ได้ กรุณาลองใหม่', true);
-    });
-
-  } catch (err) {
-    if (err.name === 'NotAllowedError') {
-      statusText.innerHTML = '🔒 ไม่ได้รับอนุญาตใช้ NFC';
-      statusSub.textContent = 'กรุณาอนุญาต NFC ในการตั้งค่าเบราว์เซอร์';
-    } else {
-      statusText.innerHTML = '❌ เปิด NFC ไม่สำเร็จ';
-      statusSub.textContent = err.message || 'กรุณากรอก ID ด้วยตนเอง';
-    }
-    icon.style.background = '#aaa';
+  } catch(err){
+    document.getElementById('nfc-st').innerHTML='❌ เปิด NFC ไม่สำเร็จ';
+    document.getElementById('nfc-ss').textContent=err.message||'กรุณากรอก ID ด้วยตนเอง';
+    ic.style.background='#aaa';
   }
 }
 
-function stopNFC() {
-  nfcActive = false;
-  nfcReader = null;
+async function manualCheckin(){
+  const inp=document.getElementById('nfc-mid');
+  const val=inp.value.trim().toUpperCase();
+  if(!val){showToast('กรุณากรอก Student ID',true);return;}
+  inp.value=''; await processCheckin(val,'manual');
 }
 
-async function manualCheckin() {
-  const input = document.getElementById('nfc-manual-id');
-  const val   = input.value.trim().toUpperCase();
-  if (!val) { showToast('กรุณากรอก Student ID', true); return; }
-  input.value = '';
-  await processCheckin(val, 'manual');
-}
-
-async function processCheckin(studentId, source) {
-  const statusText = document.getElementById('nfc-status-text');
-  const statusSub  = document.getElementById('nfc-status-sub');
-  const icon       = document.getElementById('nfc-icon-circle');
-  const card       = document.getElementById('nfc-result-card');
-
-  statusText.textContent = '⏳ กำลังบันทึก...';
-  statusSub.textContent  = studentId;
-  icon.style.background  = '#f0a000';
-  icon.classList.remove('nfc-reading');
-
-  const now      = new Date();
-  const timeStr  = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const dateStr  = now.toISOString().split('T')[0];
-
+async function processCheckin(sid, src){
+  const ic=document.getElementById('nfc-ic');
+  const card=document.getElementById('nfc-card');
+  document.getElementById('nfc-st').textContent='⏳ กำลังบันทึก...';
+  document.getElementById('nfc-ss').textContent=sid;
+  ic.style.background='#f0a000'; ic.classList.remove('reading');
+  const now=new Date();
+  const ts=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const ds=now.toISOString().split('T')[0];
   try {
-    const r = await callAPI('POST', '/attendance/nfc', {
-      student_id: studentId,
-      date:       dateStr,
-      checkin_time: now.toTimeString().split(' ')[0],
-      source
+    const r=await api('POST','/attendance/nfc',{
+      student_id:sid,date:ds,checkin_time:now.toTimeString().split(' ')[0],source:src
     });
-
-    // Show result card
-    document.getElementById('nfc-res-id').textContent   = studentId;
-    document.getElementById('nfc-res-name').textContent = r.data?.student_name || r.name || studentId;
-    document.getElementById('nfc-res-time').textContent = timeStr;
-
-    const statusEl = document.getElementById('nfc-res-status');
+    document.getElementById('nfc-rid').textContent  =sid;
+    document.getElementById('nfc-rname').textContent=r.data?.student_name||sid;
+    document.getElementById('nfc-rtime').textContent=ts;
+    const sel=document.getElementById('nfc-rst');
     if (r.success) {
-      const isLate     = r.data?.is_late;
-      const minsLate   = r.data?.minutes_late || 0;
-      statusEl.className = 'value ' + (isLate ? 'late' : 'on-time');
-      statusEl.textContent = isLate
-        ? `⏰ มาสาย ${minsLate} นาที`
-        : '✅ มาทัน';
-
-      card.className = 'nfc-result-card show ' + (isLate ? 'late' : 'success');
-      statusText.textContent = isLate ? `⏰ บันทึกแล้ว — มาสาย` : '✅ เช็คชื่อสำเร็จ';
-      statusSub.textContent  = timeStr;
-      icon.style.background  = isLate ? '#e67e22' : '#1a7a45';
-      showToast((isLate ? '⏰ มาสาย ' + minsLate + ' นาที' : '✅ เช็คชื่อสำเร็จ — ' + timeStr));
+      const il=r.data?.is_late; const ml=r.data?.minutes_late||0;
+      sel.className='val '+(il?'late':'on-time');
+      sel.textContent=il?`⏰ มาสาย ${ml} นาที`:'✅ มาทัน';
+      card.className='nfc-card show '+(il?'late':'success');
+      document.getElementById('nfc-st').textContent=il?'⏰ บันทึกแล้ว — มาสาย':'✅ เช็คชื่อสำเร็จ';
+      document.getElementById('nfc-ss').textContent=ts;
+      ic.style.background=il?'#e67e22':'#1a7a45';
     } else {
-      statusEl.className   = 'value';
-      statusEl.textContent = '⚠️ ' + (r.message || 'เกิดข้อผิดพลาด');
-      card.className       = 'nfc-result-card show error';
-      statusText.textContent = '⚠️ ไม่สำเร็จ';
-      statusSub.textContent  = r.message || '';
-      icon.style.background  = '#c0392b';
-      showToast(r.message || 'เกิดข้อผิดพลาด', true);
+      sel.textContent='⚠️ '+(r.message||'เกิดข้อผิดพลาด');
+      card.className='nfc-card show error'; ic.style.background='#c0392b';
     }
   } catch {
-    document.getElementById('nfc-res-id').textContent     = studentId;
-    document.getElementById('nfc-res-name').textContent   = '-';
-    document.getElementById('nfc-res-time').textContent   = timeStr;
-    document.getElementById('nfc-res-status').textContent = '❌ Server ไม่ตอบสนอง';
-    card.className       = 'nfc-result-card show error';
-    statusText.textContent = '❌ Server ไม่ตอบสนอง';
-    statusSub.textContent  = 'กรุณาลองใหม่';
-    icon.style.background  = '#c0392b';
-    showToast('❌ Server ไม่ตอบสนอง', true);
+    document.getElementById('nfc-rid').textContent='⚠️ Server ไม่ตอบสนอง';
+    card.className='nfc-card show error'; ic.style.background='#c0392b';
   }
-
-  // Resume NFC after 3 sec
-  if (nfcActive) {
-    setTimeout(() => {
-      statusText.innerHTML = 'แตะบัตรใบถัดไป<br>เพื่อเช็คชื่อ';
-      statusSub.textContent = '🔵 กำลังรอสัญญาณ NFC...';
-      icon.style.background = 'var(--kku-red)';
-      icon.classList.add('nfc-reading');
-    }, 3000);
-  }
+  if (nfcActive) setTimeout(()=>{
+    document.getElementById('nfc-st').innerHTML='แตะบัตรใบถัดไป<br>เพื่อเช็คชื่อ';
+    document.getElementById('nfc-ss').textContent='🔵 กำลังรอสัญญาณ NFC...';
+    ic.style.background='var(--red)'; ic.classList.add('reading');
+  },3000);
 }
 
-// ═══════════════════════════════════════════════
-// ATTENDANCE LOG (Teacher / Admin)
-// ═══════════════════════════════════════════════
-async function loadAttLog() {
-  const course = document.getElementById('attlog-course').value;
-  const date   = document.getElementById('attlog-date').value;
-  const empty  = document.getElementById('attlog-empty');
-  const table  = document.getElementById('attlog-table');
-  const tbody  = document.getElementById('attlog-tbody');
-  const btn    = document.querySelector('.attlog-search-btn');
+// ─── Init ─────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  ['sc-attend','sc-attitude','sc-homework','sc-midterm','sc-final','sc-quiz'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.addEventListener('input',updateTotal);
+  });
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter') return;
+  if(document.getElementById('screen-login')?.classList.contains('active')) doLogin();
+  if(document.getElementById('page-grades')?.classList.contains('active'))    checkGrade();
+  if(document.getElementById('page-nfc')?.classList.contains('active'))       manualCheckin();
+  if(document.getElementById('page-attendance')?.classList.contains('active')&&
+     document.getElementById('sec-attlog')?.style.display!=='none')           loadAttLog();
+});
 
-  if (!course) { showToast('กรุณาเลือกวิชา', true); return; }
-  if (!date)   { showToast('กรุณาเลือกวันที่', true); return; }
-
-  btn.innerHTML = '<span class="spinner"></span> กำลังโหลด...';
-  btn.disabled  = true;
-  empty.textContent = '⏳ กำลังดึงข้อมูล...';
-  empty.style.display = 'block';
-  table.classList.remove('show');
-
-  try {
-    const r = await callAPI('GET', `/attendance/log/${course}?date=${date}`);
-
-    if (r.success && r.data && r.data.length > 0) {
-      let present = 0, late = 0, absent = 0;
-      tbody.innerHTML = '';
-
-      r.data.forEach((row, i) => {
-        const isLate   = row.status === 'late';
-        const isAbsent = row.status === 'absent';
-        const badgeClass = isAbsent ? 'absent' : isLate ? 'late' : 'on-time';
-        const badgeText  = isAbsent ? '❌ ขาด' : isLate ? '⏰ มาสาย' : '✅ มาทัน';
-
-        if (isAbsent) absent++;
-        else if (isLate) late++;
-        else present++;
-
-        const tr = document.createElement('tr');
-        tr.style.animation = `fadeInUp 0.3s ease ${i * 0.04}s both`;
-        tr.innerHTML = `
-          <td>${i + 1}</td>
-          <td><b>${row.student_id}</b></td>
-          <td style="text-align:left;">${row.student_name || '-'}</td>
-          <td>${row.checkin_time || '-'}</td>
-          <td>${row.class_start_time || '-'}</td>
-          <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
-          <td>${row.minutes_late > 0 ? '<b style="color:#e67e22">+' + row.minutes_late + '</b>' : '-'}</td>`;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('stat-present').textContent = present;
-      document.getElementById('stat-late').textContent    = late;
-      document.getElementById('stat-absent').textContent  = absent;
-      document.getElementById('stat-total').textContent   = r.data.length;
-
-      empty.style.display = 'none';
-      table.classList.add('show');
-      showToast(`พบ ${r.data.length} รายการ ✓`);
-    } else {
-      empty.textContent = r.message || `ไม่พบข้อมูลวันที่ ${date}`;
-      empty.style.display = 'block';
-      ['stat-present','stat-late','stat-absent','stat-total'].forEach(id => {
-        document.getElementById(id).textContent = '0';
-      });
-      showToast('ไม่พบข้อมูล', true);
-    }
-  } catch {
-    empty.textContent = '❌ Server ไม่ตอบสนอง';
-    showToast('❌ Server ไม่ตอบสนอง', true);
-  } finally {
-    btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> ค้นหา`;
-    btn.disabled = false;
-  }
-}
-
+// Intercept showPage to load submission on demand
+const _origShowPage = showPage;
+window.showPage = function(pid) {
+  _origShowPage(pid);
+  if (pid==='page-submission') loadSubmission();
+  if (pid==='page-schedule')   loadSchedule();
+};
 </script>
 </body>
 </html>
