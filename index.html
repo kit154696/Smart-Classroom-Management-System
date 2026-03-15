@@ -915,9 +915,6 @@ async function doLogin() {
       showToast('ยินดีต้อนรับ '+(r.name||r.username)+' ✓');
       document.getElementById('screen-login').classList.remove('active');
       document.getElementById('screen-app').classList.add('active');
-      const isTA=(r.role==='teacher'||r.role==='admin');
-      if(r.role==='student'){document.getElementById('sec-myatt').style.display='';document.getElementById('sec-attlog').style.display='none';}
-      else{document.getElementById('sec-myatt').style.display='none';document.getElementById('sec-attlog').style.display='';}
       showPage('page-profile');
       loadAllData();
     } else showToast(r.message||'Username หรือ Password ไม่ถูกต้อง',true);
