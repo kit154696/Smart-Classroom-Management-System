@@ -96,7 +96,7 @@ app.post('/api/register', async (req, res) => {
     if (role === 'teacher')
       await query('INSERT INTO Teacher (teacher_id, teacher_name) VALUES (?,?)', [newId, fullName]);
     if (role === 'admin')
-      await query('INSERT INTO Admin (admin_id) VALUES (?)', [newId, fullName]);
+      await query('INSERT INTO Admin (admin_id) VALUES (?)', [newId]);
 
     res.json({ success: true, message: 'ลงทะเบียนสำเร็จ!', user_id: newId, name: fullName });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
@@ -179,9 +179,9 @@ app.get('/api/schedule/:student_id', async (req, res) => {
 app.get('/api/score/:student_id', async (req, res) => {
   try {
     const rows = await query(`
-      SELECT g.*, s.student_name, c.course_name
+      SELECT g.*, st.student_name, c.course_name
       FROM Score g
-      JOIN Student s ON g.student_id = s.student_id
+      JOIN Student st ON g.student_id = st.student_id
       JOIN Course  c ON g.course_id  = c.course_id
       WHERE g.student_id = ?
     `, [req.params.student_id]);
