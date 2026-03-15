@@ -6,10 +6,16 @@ const path    = require('path');
 const app  = express();
 const port = process.env.PORT || 3000;
 
+// ─── Catch crashes ────────────────────────────────────────
+process.on('uncaughtException',  e => console.error('UNCAUGHT:', e));
+process.on('unhandledRejection', e => console.error('UNHANDLED:', e));
+
 // ─── Middleware ────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+
+// ─── Health check (ตอบทันที ไม่ต้อง DB) ──────────────────
+app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
 
 // ─── MySQL Pool ────────────────────────────────────────────
 const pool = mysql.createPool({
@@ -17,7 +23,7 @@ const pool = mysql.createPool({
   user:                  process.env.MYSQLUSER     || 'root',
   password:              process.env.MYSQLPASSWORD || '',
   database:              process.env.MYSQLDATABASE || 'smart_classroom',
-  port:                  process.env.MYSQLPORT     || 3306,
+  port:                  parseInt(process.env.MYSQLPORT) || 3306,
   waitForConnections:    true,
   connectionLimit:       10,
   queueLimit:            0,
@@ -41,9 +47,6 @@ function minutesLate(checkin, classStart) {
 
 // ─── Helper: แปลง day_of_week ไทย → index ───────────────
 const DAY_TH = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
-
-// ─── หน้าหลัก ─────────────────────────────────────────────
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // ═══════════════════════════════════════════════════════════
 // 🛠️  DATABASE SETUP — เปิด /api/setup ใน browser เพื่อสร้าง DB อัตโนมัติ
@@ -864,7 +867,19 @@ app.get('/api/attendance/myhistory/:student_id', async (req, res) => {
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
+// ─── Static files + fallback (AFTER all API routes) ──────
+app.use(express.static(__dirname));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+
+// ─── Global error handler ─────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('EXPRESS ERROR:', err);
+  res.status(500).json({ success: false, message: err.message || 'Internal Server Error' });
+});
+
 // ─── Start Server ─────────────────────────────────────────
-app.listen(port, '0.0.0.0', () => {
+const server = app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Server รันอยู่ที่ http://0.0.0.0:${port}`);
 });
+server.keepAliveTimeout = 65000;
+server.headersTimeout   = 66000;
