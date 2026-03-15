@@ -210,6 +210,31 @@ const server = http.createServer(async (req, res) => {
       return json(res,200,{success:true,message:late?'มาสาย '+ml+' นาที':'มาทัน',data:{student_id:b.student_id,student_name:stu[0].name,checkin_time:b.checkin_time,class_start_time:cs,status:late?'late':'present',is_late:late,minutes_late:Math.max(0,ml),source:b.source||'nfc',date:b.date}});
     }
 
+    // ── Grade Management (Teacher/Admin) ──
+    if (p==='/api/grades/bycourse') {
+      const courses = await query('SELECT c.course_id,c.course_name,t.name AS teacher_name FROM Course c JOIN Teacher t ON c.teacher_id=t.teacher_id ORDER BY c.course_id');
+      const result = [];
+      for (const c of courses) {
+        const students = await query("SELECT g.student_id,s.name AS student_name,g.attend_score,g.attitude_score,g.homework_score,g.midterm_score,g.final_score,g.quiz_score,g.total_score,g.grade_letter FROM Grade g JOIN Student s ON g.student_id=s.student_id WHERE g.course_id=? ORDER BY g.total_score DESC",[c.course_id]);
+        const enrolled = await query("SELECT COUNT(*) AS cnt FROM Enrollment WHERE course_id=?",[c.course_id]);
+        result.push({...c, enrolled: enrolled[0]?.cnt||0, graded: students.length, students});
+      }
+      return json(res,200,{success:true,data:result});
+    }
+
+    // ── LIST APIs (ER Entities ครบทุกตาราง) ──
+    if (p==='/api/classrooms')  return json(res,200,{success:true,data:await query('SELECT * FROM Classroom ORDER BY room_id')});
+    if (p==='/api/courses')     return json(res,200,{success:true,data:await query('SELECT c.*,t.name AS teacher_name FROM Course c LEFT JOIN Teacher t ON c.teacher_id=t.teacher_id ORDER BY c.course_id')});
+    if (p==='/api/assignments') return json(res,200,{success:true,data:await query('SELECT a.*,c.course_name FROM Assignment a JOIN Course c ON a.course_id=c.course_id ORDER BY a.due_date')});
+    if (p==='/api/submissions') return json(res,200,{success:true,data:await query("SELECT sb.*,a.title AS assignment_title,s.name AS student_name,c.course_name FROM Submission sb JOIN Assignment a ON sb.assignment_id=a.assignment_id JOIN Student s ON sb.student_id=s.student_id JOIN Course c ON a.course_id=c.course_id ORDER BY sb.submit_date DESC")});
+    if (p==='/api/students')    return json(res,200,{success:true,data:await query('SELECT s.*,u.username,u.email AS user_email FROM Student s JOIN Users u ON s.student_id=u.user_id ORDER BY s.student_id')});
+    if (p==='/api/teachers')    return json(res,200,{success:true,data:await query('SELECT t.*,u.username FROM Teacher t JOIN Users u ON t.teacher_id=u.user_id ORDER BY t.teacher_id')});
+    if (p==='/api/enrollments') return json(res,200,{success:true,data:await query('SELECT e.enrollment_id,e.student_id,s.name AS student_name,e.course_id,c.course_name FROM Enrollment e JOIN Student s ON e.student_id=s.student_id JOIN Course c ON e.course_id=c.course_id ORDER BY e.course_id,e.student_id')});
+    if (p==='/api/analysis')    return json(res,200,{success:true,data:await query('SELECT aa.*,s.name AS student_name,c.course_name FROM AttendanceAnalysis aa JOIN Student s ON aa.student_id=s.student_id JOIN Course c ON aa.course_id=c.course_id ORDER BY aa.risk_level DESC,aa.attendance_rate')});
+    if (p==='/api/schedules')   return json(res,200,{success:true,data:await query("SELECT sc.*,c.course_name,cr.room_name,CONCAT(TIME_FORMAT(sc.start_time,'%H:%i'),'-',TIME_FORMAT(sc.end_time,'%H:%i')) AS time_range FROM Schedule sc JOIN Course c ON sc.course_id=c.course_id JOIN Classroom cr ON sc.room_id=cr.room_id ORDER BY FIELD(sc.day_of_week,'จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์'),sc.start_time")});
+    if (p==='/api/grades')      return json(res,200,{success:true,data:await query('SELECT * FROM GradeView ORDER BY student_id,course_id')});
+    if (p==='/api/users')       return json(res,200,{success:true,data:await query("SELECT user_id,username,role,email,created_at FROM Users ORDER BY FIELD(role,'admin','teacher','student'),user_id")});
+
     // ── Serve index.html ──
     if (p === '/' || p === '/index.html') {
       res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
