@@ -1,16 +1,16 @@
 {
-  "dependencies": {
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "mysql2": "^3.19.1"
-  },
   "name": "smart-classroom",
   "version": "1.0.0",
-  "description": "",
+  "description": "Smart Classroom Management System",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "mysql2": "^3.11.0"
   },
   "repository": {
     "type": "git",
@@ -19,9 +19,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/kit154696/Smart-Classroom-Management-System/issues"
-  },
-  "homepage": "https://github.com/kit154696/Smart-Classroom-Management-System#readme"
+  "type": "commonjs"
 }

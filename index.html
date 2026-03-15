@@ -768,7 +768,9 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
      JAVASCRIPT
 ══════════════════════════════════════════ -->
 <script>
-const API = 'https://smart-classroom-management-system-production.up.railway.app/api';
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:3000/api'
+  : window.location.origin + '/api';
 let currentUser = null, nfcActive = false, nfcReader = null;
 
 // ─── Utils ────────────────────────────────
