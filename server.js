@@ -115,10 +115,10 @@ app.post('/api/login', async (req, res) => {
     let name = user.user_name;
 
     if (user.role === 'student') {
-      const s = await query('SELECT name FROM Student WHERE student_id = ?', [user.user_id]);
+      const s = await query('SELECT student_name FROM Student WHERE student_id = ?', [user.user_id]);
       if (s.length) name = s[0].student_name;
     } else if (user.role === 'teacher') {
-      const t = await query('SELECT name FROM Teacher WHERE teacher_id = ?', [user.user_id]);
+      const t = await query('SELECT teacher_name FROM Teacher WHERE teacher_id = ?', [user.user_id]);
       if (t.length) name = t[0].teacher_name;
     } else if (user.role === 'admin') {
       const a = await query('SELECT admin_id FROM Admin WHERE admin_id = ?', [user.user_id]);
