@@ -43,7 +43,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
 /* ══════════════════════════════════════════
    LOGIN SCREEN  (PDF Page 1)
 ══════════════════════════════════════════ */
-#screen-login{flex-direction:row;}
+#screen-login{flex-direction:row;position:relative;overflow:hidden;}
 .login-left{
   width:430px;min-height:100vh;background:var(--red);
   display:flex;flex-direction:column;justify-content:center;
@@ -392,6 +392,107 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     <button class="login-main-btn" id="login-btn" onclick="doLogin()">Log in</button>
     <div class="login-or">or</div>
     <button class="login-kku-btn" onclick="showToast('KKU Mail login ยังไม่พร้อมใช้งาน',true)">Log in with kku mail</button>
+
+    <!-- Register link -->
+    <div style="text-align:center;margin-top:22px;">
+      <span style="color:rgba(255,255,255,.6);font-size:13px;font-weight:600;">ยังไม่มีบัญชี?</span>
+      <button onclick="showRegister()" style="background:none;border:none;color:#fff;font-size:13px;font-weight:800;cursor:pointer;text-decoration:underline;margin-left:6px;font-family:inherit;letter-spacing:.5px;">สมัครสมาชิก</button>
+    </div>
+  </div>
+
+  <!-- REGISTER PANEL (slides in over login-left) -->
+  <div id="reg-panel" style="
+    position:absolute;top:0;left:0;width:430px;height:100%;
+    background:var(--red);padding:36px 44px;overflow-y:auto;
+    transform:translateX(-100%);transition:transform .4s cubic-bezier(.22,1,.36,1);
+    display:flex;flex-direction:column;z-index:10;
+  ">
+    <button onclick="hideRegister()" style="
+      background:none;border:none;color:rgba(255,255,255,.7);
+      font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
+      letter-spacing:.5px;text-align:left;margin-bottom:18px;padding:0;
+      display:flex;align-items:center;gap:6px;
+    ">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      กลับ Log in
+    </button>
+
+    <div style="font-size:52px;font-weight:900;color:#fff;letter-spacing:-3px;line-height:1;
+      margin-bottom:14px;font-style:italic;font-family:'Arial Black','Arial',sans-serif;
+      text-shadow:4px 4px 0 rgba(0,0,0,.18);">SCMS</div>
+    <div style="font-size:26px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Register.</div>
+    <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.7);
+      text-transform:uppercase;letter-spacing:.5px;line-height:1.8;margin-bottom:22px;">
+      กรอกข้อมูลเพื่อสมัครสมาชิก
+    </div>
+
+    <!-- Firstname + Lastname row -->
+    <div style="display:flex;gap:10px;margin-bottom:0;">
+      <div class="login-field" style="flex:1;margin-bottom:12px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <input type="text" id="reg-firstname" placeholder="ชื่อจริง" style="font-size:13px;">
+      </div>
+      <div class="login-field" style="flex:1;margin-bottom:12px;">
+        <input type="text" id="reg-lastname" placeholder="นามสกุล" style="font-size:13px;padding-left:4px;">
+      </div>
+    </div>
+
+    <!-- Student ID -->
+    <div class="login-field" style="margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="M8 10h8M8 14h4"/>
+      </svg>
+      <input type="text" id="reg-studentid" placeholder="รหัสนิสิต (เช่น 683380999-9)" style="text-transform:uppercase;">
+    </div>
+
+    <!-- Email -->
+    <div class="login-field" style="margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+      <input type="email" id="reg-email" placeholder="Email (@kkumail.com)">
+    </div>
+
+    <!-- Username -->
+    <div class="login-field" style="margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4l3 3"/>
+      </svg>
+      <input type="text" id="reg-username" placeholder="Username">
+    </div>
+
+    <!-- Password -->
+    <div class="login-field" style="margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <input type="password" id="reg-password" placeholder="Password">
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="login-field" style="margin-bottom:20px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <input type="password" id="reg-confirm" placeholder="ยืนยัน Password">
+    </div>
+
+    <button class="login-main-btn" id="reg-btn" onclick="doRegister()">สมัครสมาชิก</button>
+
+    <div style="text-align:center;margin-top:16px;">
+      <span style="color:rgba(255,255,255,.6);font-size:12px;font-weight:600;">มีบัญชีแล้ว?</span>
+      <button onclick="hideRegister()" style="background:none;border:none;color:#fff;font-size:12px;font-weight:800;cursor:pointer;text-decoration:underline;margin-left:6px;font-family:inherit;">เข้าสู่ระบบ</button>
+    </div>
   </div>
   <div class="login-right"><div class="login-right-text">SCMS</div></div>
 </div>
@@ -690,6 +791,59 @@ function setBtn(id, loading, label='') {
   if (!b) return;
   b.disabled = loading;
   b.innerHTML = loading ? '<span class="spinner"></span>กำลังโหลด...' : label;
+}
+
+// ─── Register panel ──────────────────────
+function showRegister() {
+  const panel = document.getElementById('reg-panel');
+  panel.style.transform = 'translateX(0)';
+}
+function hideRegister() {
+  const panel = document.getElementById('reg-panel');
+  panel.style.transform = 'translateX(-100%)';
+}
+
+async function doRegister() {
+  const firstname = document.getElementById('reg-firstname').value.trim();
+  const lastname  = document.getElementById('reg-lastname').value.trim();
+  const studentid = document.getElementById('reg-studentid').value.trim();
+  const email     = document.getElementById('reg-email').value.trim();
+  const username  = document.getElementById('reg-username').value.trim();
+  const password  = document.getElementById('reg-password').value;
+  const confirm   = document.getElementById('reg-confirm').value;
+  const btn       = document.getElementById('reg-btn');
+
+  if (!firstname||!lastname||!email||!username||!password||!confirm) {
+    showToast('กรุณากรอกข้อมูลให้ครบทุกช่อง',true); return;
+  }
+  if (password !== confirm) {
+    showToast('รหัสผ่านไม่ตรงกัน',true); return;
+  }
+  if (password.length < 6) {
+    showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',true); return;
+  }
+
+  setBtn(btn, true);
+  try {
+    const r = await api('POST', '/register', {
+      firstname, lastname,
+      student_id: studentid || undefined,
+      email, username, password,
+      role: 'student'
+    });
+    if (r.success) {
+      showToast('✅ สมัครสมาชิกสำเร็จ! รหัสนิสิต: ' + r.user_id);
+      // Clear form
+      ['reg-firstname','reg-lastname','reg-studentid','reg-email',
+       'reg-username','reg-password','reg-confirm'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      setTimeout(()=>{ hideRegister(); }, 1800);
+    } else {
+      showToast(r.message||'เกิดข้อผิดพลาด',true);
+    }
+  } catch { showToast('❌ เชื่อมต่อ Server ไม่ได้',true); }
+  finally  { setBtn(btn, false, 'สมัครสมาชิก'); }
 }
 
 // ─── Login / Logout ────────────────────────

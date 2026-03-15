@@ -56,29 +56,74 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // POST /api/register
 app.post('/api/register', async (req, res) => {
-  const { username, password, role = 'student' } = req.body;
-  if (!username || !password)
-    return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลให้ครบ' });
+  const {
+    username, password,
+    firstname, lastname,
+    student_id, email,
+    role = 'student'
+  } = req.body;
+
+  // Validate required fields
+  if (!username || !password || !firstname || !lastname || !email)
+    return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลให้ครบทุกช่อง' });
+
+  // Email format validation
+  const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailReg.test(email))
+    return res.status(400).json({ success: false, message: 'รูปแบบ Email ไม่ถูกต้อง' });
+
+  const fullName = `${firstname.trim()} ${lastname.trim()}`;
+
   try {
-    const exist = await query('SELECT user_id FROM User WHERE user_name = ?', [username]);
-    if (exist.length > 0)
-      return res.status(409).json({ success: false, message: 'Username นี้มีอยู่แล้ว' });
+    // Check username duplicate
+    const existUser = await query('SELECT user_id FROM User WHERE user_name = ?', [username]);
+    if (existUser.length > 0)
+      return res.status(409).json({ success: false, message: 'Username นี้มีคนใช้แล้ว' });
 
-    const prefix = role === 'teacher' ? 'TCH' : role === 'admin' ? 'ADM' : 'STU';
-    const rows   = await query('SELECT COUNT(*) AS cnt FROM User WHERE role = ?', [role]);
-    const newId  = prefix + String(rows[0].cnt + 1).padStart(3, '0');
+    // Determine user_id
+    let newId;
+    if (student_id && student_id.trim() !== '') {
+      // Use provided student_id (validate not duplicate)
+      const existId = await query('SELECT user_id FROM User WHERE user_id = ?', [student_id.trim().toUpperCase()]);
+      if (existId.length > 0)
+        return res.status(409).json({ success: false, message: 'รหัสนิสิต ' + student_id + ' มีในระบบแล้ว' });
+      newId = student_id.trim().toUpperCase();
+    } else {
+      // Auto-generate
+      const prefix = role === 'teacher' ? 'TCH' : role === 'admin' ? 'ADM' : 'STU';
+      const rows   = await query('SELECT COUNT(*) AS cnt FROM User WHERE role = ?', [role]);
+      newId = prefix + String(rows[0].cnt + 1).padStart(3, '0');
+    }
 
-    await query('INSERT INTO User (user_id, user_name, password, role) VALUES (?,?,?,?)',
-      [newId, username, password, role]);
+    // Try to add email column if not exists (safe, runs once)
+    try {
+      await query('ALTER TABLE User ADD COLUMN email VARCHAR(200) NULL');
+    } catch (_) { /* column already exists — ignore */ }
 
+    // Insert User
+    try {
+      await query('INSERT INTO User (user_id, user_name, password, role, email) VALUES (?,?,?,?,?)',
+        [newId, username, password, role, email]);
+    } catch (_) {
+      // Fallback without email column if somehow still fails
+      await query('INSERT INTO User (user_id, user_name, password, role) VALUES (?,?,?,?)',
+        [newId, username, password, role]);
+    }
+
+    // Insert role-specific table
     if (role === 'student')
-      await query('INSERT INTO Student (student_id, student_name) VALUES (?,?)', [newId, username]);
+      await query('INSERT INTO Student (student_id, student_name) VALUES (?,?)', [newId, fullName]);
     if (role === 'teacher')
-      await query('INSERT INTO Teacher (teacher_id, teacher_name) VALUES (?,?)', [newId, username]);
+      await query('INSERT INTO Teacher (teacher_id, teacher_name) VALUES (?,?)', [newId, fullName]);
     if (role === 'admin')
       await query('INSERT INTO Admin (admin_id) VALUES (?)', [newId]);
 
-    res.json({ success: true, message: 'ลงทะเบียนสำเร็จ!', user_id: newId });
+    res.json({
+      success: true,
+      message: 'ลงทะเบียนสำเร็จ!',
+      user_id: newId,
+      name: fullName
+    });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
