@@ -1,10 +1,10 @@
-const express  = require('express');
-const mysql    = require('mysql2');
-const cors     = require('cors');
-const path     = require('path');
+const express = require('express');
+const mysql   = require('mysql2');
+const cors    = require('cors');
+const path    = require('path');
 
 const app  = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // ─── Middleware ────────────────────────────────────────────
 app.use(cors());
@@ -31,27 +31,22 @@ pool.getConnection()
 
 const query = (sql, params = []) => pool.query(sql, params).then(([rows]) => rows);
 
-// ─── Helper: แปลงชื่อวันภาษาอังกฤษจาก study_time ──────────
-// study_time format: "Monday 09:00-12:00"
-function parseDayAndStart(study_time) {
-  const parts     = (study_time || '').split(' ');
-  const dayEn     = parts[0] || '';
-  const timeRange = parts[1] || '';
-  const startTime = timeRange.split('-')[0] || '00:00';
-  return { dayEn, startTime };
+// ─── Helper: คำนวณว่ามาสายกี่นาทีจาก TIME ────────────────
+function minutesLate(checkin, classStart) {
+  if (!checkin || !classStart) return 0;
+  const [ch, cm] = String(checkin).split(':').map(Number);
+  const [sh, sm] = String(classStart).split(':').map(Number);
+  return (ch * 60 + cm) - (sh * 60 + sm);
 }
 
-// map วันอังกฤษ → วันในสัปดาห์ (getDay index)
-const DAY_INDEX = {
-  sunday:0, monday:1, tuesday:2, wednesday:3,
-  thursday:4, friday:5, saturday:6
-};
+// ─── Helper: แปลง day_of_week ไทย → index ───────────────
+const DAY_TH = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
 
 // ─── หน้าหลัก ─────────────────────────────────────────────
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // ═══════════════════════════════════════════════════════════
-// AUTH APIs
+// AUTH APIs  (ใช้ตาราง Users, username, Student.name)
 // ═══════════════════════════════════════════════════════════
 
 // POST /api/register
@@ -63,11 +58,9 @@ app.post('/api/register', async (req, res) => {
     role = 'student'
   } = req.body;
 
-  // Validate required fields
   if (!username || !password || !firstname || !lastname || !email)
     return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลให้ครบทุกช่อง' });
 
-  // Email format validation
   const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailReg.test(email))
     return res.status(400).json({ success: false, message: 'รูปแบบ Email ไม่ถูกต้อง' });
@@ -75,55 +68,37 @@ app.post('/api/register', async (req, res) => {
   const fullName = `${firstname.trim()} ${lastname.trim()}`;
 
   try {
-    // Check username duplicate
-    const existUser = await query('SELECT user_id FROM User WHERE user_name = ?', [username]);
+    // ตรวจ username ซ้ำ
+    const existUser = await query('SELECT user_id FROM Users WHERE username = ?', [username]);
     if (existUser.length > 0)
       return res.status(409).json({ success: false, message: 'Username นี้มีคนใช้แล้ว' });
 
-    // Determine user_id
+    // กำหนด user_id
     let newId;
     if (student_id && student_id.trim() !== '') {
-      // Use provided student_id (validate not duplicate)
-      const existId = await query('SELECT user_id FROM User WHERE user_id = ?', [student_id.trim().toUpperCase()]);
+      const existId = await query('SELECT user_id FROM Users WHERE user_id = ?', [student_id.trim()]);
       if (existId.length > 0)
         return res.status(409).json({ success: false, message: 'รหัสนิสิต ' + student_id + ' มีในระบบแล้ว' });
-      newId = student_id.trim().toUpperCase();
+      newId = student_id.trim();
     } else {
-      // Auto-generate
       const prefix = role === 'teacher' ? 'TCH' : role === 'admin' ? 'ADM' : 'STU';
-      const rows   = await query('SELECT COUNT(*) AS cnt FROM User WHERE role = ?', [role]);
+      const rows   = await query('SELECT COUNT(*) AS cnt FROM Users WHERE role = ?', [role]);
       newId = prefix + String(rows[0].cnt + 1).padStart(3, '0');
     }
 
-    // Try to add email column if not exists (safe, runs once)
-    try {
-      await query('ALTER TABLE User ADD COLUMN email VARCHAR(200) NULL');
-    } catch (_) { /* column already exists — ignore */ }
+    // Insert Users
+    await query('INSERT INTO Users (user_id, username, password, role, email) VALUES (?,?,?,?,?)',
+      [newId, username, password, role, email]);
 
-    // Insert User
-    try {
-      await query('INSERT INTO User (user_id, user_name, password, role, email) VALUES (?,?,?,?,?)',
-        [newId, username, password, role, email]);
-    } catch (_) {
-      // Fallback without email column if somehow still fails
-      await query('INSERT INTO User (user_id, user_name, password, role) VALUES (?,?,?,?)',
-        [newId, username, password, role]);
-    }
-
-    // Insert role-specific table
+    // Insert role-specific
     if (role === 'student')
-      await query('INSERT INTO Student (student_id, student_name) VALUES (?,?)', [newId, fullName]);
+      await query('INSERT INTO Student (student_id, name, email) VALUES (?,?,?)', [newId, fullName, email]);
     if (role === 'teacher')
-      await query('INSERT INTO Teacher (teacher_id, teacher_name) VALUES (?,?)', [newId, fullName]);
+      await query('INSERT INTO Teacher (teacher_id, name, email) VALUES (?,?,?)', [newId, fullName, email]);
     if (role === 'admin')
-      await query('INSERT INTO Admin (admin_id) VALUES (?)', [newId]);
+      await query('INSERT INTO Admin (admin_id, full_name, email) VALUES (?,?,?)', [newId, fullName, email]);
 
-    res.json({
-      success: true,
-      message: 'ลงทะเบียนสำเร็จ!',
-      user_id: newId,
-      name: fullName
-    });
+    res.json({ success: true, message: 'ลงทะเบียนสำเร็จ!', user_id: newId, name: fullName });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
@@ -132,25 +107,30 @@ app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const rows = await query(
-      'SELECT * FROM User WHERE user_name = ? AND password = ?', [username, password]);
+      'SELECT * FROM Users WHERE username = ? AND password = ?', [username, password]);
     if (rows.length === 0)
       return res.status(401).json({ success: false, message: 'Username หรือ Password ไม่ถูกต้อง' });
 
     const user = rows[0];
-    let name = user.user_name;
+    let name = user.username;
+
     if (user.role === 'student') {
-      const s = await query('SELECT student_name FROM Student WHERE student_id = ?', [user.user_id]);
-      if (s.length) name = s[0].student_name;
+      const s = await query('SELECT name FROM Student WHERE student_id = ?', [user.user_id]);
+      if (s.length) name = s[0].name;
     } else if (user.role === 'teacher') {
-      const t = await query('SELECT teacher_name FROM Teacher WHERE teacher_id = ?', [user.user_id]);
-      if (t.length) name = t[0].teacher_name;
+      const t = await query('SELECT name FROM Teacher WHERE teacher_id = ?', [user.user_id]);
+      if (t.length) name = t[0].name;
+    } else if (user.role === 'admin') {
+      const a = await query('SELECT full_name FROM Admin WHERE admin_id = ?', [user.user_id]);
+      if (a.length && a[0].full_name) name = a[0].full_name;
     }
-    res.json({ success: true, user_id: user.user_id, username: user.user_name, role: user.role, name });
+
+    res.json({ success: true, user_id: user.user_id, username: user.username, role: user.role, name });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
 // ═══════════════════════════════════════════════════════════
-// GRADE APIs
+// GRADE APIs  (ใช้ GradeView ซึ่ง query จาก Grade table)
 // ═══════════════════════════════════════════════════════════
 
 app.get('/api/grades/:student_id', async (req, res) => {
@@ -163,51 +143,47 @@ app.get('/api/grades/:student_id', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// SCHEDULE APIs
-// study_time format: "Monday 09:00-12:00"
+// SCHEDULE APIs  (ใช้ start_time + end_time แทน study_time)
 // ═══════════════════════════════════════════════════════════
 
 app.get('/api/schedule/:student_id', async (req, res) => {
   try {
     const rows = await query(`
       SELECT
-        sc.study_time                    AS time,
-        c.course_id                      AS code,
-        c.course_name                    AS name,
-        t.teacher_name                   AS teacher,
-        cr.room_name                     AS room
+        sc.day_of_week                                       AS day,
+        CONCAT(sc.start_time, '-', sc.end_time)              AS time,
+        c.course_id                                          AS code,
+        c.course_name                                        AS name,
+        t.name                                               AS teacher,
+        cr.room_name                                         AS room
       FROM Enrollment e
       JOIN Course    c  ON e.course_id  = c.course_id
       JOIN Schedule  sc ON c.course_id  = sc.course_id
       JOIN Teacher   t  ON c.teacher_id = t.teacher_id
       JOIN Classroom cr ON sc.room_id   = cr.room_id
       WHERE e.student_id = ?
+      ORDER BY FIELD(sc.day_of_week,'จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์','อาทิตย์'),
+               sc.start_time
     `, [req.params.student_id]);
 
     if (!rows.length)
       return res.status(404).json({ success: false, message: 'ไม่พบตารางเรียนของ ' + req.params.student_id });
-
-    // แยก day จาก study_time แล้วใส่ field day
-    const data = rows.map(r => {
-      const { dayEn, startTime } = parseDayAndStart(r.time);
-      return { ...r, day: dayEn };
-    });
-    res.json({ success: true, data });
+    res.json({ success: true, data: rows });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
 // ═══════════════════════════════════════════════════════════
-// SCORE APIs
+// SCORE/GRADE APIs  (ใช้ Grade table แทน Score)
 // ═══════════════════════════════════════════════════════════
 
 app.get('/api/score/:student_id', async (req, res) => {
   try {
     const rows = await query(`
-      SELECT sc.*, st.student_name, c.course_name
-      FROM Score sc
-      JOIN Student st ON sc.student_id = st.student_id
-      JOIN Course  c  ON sc.course_id  = c.course_id
-      WHERE sc.student_id = ?
+      SELECT g.*, s.name AS student_name, c.course_name
+      FROM Grade g
+      JOIN Student s ON g.student_id = s.student_id
+      JOIN Course  c ON g.course_id  = c.course_id
+      WHERE g.student_id = ?
     `, [req.params.student_id]);
     if (!rows.length)
       return res.status(404).json({ success: false, message: 'ไม่พบคะแนนของ ' + req.params.student_id });
@@ -220,25 +196,40 @@ app.post('/api/score', async (req, res) => {
           homework_score, midterm_score, final_score, quiz_score } = req.body;
   if (!student_id || !course_id)
     return res.status(400).json({ success: false, message: 'กรุณาระบุ student_id และ course_id' });
+
+  const total = (attend_score||0) + (attitude_score||0) + (homework_score||0)
+              + (midterm_score||0) + (final_score||0) + (quiz_score||0);
+
+  const grade_letter =
+    total >= 80 ? 'A'  : total >= 75 ? 'B+' : total >= 70 ? 'B'  :
+    total >= 65 ? 'C+' : total >= 60 ? 'C'  : total >= 55 ? 'D+' :
+    total >= 50 ? 'D'  : 'F';
+
   try {
     await query(`
-      INSERT INTO Score
-        (student_id,course_id,attend_score,attitude_score,homework_score,midterm_score,final_score,quiz_score)
-      VALUES (?,?,?,?,?,?,?,?)
+      INSERT INTO Grade
+        (student_id, course_id, attend_score, attitude_score, homework_score,
+         midterm_score, final_score, quiz_score, total_score, grade_letter)
+      VALUES (?,?,?,?,?,?,?,?,?,?)
       ON DUPLICATE KEY UPDATE
-        attend_score=VALUES(attend_score), attitude_score=VALUES(attitude_score),
-        homework_score=VALUES(homework_score), midterm_score=VALUES(midterm_score),
-        final_score=VALUES(final_score),     quiz_score=VALUES(quiz_score)
+        attend_score   = VALUES(attend_score),
+        attitude_score = VALUES(attitude_score),
+        homework_score = VALUES(homework_score),
+        midterm_score  = VALUES(midterm_score),
+        final_score    = VALUES(final_score),
+        quiz_score     = VALUES(quiz_score),
+        total_score    = VALUES(total_score),
+        grade_letter   = VALUES(grade_letter)
     `, [student_id, course_id,
         attend_score||0, attitude_score||0, homework_score||0,
-        midterm_score||0, final_score||0,   quiz_score||0]);
-    res.json({ success: true, message: 'บันทึกคะแนนสำเร็จ ✓' });
+        midterm_score||0, final_score||0, quiz_score||0,
+        total, grade_letter]);
+    res.json({ success: true, message: 'บันทึกคะแนนสำเร็จ ✓', grade: grade_letter, total });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
 // ═══════════════════════════════════════════════════════════
-// ATTENDANCE ANALYSIS APIs
-// AttendanceAnalysis เป็น TABLE (risk_level: Low/Medium/High)
+// ATTENDANCE ANALYSIS  (TABLE ไม่ใช่ VIEW)
 // ═══════════════════════════════════════════════════════════
 
 app.get('/api/attendance/:student_id', async (req, res) => {
@@ -258,14 +249,17 @@ app.get('/api/attendance/risk/all', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// STUDENT INFO API
+// STUDENT INFO  (ใช้ Student.name)
 // ═══════════════════════════════════════════════════════════
 
 app.get('/api/student/:student_id', async (req, res) => {
   try {
-    const rows = await query(
-      'SELECT s.student_id, s.student_name, u.user_name, u.role FROM Student s JOIN User u ON s.student_id = u.user_id WHERE s.student_id = ?',
-      [req.params.student_id]);
+    const rows = await query(`
+      SELECT s.student_id, s.name AS student_name, u.username, u.role
+      FROM Student s
+      JOIN Users u ON s.student_id = u.user_id
+      WHERE s.student_id = ?
+    `, [req.params.student_id]);
     if (!rows.length)
       return res.status(404).json({ success: false, message: 'ไม่พบนักศึกษา' });
     res.json({ success: true, data: rows[0] });
@@ -273,9 +267,7 @@ app.get('/api/student/:student_id', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// NFC CHECK-IN API
-// Attendance schema จริง:
-//   student_id, course_id, status (Present/Late/Absent), attendance_date, checkin_time
+// NFC CHECK-IN  (check_in_time, start_time, day_of_week)
 // ═══════════════════════════════════════════════════════════
 
 app.post('/api/attendance/nfc', async (req, res) => {
@@ -284,69 +276,62 @@ app.post('/api/attendance/nfc', async (req, res) => {
     return res.status(400).json({ success: false, message: 'กรุณาส่ง student_id, date และ checkin_time' });
 
   try {
-    // ตรวจนักศึกษา
     const stuRows = await query(
-      'SELECT student_id, student_name FROM Student WHERE student_id = ?', [student_id]);
+      'SELECT student_id, name FROM Student WHERE student_id = ?', [student_id]);
     if (!stuRows.length)
       return res.status(404).json({ success: false, message: 'ไม่พบนักศึกษา ' + student_id });
     const student = stuRows[0];
 
-    // หาวันในสัปดาห์จาก date
-    const dayOfWeekIndex = new Date(date).getDay(); // 0=Sun ... 6=Sat
-    const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-    const dayEn = dayNames[dayOfWeekIndex];
+    // หาวันในสัปดาห์ (ไทย)
+    const dayTh = DAY_TH[new Date(date).getDay()];
 
-    // หา schedule ที่ตรงกับวัน (study_time เช่น "Monday 09:00-12:00")
+    // หา schedule ตรงกับวัน
     const schedRows = await query(`
-      SELECT sc.schedule_id, sc.course_id, sc.study_time
+      SELECT sc.schedule_id, sc.course_id, sc.start_time
       FROM Schedule sc
       JOIN Enrollment e ON e.course_id = sc.course_id
-      WHERE e.student_id = ?
-        AND LOWER(SUBSTRING_INDEX(sc.study_time,' ',1)) = ?
+      WHERE e.student_id = ? AND sc.day_of_week = ?
+      ORDER BY sc.start_time
       LIMIT 1
-    `, [student_id, dayEn]);
+    `, [student_id, dayTh]);
 
-    let courseId    = null;
-    let classStart  = null;
-    let isLate      = false;
-    let minutesLate = 0;
+    let scheduleId = null, classStart = null, isLate = false, minsLate = 0;
 
     if (schedRows.length > 0) {
-      courseId   = schedRows[0].course_id;
-      const { startTime } = parseDayAndStart(schedRows[0].study_time);
-      classStart = startTime;
-
-      const [ch, cm] = checkin_time.split(':').map(Number);
-      const [sh, sm] = startTime.split(':').map(Number);
-      minutesLate = (ch * 60 + cm) - (sh * 60 + sm);
-      isLate      = minutesLate > 15;
+      scheduleId = schedRows[0].schedule_id;
+      classStart = schedRows[0].start_time; // TIME object from MySQL
+      const startStr = String(classStart).substring(0, 5); // "HH:MM"
+      minsLate = minutesLate(checkin_time, startStr);
+      isLate   = minsLate > 15;
     }
 
-    // status ใช้ Capitalized ตาม DB จริง
-    const status = isLate ? 'Late' : 'Present';
+    const status = isLate ? 'late' : 'present';
 
-    if (courseId) {
-      const scheduleId = schedRows[0].schedule_id;
+    if (scheduleId) {
       await query(`
-        INSERT INTO Attendance (student_id, schedule_id, attendance_date, checkin_time, status)
+        INSERT INTO Attendance (student_id, schedule_id, attendance_date, check_in_time, status)
         VALUES (?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
-          checkin_time = VALUES(checkin_time),
+          check_in_time = VALUES(check_in_time),
           status        = VALUES(status)
       `, [student_id, scheduleId, date, checkin_time, status]);
+
+      // อัปเดต AttendanceAnalysis
+      const courseId = schedRows[0].course_id;
+      await updateAttendanceAnalysis(student_id, courseId);
     }
 
     res.json({
       success: true,
-      message: isLate ? `มาสาย ${minutesLate} นาที` : 'มาทัน',
+      message: isLate ? `มาสาย ${minsLate} นาที` : 'มาทัน',
       data: {
         student_id,
-        student_name:     student.student_name,
+        student_name:     student.name,
         checkin_time,
         class_start_time: classStart,
         status,
         is_late:          isLate,
-        minutes_late:     Math.max(0, minutesLate),
+        minutes_late:     Math.max(0, minsLate),
         source:           source || 'nfc',
         date
       }
@@ -354,63 +339,87 @@ app.post('/api/attendance/nfc', async (req, res) => {
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
+// Helper: คำนวณและ upsert AttendanceAnalysis
+async function updateAttendanceAnalysis(student_id, course_id) {
+  try {
+    const stats = await query(`
+      SELECT
+        COUNT(*)                                               AS total,
+        SUM(CASE WHEN a.status='absent'  THEN 1 ELSE 0 END)   AS absent_c,
+        SUM(CASE WHEN a.status='late'    THEN 1 ELSE 0 END)    AS late_c,
+        ROUND(SUM(CASE WHEN a.status IN ('present','late') THEN 1 ELSE 0 END)/COUNT(*)*100,2) AS rate
+      FROM Attendance a
+      JOIN Schedule sc ON a.schedule_id = sc.schedule_id
+      WHERE a.student_id = ? AND sc.course_id = ?
+    `, [student_id, course_id]);
+
+    const { total, absent_c, late_c, rate } = stats[0];
+    const risk = rate >= 85 ? 'Low' : rate >= 80 ? 'Medium' : 'High';
+
+    await query(`
+      INSERT INTO AttendanceAnalysis
+        (student_id, course_id, total_classes, absent_count, late_count, attendance_rate, risk_level)
+      VALUES (?,?,?,?,?,?,?)
+      ON DUPLICATE KEY UPDATE
+        total_classes   = VALUES(total_classes),
+        absent_count    = VALUES(absent_count),
+        late_count      = VALUES(late_count),
+        attendance_rate = VALUES(attendance_rate),
+        risk_level      = VALUES(risk_level)
+    `, [student_id, course_id, total, absent_c, late_c, rate, risk]);
+  } catch (_) {}
+}
+
 // ═══════════════════════════════════════════════════════════
-// ATTENDANCE LOG (อาจารย์/Admin)
+// ATTENDANCE LOG (Teacher/Admin)
 // GET /api/attendance/log/:course_id?date=YYYY-MM-DD
 // ═══════════════════════════════════════════════════════════
 
 app.get('/api/attendance/log/:course_id', async (req, res) => {
   const { course_id } = req.params;
   const date = req.query.date;
-  if (!date)
-    return res.status(400).json({ success: false, message: 'กรุณาส่ง ?date=YYYY-MM-DD' });
+  if (!date) return res.status(400).json({ success: false, message: 'กรุณาส่ง ?date=YYYY-MM-DD' });
 
   try {
-    // หา schedule เพื่อได้ study_time สำหรับแสดงเวลาเริ่มคาบ
-    const schedInfo = await query(
-      'SELECT study_time FROM Schedule WHERE course_id = ? LIMIT 1', [course_id]);
-    const classStartTime = schedInfo.length
-      ? parseDayAndStart(schedInfo[0].study_time).startTime
-      : null;
+    const dayTh = DAY_TH[new Date(date).getDay()];
 
-    // ดึงนักศึกษาทั้งหมด + สถานะ attendance ของวันนั้น
+    // หา start_time ของ schedule วันนั้น
+    const schedInfo = await query(
+      'SELECT schedule_id, start_time FROM Schedule WHERE course_id = ? AND day_of_week = ? LIMIT 1',
+      [course_id, dayTh]);
+    const classStart = schedInfo.length ? String(schedInfo[0].start_time).substring(0, 5) : null;
+    const scheduleId = schedInfo.length ? schedInfo[0].schedule_id : null;
+
     const rows = await query(`
       SELECT
         s.student_id,
-        s.student_name,
-        a.checkin_time,
-        a.status           AS att_status,
+        s.name                           AS student_name,
+        a.check_in_time,
+        IFNULL(a.status, 'absent')       AS status,
         CASE
-          WHEN a.attendance_id IS NULL THEN 'Absent'
-          ELSE a.status
-        END                AS status,
-        CASE
-          WHEN a.checkin_time IS NOT NULL THEN
+          WHEN a.check_in_time IS NOT NULL THEN
             GREATEST(0, ROUND(
-              (TIME_TO_SEC(a.checkin_time) - TIME_TO_SEC(?)) / 60
+              (TIME_TO_SEC(a.check_in_time) - TIME_TO_SEC(?)) / 60
             ))
           ELSE 0
-        END                AS minutes_late
+        END AS minutes_late
       FROM Enrollment e
       JOIN Student s ON s.student_id = e.student_id
-      LEFT JOIN Schedule sch2 ON sch2.course_id = e.course_id
       LEFT JOIN Attendance a
-             ON a.student_id      = s.student_id
-            AND a.schedule_id     = sch2.schedule_id
+             ON a.student_id     = s.student_id
+            AND a.schedule_id    = ?
             AND a.attendance_date = ?
       WHERE e.course_id = ?
-      ORDER BY
-        FIELD(IFNULL(a.status,'Absent'), 'Absent','Late','Present'),
-        a.checkin_time ASC
-    `, [classStartTime || '00:00:00', date, course_id]);
+      ORDER BY FIELD(IFNULL(a.status,'absent'),'absent','late','present'), a.check_in_time ASC
+    `, [classStart || '00:00:00', scheduleId || 0, date, course_id]);
 
     res.json({
       success: true, course_id, date, count: rows.length,
       data: rows.map(r => ({
         student_id:       r.student_id,
         student_name:     r.student_name,
-        checkin_time:     r.checkin_time || null,
-        class_start_time: classStartTime,
+        checkin_time:     r.check_in_time || null,
+        class_start_time: classStart,
         status:           r.status,
         minutes_late:     Math.round(Number(r.minutes_late) || 0)
       }))
@@ -420,28 +429,27 @@ app.get('/api/attendance/log/:course_id', async (req, res) => {
 
 // ═══════════════════════════════════════════════════════════
 // MY ATTENDANCE HISTORY (นักศึกษา)
-// GET /api/attendance/myhistory/:student_id?course=1
+// GET /api/attendance/myhistory/:student_id?course=SC602005
 // ═══════════════════════════════════════════════════════════
 
 app.get('/api/attendance/myhistory/:student_id', async (req, res) => {
-  const { student_id }  = req.params;
-  const course_filter   = req.query.course || null;
+  const { student_id } = req.params;
+  const course_filter  = req.query.course || null;
 
   try {
     let sql = `
       SELECT
-        a.attendance_id,
         a.attendance_date,
-        a.checkin_time   AS checkin_time,
+        a.check_in_time   AS checkin_time,
         a.status,
-        sc.study_time     AS class_start_raw,
+        sc.start_time     AS class_start_time,
+        sc.day_of_week,
         c.course_id,
         c.course_name,
         CASE
-          WHEN a.checkin_time IS NOT NULL AND a.status = 'Late' THEN
+          WHEN a.check_in_time IS NOT NULL AND a.status = 'late' THEN
             GREATEST(0, ROUND(
-              (TIME_TO_SEC(a.checkin_time)
-               - TIME_TO_SEC(SUBSTRING_INDEX(SUBSTRING_INDEX(sc.study_time,' ',2),' ',-1))) / 60
+              (TIME_TO_SEC(a.check_in_time) - TIME_TO_SEC(sc.start_time)) / 60
             ))
           ELSE 0
         END AS minutes_late
@@ -456,24 +464,21 @@ app.get('/api/attendance/myhistory/:student_id', async (req, res) => {
       sql += ' AND sc.course_id = ?';
       params.push(course_filter);
     }
-
-    sql += ' ORDER BY a.attendance_date DESC, a.checkin_time DESC';
+    sql += ' ORDER BY a.attendance_date DESC, a.check_in_time DESC';
 
     const rows = await query(sql, params);
     res.json({
       success: true, student_id, count: rows.length,
-      data: rows.map(r => {
-        const { startTime } = parseDayAndStart(r.class_start_raw || '');
-        return {
-          attendance_date:  r.attendance_date,
-          course_id:        r.course_id,
-          course_name:      r.course_name,
-          class_start_time: startTime || null,
-          checkin_time:     r.checkin_time || null,
-          status:           r.status,
-          minutes_late:     Number(r.minutes_late) || 0
-        };
-      })
+      data: rows.map(r => ({
+        attendance_date:  r.attendance_date,
+        course_id:        r.course_id,
+        course_name:      r.course_name,
+        class_start_time: r.class_start_time ? String(r.class_start_time).substring(0,5) : null,
+        day_of_week:      r.day_of_week,
+        checkin_time:     r.checkin_time ? String(r.checkin_time).substring(0,8) : null,
+        status:           r.status,
+        minutes_late:     Number(r.minutes_late) || 0
+      }))
     });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
