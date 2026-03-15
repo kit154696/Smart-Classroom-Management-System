@@ -1,21 +1,12 @@
-const express = require('express');
-const mysql   = require('mysql2');
-const cors    = require('cors');
-const path    = require('path');
-const http    = require('http');
+const http = require('http');
+const fs   = require('fs');
+const path = require('path');
+const url  = require('url');
+const mysql = require('mysql2');
 
-const app  = express();
 const port = process.env.PORT || 3000;
 
-process.on('uncaughtException',  e => console.error('UNCAUGHT:', e.message));
-process.on('unhandledRejection', e => console.error('UNHANDLED:', e));
-
-app.use(cors());
-app.use(express.json());
-app.use((req, res, next) => { console.log(`${req.method} ${req.url}`); next(); });
-
-app.get('/api/health', (req, res) => { res.status(200).json({ ok: true }); });
-
+// ─── MySQL ────────────────────────────────────────────────
 const pool = mysql.createPool({
   host: process.env.MYSQLHOST || 'localhost',
   user: process.env.MYSQLUSER || 'root',
@@ -24,164 +15,214 @@ const pool = mysql.createPool({
   port: parseInt(process.env.MYSQLPORT) || 3306,
   waitForConnections: true, connectionLimit: 10, enableKeepAlive: true
 }).promise();
-pool.getConnection().then(c => { console.log('DB OK'); c.release(); }).catch(e => console.error('DB ERR:', e.message));
-const query = (sql, p = []) => pool.query(sql, p).then(([r]) => r);
+pool.getConnection().then(c=>{console.log('DB OK');c.release();}).catch(e=>console.error('DB ERR:',e.message));
+const query = (sql,p=[]) => pool.query(sql,p).then(([r])=>r);
 const DAY_TH = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
+function minutesLate(a,b){if(!a||!b)return 0;const[h1,m1]=String(a).split(':').map(Number);const[h2,m2]=String(b).split(':').map(Number);return(h1*60+m1)-(h2*60+m2);}
 
-function minutesLate(a, b) {
-  if (!a || !b) return 0;
-  const [h1,m1] = String(a).split(':').map(Number);
-  const [h2,m2] = String(b).split(':').map(Number);
-  return (h1*60+m1)-(h2*60+m2);
+// ─── Read index.html once ─────────────────────────────────
+const indexPath = path.join(__dirname, 'index.html');
+let indexHtml = '';
+try { indexHtml = fs.readFileSync(indexPath, 'utf8'); } catch(e) { indexHtml = '<h1>index.html not found</h1>'; }
+
+// ─── Parse JSON body ──────────────────────────────────────
+function parseBody(req) {
+  return new Promise((resolve) => {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => { try { resolve(JSON.parse(body)); } catch(e) { resolve({}); } });
+  });
 }
 
-app.get('/api/setup', async (req, res) => {
+// ─── Send JSON helper ─────────────────────────────────────
+function json(res, status, data) {
+  res.writeHead(status, {'Content-Type':'application/json','Access-Control-Allow-Origin':'*'});
+  res.end(JSON.stringify(data));
+}
+
+// ─── SETUP (create all tables) ────────────────────────────
+async function setupDB() {
+  const c = await pool.getConnection();
+  await c.query('SET FOREIGN_KEY_CHECKS=0');
+  for (const t of ['Submission','AttendanceAnalysis','Attendance','Grade','Score','Assignment','Schedule','Enrollment','Course','Classroom','Student','Teacher','Admin','Users','User'])
+    await c.query(`DROP TABLE IF EXISTS \`${t}\``);
+  await c.query('DROP VIEW IF EXISTS GradeView');
+  await c.query('SET FOREIGN_KEY_CHECKS=1');
+  await c.query("CREATE TABLE Users(user_id VARCHAR(20) NOT NULL,username VARCHAR(100) NOT NULL UNIQUE,password VARCHAR(255) NOT NULL,role ENUM('admin','teacher','student') NOT NULL,email VARCHAR(200),created_at DATETIME DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(user_id))");
+  await c.query("CREATE TABLE Admin(admin_id VARCHAR(20) NOT NULL,full_name VARCHAR(100),phone VARCHAR(20),email VARCHAR(200),PRIMARY KEY(admin_id),FOREIGN KEY(admin_id) REFERENCES Users(user_id) ON DELETE CASCADE)");
+  await c.query("CREATE TABLE Teacher(teacher_id VARCHAR(20) NOT NULL,name VARCHAR(100) NOT NULL,department VARCHAR(150),phone VARCHAR(20),email VARCHAR(200),PRIMARY KEY(teacher_id),FOREIGN KEY(teacher_id) REFERENCES Users(user_id) ON DELETE CASCADE)");
+  await c.query("CREATE TABLE Student(student_id VARCHAR(20) NOT NULL,name VARCHAR(100) NOT NULL,email VARCHAR(200),phone VARCHAR(20),gender ENUM('male','female','other'),PRIMARY KEY(student_id),FOREIGN KEY(student_id) REFERENCES Users(user_id) ON DELETE CASCADE)");
+  await c.query("CREATE TABLE Classroom(room_id VARCHAR(20) NOT NULL,room_name VARCHAR(100) NOT NULL,capacity INT DEFAULT 40,floor INT,room_type VARCHAR(50),PRIMARY KEY(room_id))");
+  await c.query("CREATE TABLE Course(course_id VARCHAR(20) NOT NULL,course_code VARCHAR(20),course_name VARCHAR(200) NOT NULL,credit INT DEFAULT 3,semester INT DEFAULT 1,academic_year INT DEFAULT 2568,teacher_id VARCHAR(20) NOT NULL,admin_id VARCHAR(20),PRIMARY KEY(course_id),FOREIGN KEY(teacher_id) REFERENCES Teacher(teacher_id),FOREIGN KEY(admin_id) REFERENCES Admin(admin_id))");
+  await c.query("CREATE TABLE Enrollment(enrollment_id INT AUTO_INCREMENT,student_id VARCHAR(20) NOT NULL,course_id VARCHAR(20) NOT NULL,PRIMARY KEY(enrollment_id),UNIQUE KEY uq(student_id,course_id),FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE,FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE)");
+  await c.query("CREATE TABLE Schedule(schedule_id INT AUTO_INCREMENT,course_id VARCHAR(20) NOT NULL,room_id VARCHAR(20) NOT NULL,day_of_week VARCHAR(20) NOT NULL,start_time TIME NOT NULL,end_time TIME NOT NULL,study_hours DECIMAL(4,1) DEFAULT 2,PRIMARY KEY(schedule_id),FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE,FOREIGN KEY(room_id) REFERENCES Classroom(room_id))");
+  await c.query("CREATE TABLE Attendance(attendance_id INT AUTO_INCREMENT,student_id VARCHAR(20) NOT NULL,schedule_id INT NOT NULL,attendance_date DATE NOT NULL,check_in_time TIME,status ENUM('present','absent','late','excused') DEFAULT 'absent',PRIMARY KEY(attendance_id),UNIQUE KEY uq(student_id,schedule_id,attendance_date),FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE,FOREIGN KEY(schedule_id) REFERENCES Schedule(schedule_id) ON DELETE CASCADE)");
+  await c.query("CREATE TABLE AttendanceAnalysis(analysis_id INT AUTO_INCREMENT,student_id VARCHAR(20) NOT NULL,course_id VARCHAR(20) NOT NULL,total_classes INT DEFAULT 0,absent_count INT DEFAULT 0,late_count INT DEFAULT 0,attendance_rate DECIMAL(5,2) DEFAULT 0,risk_level ENUM('Low','Medium','High') DEFAULT 'Low',PRIMARY KEY(analysis_id),UNIQUE KEY uq(student_id,course_id),FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE,FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE)");
+  await c.query("CREATE TABLE Grade(grade_id INT AUTO_INCREMENT,student_id VARCHAR(20) NOT NULL,course_id VARCHAR(20) NOT NULL,grade_letter VARCHAR(5),total_score DECIMAL(5,2) DEFAULT 0,attend_score DECIMAL(5,2) DEFAULT 0,attitude_score DECIMAL(5,2) DEFAULT 0,homework_score DECIMAL(5,2) DEFAULT 0,midterm_score DECIMAL(5,2) DEFAULT 0,final_score DECIMAL(5,2) DEFAULT 0,quiz_score DECIMAL(5,2) DEFAULT 0,semester INT DEFAULT 1,academic_year INT DEFAULT 2568,PRIMARY KEY(grade_id),UNIQUE KEY uq(student_id,course_id),FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE,FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE)");
+  await c.query("CREATE TABLE Assignment(assignment_id INT AUTO_INCREMENT,course_id VARCHAR(20) NOT NULL,title VARCHAR(200) NOT NULL,description VARCHAR(300),due_date DATETIME NOT NULL,max_score DECIMAL(5,2) DEFAULT 100,PRIMARY KEY(assignment_id),FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE)");
+  await c.query("CREATE TABLE Submission(submission_id INT AUTO_INCREMENT,assignment_id INT NOT NULL,student_id VARCHAR(20) NOT NULL,score DECIMAL(5,2),submit_date DATETIME DEFAULT CURRENT_TIMESTAMP,graded_date DATETIME,status ENUM('submitted','graded','late') DEFAULT 'submitted',PRIMARY KEY(submission_id),UNIQUE KEY uq(assignment_id,student_id),FOREIGN KEY(assignment_id) REFERENCES Assignment(assignment_id) ON DELETE CASCADE,FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE)");
+  await c.query("CREATE VIEW GradeView AS SELECT g.student_id,s.name AS student_name,g.course_id,c.course_name,g.attend_score,g.attitude_score,g.homework_score,g.midterm_score,g.final_score,g.quiz_score,g.total_score,g.grade_letter AS grade FROM Grade g JOIN Student s ON g.student_id=s.student_id JOIN Course c ON g.course_id=c.course_id");
+  await c.query("INSERT INTO Users VALUES('ADM001','admin','admin1234','admin','admin@kku.ac.th',NOW()),('TCH001','teacher1','teach1234','teacher','t1@kku.ac.th',NOW()),('TCH002','teacher2','teach5678','teacher','t2@kku.ac.th',NOW()),('683380495-2','saksorn','1234','student','s@kku.com',NOW()),('683380495-3','somchai','1234','student','s2@kku.com',NOW()),('683380495-4','somsri','1234','student','s3@kku.com',NOW()),('683380495-5','anucha','1234','student','s4@kku.com',NOW()),('683380495-6','wichai','1234','student','s5@kku.com',NOW()),('683380495-7','malai','1234','student','s6@kku.com',NOW())");
+  await c.query("INSERT INTO Admin VALUES('ADM001','Admin','043-000','admin@kku.ac.th')");
+  await c.query("INSERT INTO Teacher VALUES('TCH001','อ.ดร.วิชัย สอนดี','CS','043-101','t1@kku.ac.th'),('TCH002','อ.มาลี รักสอน','CS','043-102','t2@kku.ac.th')");
+  await c.query("INSERT INTO Student(student_id,name) VALUES('683380495-2','ศักย์ศรณ์ พละศักดิ์'),('683380495-3','สมชาย ใจดี'),('683380495-4','สมศรี รักเรียน'),('683380495-5','อนุชา มานะดี'),('683380495-6','วิชัย สุขใจ'),('683380495-7','มาลี งามดี')");
+  await c.query("INSERT INTO Classroom VALUES('SC5102','SC5102',50,5,'บรรยาย'),('GL149','GL149',80,1,'บรรยาย'),('CP9127','CP9127',40,1,'ปฏิบัติ'),('SC9107','SC9107',60,9,'บรรยาย'),('SC6201','SC6201',50,2,'ปฏิบัติ'),('SC1103','ตึกกลม',60,1,'บรรยาย'),('SC9227','SC9227',40,2,'ปฏิบัติ'),('GL213','GL213',80,2,'บรรยาย')");
+  await c.query("INSERT INTO Course VALUES('SC602005','SC602005','ความน่าจะเป็นและสถิติ',3,1,2568,'TCH001','ADM001'),('LI101001','LI101001','ภาษาอังกฤษ 1',3,1,2568,'TCH002','ADM001'),('CP411106','CP411106','Programming for ML',3,1,2568,'TCH001','ADM001'),('SC401201','SC401201','แคลคูลัส 1',3,1,2568,'TCH001','ADM001'),('CP411105','CP411105','ระบบคอมพิวเตอร์',3,1,2568,'TCH001','ADM001'),('CP411701','CP411701','AI Inspiration',2,1,2568,'TCH002','ADM001'),('GE341511','GE341511','การคิดเชิงคำนวณและสถิติ',3,1,2568,'TCH002','ADM001')");
+  await c.query("INSERT INTO Schedule(course_id,room_id,day_of_week,start_time,end_time,study_hours) VALUES('SC602005','SC5102','จันทร์','10:00','12:00',2),('SC602005','SC5102','พุธ','10:00','12:00',2),('LI101001','GL149','อังคาร','09:00','10:00',1),('LI101001','GL149','พฤหัสฯ','09:00','10:00',1),('CP411106','CP9127','อังคาร','13:00','15:00',2),('CP411106','SC9227','พฤหัสฯ','15:00','17:00',2),('SC401201','SC9107','อังคาร','16:00','18:00',2),('SC401201','SC9107','พฤหัสฯ','16:00','18:00',2),('CP411105','SC6201','พุธ','13:00','15:00',2),('CP411701','SC1103','พฤหัสฯ','10:00','12:00',2),('GE341511','GL213','ศุกร์','13:00','15:00',2)");
+  await c.query("INSERT INTO Enrollment(student_id,course_id) SELECT s.student_id,c.course_id FROM Student s CROSS JOIN Course c");
+  await c.query("INSERT INTO Attendance(student_id,schedule_id,attendance_date,check_in_time,status) VALUES('683380495-2',1,'2026-02-02','10:03','present'),('683380495-2',1,'2026-02-09','10:18','late'),('683380495-2',1,'2026-02-16','10:05','present'),('683380495-2',1,'2026-02-23',NULL,'absent'),('683380495-2',3,'2026-02-03','09:02','present'),('683380495-2',5,'2026-02-03','13:05','present'),('683380495-2',9,'2026-02-04','13:10','present'),('683380495-2',11,'2026-02-06','13:05','present')");
+  await c.query("INSERT INTO Grade(student_id,course_id,attend_score,attitude_score,homework_score,midterm_score,final_score,quiz_score,total_score,grade_letter) VALUES('683380495-2','SC602005',18,9,17,26,34,16,120,'A'),('683380495-2','LI101001',19,9,18,27,35,17,125,'A'),('683380495-2','CP411106',20,10,19,28,37,18,132,'A'),('683380495-2','SC401201',17,8,16,24,32,15,112,'B+'),('683380495-2','CP411105',18,9,17,25,33,16,118,'A'),('683380495-2','CP411701',15,7,14,20,28,13,97,'B'),('683380495-2','GE341511',16,8,15,22,30,14,105,'B+')");
+  c.release();
+}
+
+// ─── HTTP Server (ไม่ใช้ Express เลย) ─────────────────────
+const server = http.createServer(async (req, res) => {
+  console.log(`${req.method} ${req.url}`);
+  
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+
+  const parsed = url.parse(req.url, true);
+  const p = parsed.pathname;
+
   try {
-    const c = await pool.getConnection();
-    await c.query('SET FOREIGN_KEY_CHECKS=0');
-    for (const t of ['Submission','AttendanceAnalysis','Attendance','Grade','Score','Assignment','Schedule','Enrollment','Course','Classroom','Student','Teacher','Admin','Users','User'])
-      await c.query(`DROP TABLE IF EXISTS \`${t}\``);
-    await c.query('DROP VIEW IF EXISTS GradeView');
-    await c.query('SET FOREIGN_KEY_CHECKS=1');
-    await c.query("CREATE TABLE Users (user_id VARCHAR(20) NOT NULL,username VARCHAR(100) NOT NULL UNIQUE,password VARCHAR(255) NOT NULL,role ENUM('admin','teacher','student') NOT NULL,email VARCHAR(200),created_at DATETIME DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(user_id))");
-    await c.query("CREATE TABLE Admin (admin_id VARCHAR(20) NOT NULL,full_name VARCHAR(100),phone VARCHAR(20),email VARCHAR(200),PRIMARY KEY(admin_id),FOREIGN KEY(admin_id) REFERENCES Users(user_id) ON DELETE CASCADE)");
-    await c.query("CREATE TABLE Teacher (teacher_id VARCHAR(20) NOT NULL,name VARCHAR(100) NOT NULL,department VARCHAR(150),phone VARCHAR(20),email VARCHAR(200),PRIMARY KEY(teacher_id),FOREIGN KEY(teacher_id) REFERENCES Users(user_id) ON DELETE CASCADE)");
-    await c.query("CREATE TABLE Student (student_id VARCHAR(20) NOT NULL,name VARCHAR(100) NOT NULL,email VARCHAR(200),phone VARCHAR(20),gender ENUM('male','female','other'),PRIMARY KEY(student_id),FOREIGN KEY(student_id) REFERENCES Users(user_id) ON DELETE CASCADE)");
-    await c.query("CREATE TABLE Classroom (room_id VARCHAR(20) NOT NULL,room_name VARCHAR(100) NOT NULL,capacity INT DEFAULT 40,floor INT,room_type VARCHAR(50),PRIMARY KEY(room_id))");
-    await c.query("CREATE TABLE Course (course_id VARCHAR(20) NOT NULL,course_code VARCHAR(20),course_name VARCHAR(200) NOT NULL,credit INT DEFAULT 3,semester INT DEFAULT 1,academic_year INT DEFAULT 2568,teacher_id VARCHAR(20) NOT NULL,admin_id VARCHAR(20),PRIMARY KEY(course_id),FOREIGN KEY(teacher_id) REFERENCES Teacher(teacher_id),FOREIGN KEY(admin_id) REFERENCES Admin(admin_id))");
-    await c.query("CREATE TABLE Enrollment (enrollment_id INT AUTO_INCREMENT,student_id VARCHAR(20) NOT NULL,course_id VARCHAR(20) NOT NULL,PRIMARY KEY(enrollment_id),UNIQUE KEY uq(student_id,course_id),FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE,FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE)");
-    await c.query("CREATE TABLE Schedule (schedule_id INT AUTO_INCREMENT,course_id VARCHAR(20) NOT NULL,room_id VARCHAR(20) NOT NULL,day_of_week VARCHAR(20) NOT NULL,start_time TIME NOT NULL,end_time TIME NOT NULL,study_hours DECIMAL(4,1) DEFAULT 2,PRIMARY KEY(schedule_id),FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE,FOREIGN KEY(room_id) REFERENCES Classroom(room_id))");
-    await c.query("CREATE TABLE Attendance (attendance_id INT AUTO_INCREMENT,student_id VARCHAR(20) NOT NULL,schedule_id INT NOT NULL,attendance_date DATE NOT NULL,check_in_time TIME,status ENUM('present','absent','late','excused') DEFAULT 'absent',PRIMARY KEY(attendance_id),UNIQUE KEY uq(student_id,schedule_id,attendance_date),FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE,FOREIGN KEY(schedule_id) REFERENCES Schedule(schedule_id) ON DELETE CASCADE)");
-    await c.query("CREATE TABLE AttendanceAnalysis (analysis_id INT AUTO_INCREMENT,student_id VARCHAR(20) NOT NULL,course_id VARCHAR(20) NOT NULL,total_classes INT DEFAULT 0,absent_count INT DEFAULT 0,late_count INT DEFAULT 0,attendance_rate DECIMAL(5,2) DEFAULT 0,risk_level ENUM('Low','Medium','High') DEFAULT 'Low',PRIMARY KEY(analysis_id),UNIQUE KEY uq(student_id,course_id),FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE,FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE)");
-    await c.query("CREATE TABLE Grade (grade_id INT AUTO_INCREMENT,student_id VARCHAR(20) NOT NULL,course_id VARCHAR(20) NOT NULL,grade_letter VARCHAR(5),total_score DECIMAL(5,2) DEFAULT 0,attend_score DECIMAL(5,2) DEFAULT 0,attitude_score DECIMAL(5,2) DEFAULT 0,homework_score DECIMAL(5,2) DEFAULT 0,midterm_score DECIMAL(5,2) DEFAULT 0,final_score DECIMAL(5,2) DEFAULT 0,quiz_score DECIMAL(5,2) DEFAULT 0,semester INT DEFAULT 1,academic_year INT DEFAULT 2568,PRIMARY KEY(grade_id),UNIQUE KEY uq(student_id,course_id),FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE,FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE)");
-    await c.query("CREATE TABLE Assignment (assignment_id INT AUTO_INCREMENT,course_id VARCHAR(20) NOT NULL,title VARCHAR(200) NOT NULL,description VARCHAR(300),due_date DATETIME NOT NULL,max_score DECIMAL(5,2) DEFAULT 100,PRIMARY KEY(assignment_id),FOREIGN KEY(course_id) REFERENCES Course(course_id) ON DELETE CASCADE)");
-    await c.query("CREATE TABLE Submission (submission_id INT AUTO_INCREMENT,assignment_id INT NOT NULL,student_id VARCHAR(20) NOT NULL,score DECIMAL(5,2),submit_date DATETIME DEFAULT CURRENT_TIMESTAMP,graded_date DATETIME,status ENUM('submitted','graded','late') DEFAULT 'submitted',PRIMARY KEY(submission_id),UNIQUE KEY uq(assignment_id,student_id),FOREIGN KEY(assignment_id) REFERENCES Assignment(assignment_id) ON DELETE CASCADE,FOREIGN KEY(student_id) REFERENCES Student(student_id) ON DELETE CASCADE)");
-    await c.query("CREATE VIEW GradeView AS SELECT g.student_id,s.name AS student_name,g.course_id,c.course_name,g.attend_score,g.attitude_score,g.homework_score,g.midterm_score,g.final_score,g.quiz_score,g.total_score,g.grade_letter AS grade FROM Grade g JOIN Student s ON g.student_id=s.student_id JOIN Course c ON g.course_id=c.course_id");
-    await c.query("INSERT INTO Users VALUES('ADM001','admin','admin1234','admin','admin@kku.ac.th',NOW()),('TCH001','teacher1','teach1234','teacher','t1@kku.ac.th',NOW()),('TCH002','teacher2','teach5678','teacher','t2@kku.ac.th',NOW()),('683380495-2','saksorn','1234','student','s@kku.com',NOW()),('683380495-3','somchai','1234','student','s2@kku.com',NOW()),('683380495-4','somsri','1234','student','s3@kku.com',NOW()),('683380495-5','anucha','1234','student','s4@kku.com',NOW()),('683380495-6','wichai','1234','student','s5@kku.com',NOW()),('683380495-7','malai','1234','student','s6@kku.com',NOW())");
-    await c.query("INSERT INTO Admin VALUES('ADM001','Admin','043-000','admin@kku.ac.th')");
-    await c.query("INSERT INTO Teacher VALUES('TCH001','อ.ดร.วิชัย สอนดี','CS','043-101','t1@kku.ac.th'),('TCH002','อ.มาลี รักสอน','CS','043-102','t2@kku.ac.th')");
-    await c.query("INSERT INTO Student(student_id,name) VALUES('683380495-2','ศักย์ศรณ์ พละศักดิ์'),('683380495-3','สมชาย ใจดี'),('683380495-4','สมศรี รักเรียน'),('683380495-5','อนุชา มานะดี'),('683380495-6','วิชัย สุขใจ'),('683380495-7','มาลี งามดี')");
-    await c.query("INSERT INTO Classroom VALUES('SC5102','SC5102',50,5,'บรรยาย'),('GL149','GL149',80,1,'บรรยาย'),('CP9127','CP9127',40,1,'ปฏิบัติ'),('SC9107','SC9107',60,9,'บรรยาย'),('SC6201','SC6201',50,2,'ปฏิบัติ'),('SC1103','ตึกกลม',60,1,'บรรยาย'),('SC9227','SC9227',40,2,'ปฏิบัติ'),('GL213','GL213',80,2,'บรรยาย')");
-    await c.query("INSERT INTO Course VALUES('SC602005','SC602005','ความน่าจะเป็นและสถิติ',3,1,2568,'TCH001','ADM001'),('LI101001','LI101001','ภาษาอังกฤษ 1',3,1,2568,'TCH002','ADM001'),('CP411106','CP411106','Programming for ML',3,1,2568,'TCH001','ADM001'),('SC401201','SC401201','แคลคูลัส 1',3,1,2568,'TCH001','ADM001'),('CP411105','CP411105','ระบบคอมพิวเตอร์',3,1,2568,'TCH001','ADM001'),('CP411701','CP411701','AI Inspiration',2,1,2568,'TCH002','ADM001'),('GE341511','GE341511','การคิดเชิงคำนวณและสถิติ',3,1,2568,'TCH002','ADM001')");
-    await c.query("INSERT INTO Schedule(course_id,room_id,day_of_week,start_time,end_time,study_hours) VALUES('SC602005','SC5102','จันทร์','10:00','12:00',2),('SC602005','SC5102','พุธ','10:00','12:00',2),('LI101001','GL149','อังคาร','09:00','10:00',1),('LI101001','GL149','พฤหัสฯ','09:00','10:00',1),('CP411106','CP9127','อังคาร','13:00','15:00',2),('CP411106','SC9227','พฤหัสฯ','15:00','17:00',2),('SC401201','SC9107','อังคาร','16:00','18:00',2),('SC401201','SC9107','พฤหัสฯ','16:00','18:00',2),('CP411105','SC6201','พุธ','13:00','15:00',2),('CP411701','SC1103','พฤหัสฯ','10:00','12:00',2),('GE341511','GL213','ศุกร์','13:00','15:00',2)");
-    await c.query("INSERT INTO Enrollment(student_id,course_id) SELECT s.student_id,c.course_id FROM Student s CROSS JOIN Course c");
-    await c.query("INSERT INTO Attendance(student_id,schedule_id,attendance_date,check_in_time,status) VALUES('683380495-2',1,'2026-02-02','10:03','present'),('683380495-2',1,'2026-02-09','10:18','late'),('683380495-2',1,'2026-02-16','10:05','present'),('683380495-2',1,'2026-02-23',NULL,'absent'),('683380495-2',3,'2026-02-03','09:02','present'),('683380495-2',5,'2026-02-03','13:05','present'),('683380495-2',9,'2026-02-04','13:10','present'),('683380495-2',11,'2026-02-06','13:05','present')");
-    await c.query("INSERT INTO Grade(student_id,course_id,attend_score,attitude_score,homework_score,midterm_score,final_score,quiz_score,total_score,grade_letter) VALUES('683380495-2','SC602005',18,9,17,26,34,16,120,'A'),('683380495-2','LI101001',19,9,18,27,35,17,125,'A'),('683380495-2','CP411106',20,10,19,28,37,18,132,'A'),('683380495-2','SC401201',17,8,16,24,32,15,112,'B+'),('683380495-2','CP411105',18,9,17,25,33,16,118,'A'),('683380495-2','CP411701',15,7,14,20,28,13,97,'B'),('683380495-2','GE341511',16,8,15,22,30,14,105,'B+')");
-    c.release();
-    res.status(200).send('<h1 style="color:green;font-family:sans-serif">OK! Database setup done</h1><a href="/">Go to app</a>');
-  } catch (e) { console.error('SETUP:', e); res.status(500).send('ERROR: ' + e.message); }
+    // ── Health ──
+    if (p === '/api/health') return json(res, 200, { ok: true });
+
+    // ── Setup ──
+    if (p === '/api/setup') {
+      await setupDB();
+      res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+      return res.end('<h1 style="color:green;font-family:sans-serif">✅ Database setup สำเร็จ!</h1><a href="/">← กลับหน้าเว็บ</a>');
+    }
+
+    // ── Login ──
+    if (p === '/api/login' && req.method === 'POST') {
+      const body = await parseBody(req);
+      const rows = await query('SELECT * FROM Users WHERE username=? AND password=?', [body.username, body.password]);
+      if (!rows.length) return json(res, 401, {success:false, message:'ไม่ถูกต้อง'});
+      const u = rows[0]; let name = u.username;
+      if (u.role==='student'){const s=await query('SELECT name FROM Student WHERE student_id=?',[u.user_id]);if(s.length)name=s[0].name;}
+      if (u.role==='teacher'){const t=await query('SELECT name FROM Teacher WHERE teacher_id=?',[u.user_id]);if(t.length)name=t[0].name;}
+      if (u.role==='admin'){const a=await query('SELECT full_name FROM Admin WHERE admin_id=?',[u.user_id]);if(a.length&&a[0].full_name)name=a[0].full_name;}
+      return json(res, 200, {success:true, user_id:u.user_id, username:u.username, role:u.role, name});
+    }
+
+    // ── Register ──
+    if (p === '/api/register' && req.method === 'POST') {
+      const b = await parseBody(req);
+      if (!b.username||!b.password||!b.firstname||!b.lastname||!b.email) return json(res, 400, {success:false,message:'กรอกข้อมูลให้ครบ'});
+      const ex = await query('SELECT user_id FROM Users WHERE username=?',[b.username]);
+      if (ex.length) return json(res, 409, {success:false,message:'Username มีแล้ว'});
+      let id = b.student_id&&b.student_id.trim() ? b.student_id.trim() : null;
+      if (!id){const pfx=b.role==='teacher'?'TCH':b.role==='admin'?'ADM':'STU';const c=await query('SELECT COUNT(*) AS n FROM Users WHERE role=?',[b.role||'student']);id=pfx+String(c[0].n+1).padStart(3,'0');}
+      const fn=b.firstname.trim()+' '+b.lastname.trim();
+      const role=b.role||'student';
+      await query('INSERT INTO Users(user_id,username,password,role,email) VALUES(?,?,?,?,?)',[id,b.username,b.password,role,b.email]);
+      if(role==='student')await query('INSERT INTO Student(student_id,name) VALUES(?,?)',[id,fn]);
+      if(role==='teacher')await query('INSERT INTO Teacher(teacher_id,name) VALUES(?,?)',[id,fn]);
+      if(role==='admin')await query('INSERT INTO Admin(admin_id,full_name) VALUES(?,?)',[id,fn]);
+      return json(res, 200, {success:true,message:'สำเร็จ',user_id:id,name:fn});
+    }
+
+    // ── Grades ──
+    const gradesMatch = p.match(/^\/api\/grades\/(.+)$/);
+    if (gradesMatch && req.method==='GET') {
+      const r = await query('SELECT * FROM GradeView WHERE student_id=?',[gradesMatch[1]]);
+      return json(res, 200, {success:true, data:r});
+    }
+
+    // ── Schedule ──
+    const schedMatch = p.match(/^\/api\/schedule\/(.+)$/);
+    if (schedMatch && req.method==='GET') {
+      const r = await query("SELECT sc.day_of_week AS day,CONCAT(TIME_FORMAT(sc.start_time,'%H:%i'),'-',TIME_FORMAT(sc.end_time,'%H:%i')) AS time,c.course_id AS code,c.course_name AS name,t.name AS teacher,cr.room_name AS room FROM Enrollment e JOIN Course c ON e.course_id=c.course_id JOIN Schedule sc ON c.course_id=sc.course_id JOIN Teacher t ON c.teacher_id=t.teacher_id JOIN Classroom cr ON sc.room_id=cr.room_id WHERE e.student_id=? ORDER BY FIELD(sc.day_of_week,'จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์'),sc.start_time",[schedMatch[1]]);
+      return json(res, 200, {success:true, data:r});
+    }
+
+    // ── Score GET ──
+    const scoreMatch = p.match(/^\/api\/score\/(.+)$/);
+    if (scoreMatch && req.method==='GET') {
+      const r = await query('SELECT g.*,s.name AS student_name,c.course_name FROM Grade g JOIN Student s ON g.student_id=s.student_id JOIN Course c ON g.course_id=c.course_id WHERE g.student_id=?',[scoreMatch[1]]);
+      return json(res, 200, {success:true, data:r[0]||null});
+    }
+
+    // ── Score POST ──
+    if (p === '/api/score' && req.method==='POST') {
+      const b = await parseBody(req);
+      const total=+(b.attend_score||0)+ +(b.attitude_score||0)+ +(b.homework_score||0)+ +(b.midterm_score||0)+ +(b.final_score||0)+ +(b.quiz_score||0);
+      const gl=total>=80?'A':total>=75?'B+':total>=70?'B':total>=65?'C+':total>=60?'C':total>=55?'D+':total>=50?'D':'F';
+      await query('INSERT INTO Grade(student_id,course_id,attend_score,attitude_score,homework_score,midterm_score,final_score,quiz_score,total_score,grade_letter) VALUES(?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE attend_score=VALUES(attend_score),attitude_score=VALUES(attitude_score),homework_score=VALUES(homework_score),midterm_score=VALUES(midterm_score),final_score=VALUES(final_score),quiz_score=VALUES(quiz_score),total_score=VALUES(total_score),grade_letter=VALUES(grade_letter)',[b.student_id,b.course_id,b.attend_score||0,b.attitude_score||0,b.homework_score||0,b.midterm_score||0,b.final_score||0,b.quiz_score||0,total,gl]);
+      return json(res, 200, {success:true,grade:gl,total});
+    }
+
+    // ── Attendance risk ──
+    if (p === '/api/attendance/risk/all') {
+      return json(res, 200, {success:true, data:await query("SELECT * FROM AttendanceAnalysis WHERE risk_level!='Low'")});
+    }
+
+    // ── Attendance log ──
+    const logMatch = p.match(/^\/api\/attendance\/log\/(.+)$/);
+    if (logMatch && req.method==='GET') {
+      const d=parsed.query.date; if(!d)return json(res,400,{success:false,message:'need date'});
+      const dayTh=DAY_TH[new Date(d).getDay()];
+      const si=await query('SELECT schedule_id,start_time FROM Schedule WHERE course_id=? AND day_of_week=? LIMIT 1',[logMatch[1],dayTh]);
+      const cs=si.length?String(si[0].start_time).substring(0,5):null;
+      const rows=await query('SELECT s.student_id,s.name AS student_name,a.check_in_time,IFNULL(a.status,"absent") AS status FROM Enrollment e JOIN Student s ON s.student_id=e.student_id LEFT JOIN Attendance a ON a.student_id=s.student_id AND a.schedule_id=? AND a.attendance_date=? WHERE e.course_id=?',[si.length?si[0].schedule_id:0,d,logMatch[1]]);
+      return json(res,200,{success:true,data:rows.map(r=>({student_id:r.student_id,student_name:r.student_name,checkin_time:r.check_in_time,class_start_time:cs,status:r.status,minutes_late:0}))});
+    }
+
+    // ── My attendance history ──
+    const histMatch = p.match(/^\/api\/attendance\/myhistory\/(.+)$/);
+    if (histMatch && req.method==='GET') {
+      let sql="SELECT a.attendance_date,a.check_in_time,a.status,TIME_FORMAT(sc.start_time,'%H:%i') AS class_start_time,sc.day_of_week,c.course_id,c.course_name FROM Attendance a JOIN Schedule sc ON a.schedule_id=sc.schedule_id JOIN Course c ON sc.course_id=c.course_id WHERE a.student_id=?";
+      const params=[histMatch[1]]; if(parsed.query.course){sql+=' AND sc.course_id=?';params.push(parsed.query.course);} sql+=' ORDER BY a.attendance_date DESC';
+      const rows=await query(sql,params);
+      return json(res,200,{success:true,count:rows.length,data:rows.map(r=>({attendance_date:r.attendance_date,course_id:r.course_id,course_name:r.course_name,class_start_time:r.class_start_time,day_of_week:r.day_of_week,checkin_time:r.check_in_time,status:r.status,minutes_late:0}))});
+    }
+
+    // ── Attendance by student ──
+    const attMatch = p.match(/^\/api\/attendance\/(.+)$/);
+    if (attMatch && req.method==='GET') {
+      return json(res,200,{success:true,data:await query('SELECT * FROM AttendanceAnalysis WHERE student_id=?',[attMatch[1]])});
+    }
+
+    // ── Student info ──
+    const stuMatch = p.match(/^\/api\/student\/(.+)$/);
+    if (stuMatch && req.method==='GET') {
+      const r=await query('SELECT s.student_id,s.name AS student_name,u.username,u.role FROM Student s JOIN Users u ON s.student_id=u.user_id WHERE s.student_id=?',[stuMatch[1]]);
+      return json(res,200,{success:true,data:r[0]||null});
+    }
+
+    // ── NFC checkin ──
+    if (p === '/api/attendance/nfc' && req.method==='POST') {
+      const b = await parseBody(req);
+      if(!b.student_id||!b.date||!b.checkin_time) return json(res,400,{success:false,message:'ข้อมูลไม่ครบ'});
+      const stu=await query('SELECT student_id,name FROM Student WHERE student_id=?',[b.student_id]);
+      if(!stu.length) return json(res,404,{success:false,message:'ไม่พบ'});
+      const dayTh=DAY_TH[new Date(b.date).getDay()];
+      const sc=await query('SELECT sc.schedule_id,sc.course_id,sc.start_time FROM Schedule sc JOIN Enrollment e ON e.course_id=sc.course_id WHERE e.student_id=? AND sc.day_of_week=? LIMIT 1',[b.student_id,dayTh]);
+      let sid=null,cs=null,late=false,ml=0;
+      if(sc.length){sid=sc[0].schedule_id;cs=sc[0].start_time;ml=minutesLate(b.checkin_time,String(cs).substring(0,5));late=ml>15;}
+      if(sid)await query('INSERT INTO Attendance(student_id,schedule_id,attendance_date,check_in_time,status) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE check_in_time=VALUES(check_in_time),status=VALUES(status)',[b.student_id,sid,b.date,b.checkin_time,late?'late':'present']);
+      return json(res,200,{success:true,message:late?'มาสาย '+ml+' นาที':'มาทัน',data:{student_id:b.student_id,student_name:stu[0].name,checkin_time:b.checkin_time,class_start_time:cs,status:late?'late':'present',is_late:late,minutes_late:Math.max(0,ml),source:b.source||'nfc',date:b.date}});
+    }
+
+    // ── Serve index.html ──
+    if (p === '/' || p === '/index.html') {
+      res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+      return res.end(indexHtml);
+    }
+
+    // ── 404 ──
+    res.writeHead(404); res.end('Not Found');
+
+  } catch(e) {
+    console.error('ERROR:', e.message);
+    json(res, 500, {success:false, message:e.message});
+  }
 });
 
-app.post('/api/register', async (req, res) => {
-  const { username, password, firstname, lastname, student_id, email, role='student' } = req.body;
-  if (!username||!password||!firstname||!lastname||!email) return res.status(400).json({success:false,message:'กรอกข้อมูลให้ครบ'});
-  try {
-    const ex = await query('SELECT user_id FROM Users WHERE username=?',[username]);
-    if (ex.length) return res.status(409).json({success:false,message:'Username มีแล้ว'});
-    let id = student_id&&student_id.trim() ? student_id.trim() : null;
-    if (!id) { const pfx=role==='teacher'?'TCH':role==='admin'?'ADM':'STU'; const c=await query('SELECT COUNT(*) AS n FROM Users WHERE role=?',[role]); id=pfx+String(c[0].n+1).padStart(3,'0'); }
-    const fn = firstname.trim()+' '+lastname.trim();
-    await query('INSERT INTO Users(user_id,username,password,role,email) VALUES(?,?,?,?,?)',[id,username,password,role,email]);
-    if (role==='student') await query('INSERT INTO Student(student_id,name) VALUES(?,?)',[id,fn]);
-    if (role==='teacher') await query('INSERT INTO Teacher(teacher_id,name) VALUES(?,?)',[id,fn]);
-    if (role==='admin') await query('INSERT INTO Admin(admin_id,full_name) VALUES(?,?)',[id,fn]);
-    res.json({success:true,message:'สำเร็จ',user_id:id,name:fn});
-  } catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-
-app.post('/api/login', async (req, res) => {
-  try {
-    const rows = await query('SELECT * FROM Users WHERE username=? AND password=?',[req.body.username,req.body.password]);
-    if (!rows.length) return res.status(401).json({success:false,message:'ไม่ถูกต้อง'});
-    const u=rows[0]; let name=u.username;
-    if (u.role==='student'){const s=await query('SELECT name FROM Student WHERE student_id=?',[u.user_id]);if(s.length)name=s[0].name;}
-    if (u.role==='teacher'){const t=await query('SELECT name FROM Teacher WHERE teacher_id=?',[u.user_id]);if(t.length)name=t[0].name;}
-    if (u.role==='admin'){const a=await query('SELECT full_name FROM Admin WHERE admin_id=?',[u.user_id]);if(a.length&&a[0].full_name)name=a[0].full_name;}
-    res.json({success:true,user_id:u.user_id,username:u.username,role:u.role,name});
-  } catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-
-app.get('/api/grades/:student_id', async (req,res) => {
-  try { const r=await query('SELECT * FROM GradeView WHERE student_id=?',[req.params.student_id]); res.json({success:true,data:r}); }
-  catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-
-app.get('/api/schedule/:student_id', async (req,res) => {
-  try {
-    const r=await query("SELECT sc.day_of_week AS day,CONCAT(TIME_FORMAT(sc.start_time,'%H:%i'),'-',TIME_FORMAT(sc.end_time,'%H:%i')) AS time,c.course_id AS code,c.course_name AS name,t.name AS teacher,cr.room_name AS room FROM Enrollment e JOIN Course c ON e.course_id=c.course_id JOIN Schedule sc ON c.course_id=sc.course_id JOIN Teacher t ON c.teacher_id=t.teacher_id JOIN Classroom cr ON sc.room_id=cr.room_id WHERE e.student_id=? ORDER BY FIELD(sc.day_of_week,'จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์'),sc.start_time",[req.params.student_id]);
-    res.json({success:true,data:r});
-  } catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-
-app.get('/api/score/:student_id', async (req,res) => {
-  try { const r=await query('SELECT g.*,s.name AS student_name,c.course_name FROM Grade g JOIN Student s ON g.student_id=s.student_id JOIN Course c ON g.course_id=c.course_id WHERE g.student_id=?',[req.params.student_id]); res.json({success:true,data:r[0]||null}); }
-  catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-
-app.post('/api/score', async (req,res) => {
-  const {student_id,course_id,attend_score=0,attitude_score=0,homework_score=0,midterm_score=0,final_score=0,quiz_score=0}=req.body;
-  const total=+attend_score+ +attitude_score+ +homework_score+ +midterm_score+ +final_score+ +quiz_score;
-  const gl=total>=80?'A':total>=75?'B+':total>=70?'B':total>=65?'C+':total>=60?'C':total>=55?'D+':total>=50?'D':'F';
-  try {
-    await query('INSERT INTO Grade(student_id,course_id,attend_score,attitude_score,homework_score,midterm_score,final_score,quiz_score,total_score,grade_letter) VALUES(?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE attend_score=VALUES(attend_score),attitude_score=VALUES(attitude_score),homework_score=VALUES(homework_score),midterm_score=VALUES(midterm_score),final_score=VALUES(final_score),quiz_score=VALUES(quiz_score),total_score=VALUES(total_score),grade_letter=VALUES(grade_letter)',[student_id,course_id,attend_score,attitude_score,homework_score,midterm_score,final_score,quiz_score,total,gl]);
-    res.json({success:true,grade:gl,total});
-  } catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-
-app.get('/api/attendance/risk/all', async (req,res) => {
-  try { res.json({success:true,data:await query("SELECT * FROM AttendanceAnalysis WHERE risk_level!='Low'")}); }
-  catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-app.get('/api/attendance/log/:course_id', async (req,res) => {
-  const d=req.query.date; if(!d) return res.status(400).json({success:false,message:'need date'});
-  try {
-    const dayTh=DAY_TH[new Date(d).getDay()];
-    const si=await query('SELECT schedule_id,start_time FROM Schedule WHERE course_id=? AND day_of_week=? LIMIT 1',[req.params.course_id,dayTh]);
-    const cs=si.length?String(si[0].start_time).substring(0,5):null;
-    const rows=await query('SELECT s.student_id,s.name AS student_name,a.check_in_time,IFNULL(a.status,"absent") AS status FROM Enrollment e JOIN Student s ON s.student_id=e.student_id LEFT JOIN Attendance a ON a.student_id=s.student_id AND a.schedule_id=? AND a.attendance_date=? WHERE e.course_id=?',[si.length?si[0].schedule_id:0,d,req.params.course_id]);
-    res.json({success:true,data:rows.map(r=>({...r,checkin_time:r.check_in_time,class_start_time:cs,minutes_late:0}))});
-  } catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-app.get('/api/attendance/myhistory/:student_id', async (req,res) => {
-  try {
-    let sql="SELECT a.attendance_date,a.check_in_time,a.status,TIME_FORMAT(sc.start_time,'%H:%i') AS class_start_time,sc.day_of_week,c.course_id,c.course_name FROM Attendance a JOIN Schedule sc ON a.schedule_id=sc.schedule_id JOIN Course c ON sc.course_id=c.course_id WHERE a.student_id=?";
-    const p=[req.params.student_id]; if(req.query.course){sql+=' AND sc.course_id=?';p.push(req.query.course);} sql+=' ORDER BY a.attendance_date DESC';
-    const rows=await query(sql,p);
-    res.json({success:true,count:rows.length,data:rows.map(r=>({attendance_date:r.attendance_date,course_id:r.course_id,course_name:r.course_name,class_start_time:r.class_start_time,day_of_week:r.day_of_week,checkin_time:r.check_in_time,status:r.status,minutes_late:0}))});
-  } catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-app.get('/api/attendance/:student_id', async (req,res) => {
-  try { res.json({success:true,data:await query('SELECT * FROM AttendanceAnalysis WHERE student_id=?',[req.params.student_id])}); }
-  catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-app.get('/api/student/:student_id', async (req,res) => {
-  try { const r=await query('SELECT s.student_id,s.name AS student_name,u.username,u.role FROM Student s JOIN Users u ON s.student_id=u.user_id WHERE s.student_id=?',[req.params.student_id]); res.json({success:true,data:r[0]||null}); }
-  catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-app.post('/api/attendance/nfc', async (req,res) => {
-  const {student_id,date,checkin_time,source}=req.body;
-  if(!student_id||!date||!checkin_time) return res.status(400).json({success:false,message:'ข้อมูลไม่ครบ'});
-  try {
-    const stu=await query('SELECT student_id,name FROM Student WHERE student_id=?',[student_id]);
-    if(!stu.length) return res.status(404).json({success:false,message:'ไม่พบ'});
-    const dayTh=DAY_TH[new Date(date).getDay()];
-    const sc=await query('SELECT sc.schedule_id,sc.course_id,sc.start_time FROM Schedule sc JOIN Enrollment e ON e.course_id=sc.course_id WHERE e.student_id=? AND sc.day_of_week=? LIMIT 1',[student_id,dayTh]);
-    let sid=null,cs=null,late=false,ml=0;
-    if(sc.length){sid=sc[0].schedule_id;cs=sc[0].start_time;ml=minutesLate(checkin_time,String(cs).substring(0,5));late=ml>15;}
-    if(sid) await query('INSERT INTO Attendance(student_id,schedule_id,attendance_date,check_in_time,status) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE check_in_time=VALUES(check_in_time),status=VALUES(status)',[student_id,sid,date,checkin_time,late?'late':'present']);
-    res.json({success:true,message:late?'มาสาย '+ml+' นาที':'มาทัน',data:{student_id,student_name:stu[0].name,checkin_time,class_start_time:cs,status:late?'late':'present',is_late:late,minutes_late:Math.max(0,ml),source:source||'nfc',date}});
-  } catch(e){ res.status(500).json({success:false,message:e.message}); }
-});
-
-// Serve index.html
-app.use(express.static(__dirname));
-app.get('/', (req,res) => res.sendFile(path.join(__dirname,'index.html')));
-
-// Error handler
-app.use((err,req,res,next) => { console.error('ERR:', err.message); res.status(500).json({success:false,message:err.message}); });
-
-// Start with http.createServer
-const server = http.createServer(app);
 server.listen(port, '0.0.0.0', () => console.log('SERVER OK on port ' + port));
-server.keepAliveTimeout = 65000;
-server.headersTimeout = 66000;
