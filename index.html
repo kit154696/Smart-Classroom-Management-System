@@ -391,7 +391,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     </div>
     <button class="login-main-btn" id="login-btn" onclick="doLogin()">Log in</button>
     <div class="login-or">or</div>
-    <button class="login-kku-btn" onclick="showToast('KKU Mail login ยังไม่พร้อมใช้งาน',true)">Log in with kku mail</button>
+    <button class="login-kku-btn" onclick="loginWithKKU()">Log in with kku mail</button>
 
     <!-- Register link -->
     <div style="text-align:center;margin-top:22px;">
@@ -695,7 +695,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     <div class="page" id="page-grades">
       <div class="page-pill">ตรวจสอบเกรด</div>
       <div class="grade-qrow">
-        <input class="grade-inp" id="grade-uid" type="text" placeholder="กรอก User ID เช่น 683380999-9">
+        <input class="grade-inp" id="grade-uid" type="text" placeholder="กรอก User ID เช่น STU001">
         <button class="grade-btn" id="grade-btn" onclick="checkGrade()">SUBMIT</button>
       </div>
       <div id="grade-wrap"><div class="tbl-empty">ป้อน User ID แล้วกด SUBMIT เพื่อดูเกรด</div></div>
@@ -894,15 +894,19 @@ async function doRegister() {
 }
 
 // ─── Login / Logout ────────────────────────
-async function doLogin() {
-  const u = document.getElementById('login-username').value.trim();
-  const p = document.getElementById('login-password').value;
+async function doLogin(autoUser, autoPass) {
+  const u = autoUser || document.getElementById('login-username').value.trim();
+  const p = autoPass || document.getElementById('login-password').value;
   if (!u||!p){ showToast('กรุณากรอกข้อมูลให้ครบ',true); return; }
-  setBtn('login-btn', true);
+  if (!autoUser) setBtn('login-btn', true);
   try {
     const r = await api('POST','/login',{username:u,password:p});
     if (r.success) {
       currentUser = r;
+      // Keep me logged in
+      if (document.getElementById('keep-me')?.checked || autoUser) {
+        try { localStorage.setItem('scms_user', JSON.stringify({u,p})); } catch(e){}
+      }
       document.getElementById('sb-av').textContent   = (r.name||r.username||'?')[0].toUpperCase();
       document.getElementById('sb-name').textContent = r.name||r.username;
       document.getElementById('sb-id').textContent   = r.user_id||r.username;
@@ -917,17 +921,52 @@ async function doLogin() {
       document.getElementById('screen-app').classList.add('active');
       showPage('page-profile');
       loadAllData();
-    } else showToast(r.message||'Username หรือ Password ไม่ถูกต้อง',true);
-  } catch { showToast('❌ เชื่อมต่อ Server ไม่ได้',true); }
-  finally  { setBtn('login-btn', false, 'Log in'); }
+    } else {
+      if (!autoUser) showToast(r.message||'Username หรือ Password ไม่ถูกต้อง',true);
+      try { localStorage.removeItem('scms_user'); } catch(e){}
+    }
+  } catch { if (!autoUser) showToast('❌ เชื่อมต่อ Server ไม่ได้',true); }
+  finally  { if (!autoUser) setBtn('login-btn', false, 'Log in'); }
 }
 
 function doLogout() {
   currentUser = null;
+  try { localStorage.removeItem('scms_user'); } catch(e){}
   document.getElementById('screen-app').classList.remove('active');
   document.getElementById('screen-login').classList.add('active');
   document.getElementById('login-password').value = '';
+  document.getElementById('keep-me').checked = false;
   showToast('ออกจากระบบแล้ว');
+}
+
+// ─── Auto login on page load ─────────────
+(function autoLogin() {
+  try {
+    const saved = localStorage.getItem('scms_user');
+    if (saved) {
+      const {u, p} = JSON.parse(saved);
+      if (u && p) setTimeout(() => doLogin(u, p), 300);
+    }
+  } catch(e){}
+})();
+
+// ─── Login with KKU Mail ─────────────────
+function loginWithKKU() {
+  const email = prompt('กรอก KKU Email ของคุณ:\n(เช่น saksorn.p@kkumail.com)');
+  if (!email) return;
+  const em = email.trim().toLowerCase();
+  if (!em.includes('@kku') && !em.includes('@kkumail')) {
+    showToast('กรุณาใช้อีเมล @kkumail.com หรือ @kku.ac.th เท่านั้น', true);
+    return;
+  }
+  // Extract username from email
+  const username = em.split('@')[0].replace(/\./g, '').replace(/[^a-z0-9]/g, '');
+  const password = prompt('กรอกรหัสผ่านของ ' + username + ':');
+  if (!password) return;
+  document.getElementById('login-username').value = username;
+  document.getElementById('login-password').value = password;
+  document.getElementById('keep-me').checked = true;
+  doLogin();
 }
 
 // ─── Page navigation ──────────────────────
