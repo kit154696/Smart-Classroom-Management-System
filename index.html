@@ -391,7 +391,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     </div>
     <button class="login-main-btn" id="login-btn" onclick="doLogin()">Log in</button>
     <div class="login-or">or</div>
-    <button class="login-kku-btn" onclick="loginWithKKU()">Log in with kku mail</button>
+    <button class="login-kku-btn" onclick="showToast('KKU Mail login ยังไม่พร้อมใช้งาน',true)">Log in with kku mail</button>
 
     <!-- Register link -->
     <div style="text-align:center;margin-top:22px;">
@@ -525,10 +525,13 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
       <button class="sb-btn" id="sb-assignment"  onclick="showPage('page-assignment')">📝 Assignment</button>
       <button class="sb-btn" id="sb-submission"  onclick="showPage('page-submission')">📤 Submission</button>
       <button class="sb-btn" id="sb-grades"      onclick="showPage('page-grades')">🎓 Grade</button>
+      <button class="sb-btn" id="sb-enrollment"  onclick="showPage('page-enrollment')">📋 Enrollment</button>
       <button class="sb-btn" id="sb-students"    onclick="showPage('page-students')">👨‍🎓 Student</button>
       <button class="sb-btn" id="sb-teachers"    onclick="showPage('page-teachers')">👨‍🏫 Teacher</button>
       <button class="sb-btn" id="sb-users"       onclick="showPage('page-users')">👥 Users</button>
       <button class="sb-btn" id="sb-analysis"    onclick="showPage('page-analysis')">📊 Analysis</button>
+      <button class="sb-btn" id="sb-scoring"     onclick="showPage('page-scoring')">✏️ Scoring</button>
+      <button class="sb-btn" id="sb-gradeall"    onclick="showPage('page-gradeall')" style="background:#8B3020;color:#fff;">📊 เกรดทุกวิชา</button>
       <button class="sb-btn" id="sb-nfc"         onclick="showPage('page-nfc')">📲 NFC</button>
     </div>
   </nav>
@@ -692,10 +695,41 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     <div class="page" id="page-grades">
       <div class="page-pill">ตรวจสอบเกรด</div>
       <div class="grade-qrow">
-        <input class="grade-inp" id="grade-uid" type="text" placeholder="กรอก User ID เช่น STU001">
+        <input class="grade-inp" id="grade-uid" type="text" placeholder="กรอก User ID เช่น 683380999-9">
         <button class="grade-btn" id="grade-btn" onclick="checkGrade()">SUBMIT</button>
       </div>
       <div id="grade-wrap"><div class="tbl-empty">ป้อน User ID แล้วกด SUBMIT เพื่อดูเกรด</div></div>
+    </div>
+
+    <!-- ════════════════════════
+         SCORING (Teacher/Admin)
+    ════════════════════════ -->
+    <div class="page" id="page-scoring">
+      <div class="page-pill">ลงเกรด</div>
+      <div class="score-wrap">
+        <div class="score-uid-row">
+          <span class="score-uid-lbl">User ID นักศึกษา :</span>
+          <input type="text" id="sc-uid" class="score-uid-inp" placeholder="เช่น 683380495-2" onchange="loadStudentInfo()">
+          <span id="sc-name" class="score-name">ชื่อ-นามสกุล</span>
+        </div>
+        <div id="sc-fields" style="display:none;">
+          <div class="score-row">
+            <label>วิชา :</label>
+            <select id="sc-course" class="score-inp" style="width:260px;padding:8px;"></select>
+          </div>
+          <div class="score-row">
+            <label>เกรด :</label>
+            <select id="sc-grade" class="score-inp" style="width:120px;padding:8px;">
+              <option value="A">A</option><option value="B+">B+</option><option value="B">B</option>
+              <option value="C+">C+</option><option value="C">C</option><option value="D+">D+</option>
+              <option value="D">D</option><option value="F">F</option>
+            </select>
+          </div>
+          <div class="score-actions">
+            <button class="sbtn primary" onclick="submitScore()">SUBMIT / บันทึกเกรด</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ════════════════════════
@@ -751,31 +785,24 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
       <div class="page-pill">👥 Users (ผู้ใช้ทั้งหมด)</div>
       <div id="users-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
     </div>
+    <!-- ════════════════════════ ENROLLMENT ════════════════════════ -->
+    <div class="page" id="page-enrollment">
+      <div class="page-pill">📋 Enrollment (ลงทะเบียน)</div>
+      <div id="enrollment-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
+    </div>
     <!-- ════════════════════════ ANALYSIS ════════════════════════ -->
     <div class="page" id="page-analysis">
       <div class="page-pill">📊 AttendanceAnalysis (วิเคราะห์ความเสี่ยง)</div>
-
-      <!-- Summary Cards -->
-      <div id="analysis-summary" style="display:flex;flex-wrap:wrap;gap:12px;margin:12px 0;"></div>
-
-      <!-- Filter -->
-      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 12px;">
-        <select id="analysis-filter-risk" style="padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;" onchange="renderAnalysis()">
-          <option value="">ทุกระดับความเสี่ยง</option>
-          <option value="High">🔴 High (เสี่ยงสูง)</option>
-          <option value="Medium">🟠 Medium (เสี่ยงปานกลาง)</option>
-          <option value="Low">🟢 Low (เสี่ยงต่ำ)</option>
-        </select>
-        <input id="analysis-filter-student" type="text" placeholder="🔍 ค้นหาชื่อหรือรหัสนิสิต..." style="padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;flex:1;min-width:200px;font-family:inherit;" oninput="renderAnalysis()">
-        <select id="analysis-filter-course" style="padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;" onchange="renderAnalysis()">
-          <option value="">ทุกวิชา</option>
-        </select>
-      </div>
-
-      <!-- Table -->
       <div id="analysis-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
-      <!-- Student Detail -->
-      <div id="analysis-detail" style="display:none;margin-top:16px;"></div>
+    </div>
+
+    <!-- ════════════════════════ GRADE ALL (Teacher/Admin) ════════════════════════ -->
+    <div class="page" id="page-gradeall">
+      <div class="page-pill" style="background:#8B3020;">📊 เกรดนักศึกษาทุกวิชา (Teacher/Admin)</div>
+      <div id="gradeall-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;"></div>
+      <div id="gradeall-content">
+        <div class="tbl-empty">กดปุ่มวิชาด้านบนเพื่อดูเกรด หรือรอโหลด...</div>
+      </div>
     </div>
 
   </div><!-- /app-main -->
@@ -866,19 +893,15 @@ async function doRegister() {
 }
 
 // ─── Login / Logout ────────────────────────
-async function doLogin(autoUser, autoPass) {
-  const u = autoUser || document.getElementById('login-username').value.trim();
-  const p = autoPass || document.getElementById('login-password').value;
+async function doLogin() {
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
   if (!u||!p){ showToast('กรุณากรอกข้อมูลให้ครบ',true); return; }
-  if (!autoUser) setBtn('login-btn', true);
+  setBtn('login-btn', true);
   try {
     const r = await api('POST','/login',{username:u,password:p});
     if (r.success) {
       currentUser = r;
-      // Keep me logged in
-      if (document.getElementById('keep-me')?.checked || autoUser) {
-        try { localStorage.setItem('scms_user', JSON.stringify({u,p})); } catch(e){}
-      }
       document.getElementById('sb-av').textContent   = (r.name||r.username||'?')[0].toUpperCase();
       document.getElementById('sb-name').textContent = r.name||r.username;
       document.getElementById('sb-id').textContent   = r.user_id||r.username;
@@ -893,61 +916,27 @@ async function doLogin(autoUser, autoPass) {
       document.getElementById('screen-app').classList.add('active');
       showPage('page-profile');
       loadAllData();
-    } else {
-      if (!autoUser) showToast(r.message||'Username หรือ Password ไม่ถูกต้อง',true);
-      try { localStorage.removeItem('scms_user'); } catch(e){}
-    }
-  } catch { if (!autoUser) showToast('❌ เชื่อมต่อ Server ไม่ได้',true); }
-  finally  { if (!autoUser) setBtn('login-btn', false, 'Log in'); }
+    } else showToast(r.message||'Username หรือ Password ไม่ถูกต้อง',true);
+  } catch { showToast('❌ เชื่อมต่อ Server ไม่ได้',true); }
+  finally  { setBtn('login-btn', false, 'Log in'); }
 }
 
 function doLogout() {
   currentUser = null;
-  try { localStorage.removeItem('scms_user'); } catch(e){}
   document.getElementById('screen-app').classList.remove('active');
   document.getElementById('screen-login').classList.add('active');
   document.getElementById('login-password').value = '';
-  document.getElementById('keep-me').checked = false;
   showToast('ออกจากระบบแล้ว');
-}
-
-// ─── Auto login on page load ─────────────
-(function autoLogin() {
-  try {
-    const saved = localStorage.getItem('scms_user');
-    if (saved) {
-      const {u, p} = JSON.parse(saved);
-      if (u && p) setTimeout(() => doLogin(u, p), 300);
-    }
-  } catch(e){}
-})();
-
-// ─── Login with KKU Mail ─────────────────
-function loginWithKKU() {
-  const email = prompt('กรอก KKU Email ของคุณ:\n(เช่น saksorn.p@kkumail.com)');
-  if (!email) return;
-  const em = email.trim().toLowerCase();
-  if (!em.includes('@kku') && !em.includes('@kkumail')) {
-    showToast('กรุณาใช้อีเมล @kkumail.com หรือ @kku.ac.th เท่านั้น', true);
-    return;
-  }
-  // Extract username from email
-  const username = em.split('@')[0].replace(/\./g, '').replace(/[^a-z0-9]/g, '');
-  const password = prompt('กรอกรหัสผ่านของ ' + username + ':');
-  if (!password) return;
-  document.getElementById('login-username').value = username;
-  document.getElementById('login-password').value = password;
-  document.getElementById('keep-me').checked = true;
-  doLogin();
 }
 
 // ─── Page navigation ──────────────────────
 const PAGE_SB = {
   'page-schedule':'sb-schedule','page-attendance':'sb-attendance',
   'page-classroom':'sb-classroom','page-course':'sb-course','page-assignment':'sb-assignment',
-  'page-submission':'sb-submission','page-grades':'sb-grades',
+  'page-submission':'sb-submission','page-grades':'sb-grades','page-scoring':'sb-scoring',
   'page-students':'sb-students','page-teachers':'sb-teachers','page-users':'sb-users',
-  'page-analysis':'sb-analysis','page-nfc':'sb-nfc',
+  'page-enrollment':'sb-enrollment','page-analysis':'sb-analysis','page-nfc':'sb-nfc',
+  'page-gradeall':'sb-gradeall',
 };
 
 function showPage(pid) {
@@ -958,7 +947,7 @@ function showPage(pid) {
   const sb = document.getElementById(PAGE_SB[pid]);
   if (sb) sb.classList.add('active');
   if (pid==='page-nfc') setTimeout(startNFC,400);
-  if (pid==='page-analysis') loadAnalysis();
+  if (pid==='page-gradeall') loadGradeAll();
   window.scrollTo(0,0);
 }
 
@@ -1014,7 +1003,7 @@ async function loadSubmission() {
   const el=document.getElementById('submission-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/submissions');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>submission_id</th><th>student (FK)</th><th>assignment (FK)</th><th>course</th><th>score</th><th>status</th><th>submit_date</th><th>graded_date</th><th>graded_by (FK→Teacher)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.submission_id}</b></td><td>${d.student_name||d.student_id}</td><td>${d.assignment_title||d.assignment_id}</td><td>${d.course_name||''}</td><td>${d.score??'-'}</td><td><span style="color:${d.status==='graded'?'green':d.status==='late'?'red':'orange'}">${d.status}</span></td><td>${String(d.submit_date||'').substring(0,16)}</td><td>${d.graded_date?String(d.graded_date).substring(0,10):'-'}</td><td>${d.graded_by_name||d.graded_by||'-'}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>submission_id</th><th>student (FK)</th><th>assignment (FK)</th><th>course</th><th>score</th><th>status</th><th>submit_date</th><th>graded_date</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.submission_id}</b></td><td>${d.student_name||d.student_id}</td><td>${d.assignment_title||d.assignment_id}</td><td>${d.course_name||''}</td><td>${d.score??'-'}</td><td><span style="color:${d.status==='graded'?'green':d.status==='late'?'red':'orange'}">${d.status}</span></td><td>${String(d.submit_date||'').substring(0,16)}</td><td>${d.graded_date?String(d.graded_date).substring(0,10):'-'}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1046,173 +1035,23 @@ async function loadUsers() {
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
+// ─── Enrollment ───────────────────────────
+async function loadEnrollment() {
+  const el=document.getElementById('enrollment-wrap'); if(!el)return;
+  el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
+  try{const r=await api('GET','/enrollments');if(r.success&&r.data?.length){
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>enrollment_id</th><th>student_id (FK)</th><th>student_name</th><th>course_id (FK)</th><th>course_name</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.03}s both"><td><b>${d.enrollment_id}</b></td><td>${d.student_id}</td><td>${d.student_name}</td><td>${d.course_id}</td><td style="text-align:left">${d.course_name}</td></tr>`).join('')}</tbody></table></div>`;
+  }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
+}
+
 // ─── Attendance Analysis ──────────────────
-let analysisData = null;
 async function loadAnalysis() {
   const el=document.getElementById('analysis-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
-  document.getElementById('analysis-summary').innerHTML='';
-  document.getElementById('analysis-detail').style.display='none';
-  try {
-    const r=await api('GET','/analysis');
-    if(r.success&&r.data?.length){
-      analysisData=r.data;
-      // Populate course filter
-      const courses=[...new Set(r.data.map(d=>d.course_id))];
-      const csel=document.getElementById('analysis-filter-course');
-      csel.innerHTML='<option value="">ทุกวิชา</option>'+courses.map(c=>{
-        const nm=r.data.find(d=>d.course_id===c)?.course_name||c;
-        return `<option value="${c}">${c} — ${nm}</option>`;
-      }).join('');
-      renderAnalysisSummary();
-      renderAnalysis();
-    } else {
-      el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล AttendanceAnalysis</div>';
-      document.getElementById('analysis-summary').innerHTML='';
-    }
-  } catch { el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>'; }
-}
-
-function renderAnalysisSummary() {
-  if(!analysisData)return;
-  const d=analysisData;
-  const high=d.filter(x=>x.risk_level==='High');
-  const med=d.filter(x=>x.risk_level==='Medium');
-  const low=d.filter(x=>x.risk_level==='Low');
-  const students=[...new Set(d.map(x=>x.student_id))];
-  const highStudents=[...new Set(high.map(x=>x.student_id))];
-  const avgRate=d.length?(d.reduce((s,x)=>s+(+x.attendance_rate||0),0)/d.length).toFixed(1):0;
-
-  document.getElementById('analysis-summary').innerHTML=`
-    <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;padding:16px;border-radius:12px;text-align:center;">
-      <div style="font-size:32px;font-weight:800;">${high.length}</div>
-      <div style="font-size:12px;opacity:.9;">🔴 เสี่ยงสูง (High)</div>
-      <div style="font-size:11px;opacity:.7;margin-top:4px;">${highStudents.length} คน</div>
-    </div>
-    <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#e67e22,#f39c12);color:#fff;padding:16px;border-radius:12px;text-align:center;">
-      <div style="font-size:32px;font-weight:800;">${med.length}</div>
-      <div style="font-size:12px;opacity:.9;">🟠 เสี่ยงปานกลาง (Medium)</div>
-    </div>
-    <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff;padding:16px;border-radius:12px;text-align:center;">
-      <div style="font-size:32px;font-weight:800;">${low.length}</div>
-      <div style="font-size:12px;opacity:.9;">🟢 เสี่ยงต่ำ (Low)</div>
-    </div>
-    <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#2c3e50,#34495e);color:#fff;padding:16px;border-radius:12px;text-align:center;">
-      <div style="font-size:32px;font-weight:800;">${avgRate}%</div>
-      <div style="font-size:12px;opacity:.9;">📊 อัตราเข้าเรียนเฉลี่ย</div>
-      <div style="font-size:11px;opacity:.7;margin-top:4px;">${students.length} คน | ${d.length} records</div>
-    </div>`;
-}
-
-function renderAnalysis() {
-  if(!analysisData)return;
-  const el=document.getElementById('analysis-wrap');
-  const riskFilter=document.getElementById('analysis-filter-risk').value;
-  const stuFilter=document.getElementById('analysis-filter-student').value.trim().toLowerCase();
-  const courseFilter=document.getElementById('analysis-filter-course').value;
-
-  let filtered=analysisData;
-  if(riskFilter) filtered=filtered.filter(d=>d.risk_level===riskFilter);
-  if(stuFilter) filtered=filtered.filter(d=>(d.student_name||'').toLowerCase().includes(stuFilter)||(d.student_id||'').toLowerCase().includes(stuFilter));
-  if(courseFilter) filtered=filtered.filter(d=>d.course_id===courseFilter);
-
-  if(!filtered.length){
-    el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</div>';
-    return;
-  }
-
-  const rc=lv=>lv==='High'?'#c0392b':lv==='Medium'?'#e67e22':'#27ae60';
-  const bg=lv=>lv==='High'?'#fdf2f2':lv==='Medium'?'#fef9f0':'#f0fdf4';
-  const icon=lv=>lv==='High'?'🔴':lv==='Medium'?'🟠':'🟢';
-  const bar=(rate)=>`<div style="display:flex;align-items:center;gap:6px;">
-    <div style="flex:1;height:8px;background:#eee;border-radius:4px;min-width:60px;">
-      <div style="width:${Math.min(rate,100)}%;height:100%;background:${rate>=80?'#27ae60':rate>=60?'#e67e22':'#c0392b'};border-radius:4px;"></div>
-    </div><span style="font-size:12px;font-weight:700;">${rate}%</span></div>`;
-
-  el.innerHTML=`<div style="font-size:12px;color:#888;margin-bottom:6px;">แสดง ${filtered.length} / ${analysisData.length} รายการ</div>
-    <div class="tbl-wrap"><table class="tbl"><thead><tr>
-      <th>#</th><th>รหัสนิสิต</th><th>ชื่อ-นามสกุล</th><th>วิชา</th>
-      <th>คาบทั้งหมด</th><th>ขาด</th><th>สาย</th><th>อัตราเข้าเรียน</th><th>ระดับความเสี่ยง</th><th></th>
-    </tr></thead><tbody>${filtered.map((d,i)=>`<tr style="animation:fadeInUp .2s ease ${i*.03}s both;background:${bg(d.risk_level)}">
-      <td>${i+1}</td>
-      <td><b>${d.student_id}</b></td>
-      <td style="text-align:left">${d.student_name||'-'}</td>
-      <td style="text-align:left;font-size:11px;">${d.course_id}<br><span style="color:#888">${d.course_name||''}</span></td>
-      <td>${d.total_classes}</td>
-      <td style="color:${d.absent_count>1?'#c0392b':'#333'};font-weight:${d.absent_count>1?'700':'400'}">${d.absent_count}</td>
-      <td style="color:${d.late_count>2?'#e67e22':'#333'}">${d.late_count}</td>
-      <td>${bar(d.attendance_rate)}</td>
-      <td><span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;background:${rc(d.risk_level)}">${icon(d.risk_level)} ${d.risk_level}</span></td>
-      <td><button onclick="showStudentAnalysis('${d.student_id}')" style="padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">ดูรายละเอียด</button></td>
-    </tr>`).join('')}</tbody></table></div>`;
-}
-
-function showStudentAnalysis(sid) {
-  if(!analysisData)return;
-  const detail=document.getElementById('analysis-detail');
-  const records=analysisData.filter(d=>d.student_id===sid);
-  if(!records.length){detail.style.display='none';return;}
-
-  const name=records[0].student_name||sid;
-  const totalClasses=records.reduce((s,r)=>s+r.total_classes,0);
-  const totalAbsent=records.reduce((s,r)=>s+r.absent_count,0);
-  const totalLate=records.reduce((s,r)=>s+r.late_count,0);
-  const avgRate=records.length?(records.reduce((s,r)=>s+(+r.attendance_rate),0)/records.length).toFixed(1):0;
-  const worstRisk=records.some(r=>r.risk_level==='High')?'High':records.some(r=>r.risk_level==='Medium')?'Medium':'Low';
-  const rc=lv=>lv==='High'?'#c0392b':lv==='Medium'?'#e67e22':'#27ae60';
-
-  detail.style.display='block';
-  detail.innerHTML=`
-    <div style="border:2px solid ${rc(worstRisk)};border-radius:12px;overflow:hidden;">
-      <div style="background:${rc(worstRisk)};color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <div>
-          <div style="font-size:18px;font-weight:700;">👤 ${name}</div>
-          <div style="font-size:12px;opacity:.8;">รหัสนิสิต: ${sid} | ลงทะเบียน ${records.length} วิชา</div>
-        </div>
-        <button onclick="document.getElementById('analysis-detail').style.display='none'" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:inherit;">✕ ปิด</button>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;padding:14px 20px;background:#fafafa;">
-        <div style="text-align:center;padding:10px 18px;background:#fff;border-radius:8px;border:1px solid #eee;">
-          <div style="font-size:24px;font-weight:800;color:#333;">${totalClasses}</div>
-          <div style="font-size:10px;color:#888;">คาบเรียนทั้งหมด</div>
-        </div>
-        <div style="text-align:center;padding:10px 18px;background:#fff;border-radius:8px;border:1px solid #eee;">
-          <div style="font-size:24px;font-weight:800;color:#c0392b;">${totalAbsent}</div>
-          <div style="font-size:10px;color:#888;">ขาดเรียน</div>
-        </div>
-        <div style="text-align:center;padding:10px 18px;background:#fff;border-radius:8px;border:1px solid #eee;">
-          <div style="font-size:24px;font-weight:800;color:#e67e22;">${totalLate}</div>
-          <div style="font-size:10px;color:#888;">มาสาย</div>
-        </div>
-        <div style="text-align:center;padding:10px 18px;background:#fff;border-radius:8px;border:1px solid #eee;">
-          <div style="font-size:24px;font-weight:800;color:${+avgRate>=80?'#27ae60':'#c0392b'};">${avgRate}%</div>
-          <div style="font-size:10px;color:#888;">อัตราเข้าเรียนเฉลี่ย</div>
-        </div>
-      </div>
-      <div style="padding:0 20px 14px;">
-        <div style="font-weight:700;font-size:13px;margin:10px 0 6px;color:#555;">รายละเอียดแต่ละวิชา</div>
-        <div class="tbl-wrap"><table class="tbl" style="margin:0;"><thead><tr>
-          <th>วิชา</th><th>ชื่อวิชา</th><th>คาบทั้งหมด</th><th>ขาด</th><th>สาย</th><th>อัตราเข้าเรียน</th><th>ระดับ</th>
-        </tr></thead><tbody>${records.map((d,i)=>{
-          const bg2=d.risk_level==='High'?'#fdf2f2':d.risk_level==='Medium'?'#fef9f0':'#f0fdf4';
-          return `<tr style="background:${bg2}">
-            <td><b>${d.course_id}</b></td><td style="text-align:left">${d.course_name||'-'}</td>
-            <td>${d.total_classes}</td>
-            <td style="font-weight:700;color:${d.absent_count>1?'#c0392b':'#333'}">${d.absent_count}</td>
-            <td style="color:${d.late_count>2?'#e67e22':'#333'}">${d.late_count}</td>
-            <td>
-              <div style="display:flex;align-items:center;gap:6px;">
-                <div style="flex:1;height:8px;background:#eee;border-radius:4px;min-width:50px;">
-                  <div style="width:${Math.min(d.attendance_rate,100)}%;height:100%;background:${+d.attendance_rate>=80?'#27ae60':+d.attendance_rate>=60?'#e67e22':'#c0392b'};border-radius:4px;"></div>
-                </div><span style="font-weight:700;">${d.attendance_rate}%</span>
-              </div>
-            </td>
-            <td><span style="padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:${rc(d.risk_level)}">${d.risk_level}</span></td>
-          </tr>`;
-        }).join('')}</tbody></table></div>
-      </div>
-    </div>`;
-  detail.scrollIntoView({behavior:'smooth',block:'start'});
+  try{const r=await api('GET','/analysis');if(r.success&&r.data?.length){
+    const rc=lv=>lv==='High'?'#c0392b':lv==='Medium'?'#e67e22':'#27ae60';
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>analysis_id</th><th>student (FK)</th><th>course (FK)</th><th>total_classes</th><th>absent_count</th><th>late_count</th><th>attendance_rate</th><th>risk_level</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.analysis_id}</b></td><td>${d.student_name||d.student_id}</td><td>${d.course_name||d.course_id}</td><td>${d.total_classes}</td><td>${d.absent_count}</td><td>${d.late_count}</td><td>${d.attendance_rate}%</td><td><b style="color:${rc(d.risk_level)}">${d.risk_level}</b></td></tr>`).join('')}</tbody></table></div>`;
+  }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
 // ─── Grade All (Teacher/Admin) ────────────
@@ -1269,7 +1108,6 @@ function showCourseGrade(idx) {
 
   // Stats
   const grades = c.students || [];
-  const avgScore = grades.length ? (grades.reduce((s, g) => s + (+g.total_score || 0), 0) / grades.length).toFixed(1) : 0;
   const countA = grades.filter(g => g.grade_letter === 'A').length;
   const countF = grades.filter(g => g.grade_letter === 'F').length;
 
@@ -1280,10 +1118,6 @@ function showCourseGrade(idx) {
         <div style="font-size:12px;opacity:.8;margin-top:4px;">อาจารย์: ${c.teacher_name || '-'} | ลงทะเบียน: ${c.enrolled} คน | มีเกรด: ${c.graded} คน</div>
       </div>
       <div style="display:flex;gap:12px;padding:12px 20px;background:#f9f5f3;flex-wrap:wrap;">
-        <div style="text-align:center;padding:8px 16px;background:#fff;border-radius:8px;border:1px solid #eee;">
-          <div style="font-size:22px;font-weight:800;color:#8B3020;">${avgScore}</div>
-          <div style="font-size:10px;color:#888;">คะแนนเฉลี่ย</div>
-        </div>
         <div style="text-align:center;padding:8px 16px;background:#fff;border-radius:8px;border:1px solid #eee;">
           <div style="font-size:22px;font-weight:800;color:#1a7a45;">${countA}</div>
           <div style="font-size:10px;color:#888;">ได้เกรด A</div>
@@ -1302,23 +1136,16 @@ function showCourseGrade(idx) {
     html += `<div style="overflow-x:auto;"><table class="tbl" style="margin:0;">
       <thead><tr>
         <th>#</th><th>รหัสนิสิต</th><th>ชื่อ-นามสกุล</th>
-        <th>เข้าเรียน</th><th>จิตพิสัย</th><th>งาน</th>
-        <th>กลางภาค</th><th>ปลายภาค</th><th>สอบย่อย</th>
-        <th>รวม</th><th>เกรด</th>
+        <th>เกรด</th><th>ภาคเรียน</th><th>ปีการศึกษา</th>
       </tr></thead><tbody>`;
     grades.forEach((g, i) => {
       html += `<tr style="animation:fadeInUp .25s ease ${i * .04}s both">
         <td>${i + 1}</td>
         <td><b>${g.student_id}</b></td>
         <td style="text-align:left">${g.student_name}</td>
-        <td>${g.attend_score ?? '-'}</td>
-        <td>${g.attitude_score ?? '-'}</td>
-        <td>${g.homework_score ?? '-'}</td>
-        <td>${g.midterm_score ?? '-'}</td>
-        <td>${g.final_score ?? '-'}</td>
-        <td>${g.quiz_score ?? '-'}</td>
-        <td><b>${g.total_score}</b></td>
         <td><b style="color:${gc(g.grade_letter)};font-size:15px;">${g.grade_letter || '-'}</b></td>
+        <td>${g.semester??1}</td>
+        <td>${g.academic_year??2568}</td>
       </tr>`;
     });
     html += '</tbody></table></div>';
@@ -1332,7 +1159,7 @@ function showCourseGrade(idx) {
 // ─── Load ALL data after login ────────────
 function loadAllData() {
   loadClassroom(); loadCourse(); loadAssignment(); loadSubmission();
-  loadStudents(); loadTeachers(); loadUsers(); loadAnalysis();
+  loadStudents(); loadTeachers(); loadUsers(); loadEnrollment(); loadAnalysis();
 }
 
 // ─── Grades ───────────────────────────────
@@ -1347,13 +1174,11 @@ async function checkGrade() {
     if (r.success && r.data?.length) {
       const gc=g=>g==='A'?'#1a7a45':g==='F'?'#c0392b':g.startsWith('B')?'#1d4ed8':'#333';
       el.innerHTML=`<div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>รหัสวิชา</th><th>ชื่อวิชา</th><th>เข้าเรียน</th><th>จิตพิสัย</th><th>งาน</th><th>กลางภาค</th><th>ปลายภาค</th><th>รวม</th><th>เกรด</th></tr></thead>
+        <thead><tr><th>รหัสวิชา</th><th>ชื่อวิชา</th><th>เกรด</th><th>ภาคเรียน</th><th>ปีการศึกษา</th></tr></thead>
         <tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.06}s both">
           <td><b>${d.course_id}</b></td><td style="text-align:left;">${d.course_name}</td>
-          <td>${d.attend_score??'-'}</td><td>${d.attitude_score??'-'}</td>
-          <td>${d.homework_score??'-'}</td><td>${d.midterm_score??'-'}</td>
-          <td>${d.final_score??'-'}</td><td><b>${d.total_score}</b></td>
           <td><b style="color:${gc(d.grade)};font-size:16px;">${d.grade}</b></td>
+          <td>${d.semester??1}</td><td>${d.academic_year??2568}</td>
         </tr>`).join('')}</tbody></table></div>`;
       showToast('พบเกรด '+r.data.length+' วิชา ✓');
     } else el.innerHTML=`<div class="tbl-empty">⚠️ ${r.message||'ไม่พบข้อมูลของ '+uid}</div>`;
@@ -1460,7 +1285,7 @@ async function loadMyAtt() {
 }
 
 // ─── Scoring ──────────────────────────────
-const SMAX={attend:20,attitude:10,homework:20,midterm:30,final:40,quiz:20};
+// ─── Scoring (simplified for ER — grade_letter only) ──
 
 async function loadStudentInfo() {
   const uid=document.getElementById('sc-uid').value.trim().toUpperCase();
@@ -1470,68 +1295,30 @@ async function loadStudentInfo() {
   ne.textContent='⏳ กำลังค้นหา...'; ne.style.color='#888'; sf.style.display='none';
   try {
     const r=await api('GET','/student/'+uid);
-    if (r.success) {
+    if (r.success && r.data) {
       ne.textContent=r.data.student_name; ne.style.color='#222'; sf.style.display='block';
-      const sr=await api('GET','/score/'+uid);
-      if (sr.success) ['attend','attitude','homework','midterm','final','quiz'].forEach(f=>{
-        const el=document.getElementById('sc-'+f); if(el) el.value=sr.data[f+'_score']||'';
-      }); else ['attend','attitude','homework','midterm','final','quiz'].forEach(f=>{
-        const el=document.getElementById('sc-'+f); if(el) el.value='';
-      });
-      updateTotal();
+      // Load courses into dropdown
+      const sel=document.getElementById('sc-course');
+      const cr=await api('GET','/courses');
+      if(cr.success) sel.innerHTML=cr.data.map(c=>`<option value="${c.course_id}">${c.course_id} — ${c.course_name}</option>`).join('');
     } else { ne.textContent='⚠️ ไม่พบ User ID นี้'; ne.style.color='#c0392b'; }
   } catch { ne.textContent='❌ Server ไม่ตอบสนอง'; ne.style.color='#c0392b'; }
 }
 
-function updateTotal() {
-  let t=0;
-  ['attend','attitude','homework','midterm','final','quiz'].forEach(f=>{
-    const el=document.getElementById('sc-'+f); if(!el) return;
-    let v=parseFloat(el.value)||0;
-    if(v>SMAX[f]){v=SMAX[f];el.value=v;} if(v<0){v=0;el.value=0;}
-    t+=v;
-  });
-  const fill=document.getElementById('total-fill');
-  const disp=document.getElementById('total-disp');
-  const c=t>100?'#c0392b':t>=80?'#1a7a45':'var(--red)';
-  if(fill){fill.style.width=Math.min(t,100)+'%';fill.style.background=c;}
-  if(disp){disp.textContent=t+' / 100';disp.style.color=c;}
-  return t;
-}
+function updateTotal() { return 0; }
 
-async function saveScore() {
-  const uid=document.getElementById('sc-uid').value.trim().toUpperCase();
-  if(!uid){showToast('กรุณากรอก User ID',true);return;}
-  const t=updateTotal(); if(t>100){showToast('❌ คะแนนรวมเกิน 100!',true);return;}
-  try {
-    const r=await api('POST','/score',{student_id:uid,course_id:'CS101',
-      attend_score:  parseFloat(document.getElementById('sc-attend').value)||0,
-      attitude_score:parseFloat(document.getElementById('sc-attitude').value)||0,
-      homework_score:parseFloat(document.getElementById('sc-homework').value)||0,
-      midterm_score: parseFloat(document.getElementById('sc-midterm').value)||0,
-      final_score:   parseFloat(document.getElementById('sc-final').value)||0,
-      quiz_score:    parseFloat(document.getElementById('sc-quiz').value)||0,
-    });
-    showToast(r.success?'บันทึกคะแนนสำเร็จ ✓':r.message,!r.success);
-  } catch { showToast('❌ Server ไม่ตอบสนอง',true); }
-}
+async function saveScore() { submitScore(); }
 
 async function submitScore() {
   const uid=document.getElementById('sc-uid').value.trim().toUpperCase();
   if(!uid){showToast('กรุณากรอก User ID',true);return;}
-  const t=updateTotal(); if(t>100){showToast('❌ คะแนนรวมเกิน 100!',true);return;}
+  const course_id=document.getElementById('sc-course')?.value;
+  const grade_letter=document.getElementById('sc-grade')?.value;
+  if(!course_id||!grade_letter){showToast('กรุณาเลือกวิชาและเกรด',true);return;}
   try {
-    const r=await api('POST','/score',{student_id:uid,course_id:'CS101',
-      attend_score:  parseFloat(document.getElementById('sc-attend').value)||0,
-      attitude_score:parseFloat(document.getElementById('sc-attitude').value)||0,
-      homework_score:parseFloat(document.getElementById('sc-homework').value)||0,
-      midterm_score: parseFloat(document.getElementById('sc-midterm').value)||0,
-      final_score:   parseFloat(document.getElementById('sc-final').value)||0,
-      quiz_score:    parseFloat(document.getElementById('sc-quiz').value)||0,
-    });
+    const r=await api('POST','/score',{student_id:uid,course_id,grade_letter});
     if (r.success) {
-      const g=t>=80?'A':t>=75?'B+':t>=70?'B':t>=65?'C+':t>=60?'C':t>=55?'D+':t>=50?'D':'F';
-      showToast('ยืนยันแล้ว ✓  รวม: '+t+'  เกรด: '+g);
+      showToast('บันทึกเกรด '+grade_letter+' สำเร็จ ✓');
     } else showToast(r.message,true);
   } catch { showToast('❌ Server ไม่ตอบสนอง',true); }
 }
