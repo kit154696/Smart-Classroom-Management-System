@@ -1044,7 +1044,7 @@ async function loadStudents() {
   const el=document.getElementById('students-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/students');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>student_id (PK)</th><th>name</th><th>gender</th><th>phone</th><th>email</th><th>user_id (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.student_id}</b></td><td>${d.name}</td><td>${d.gender||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||d.user_email||'-'}</td><td>${d.student_id}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>student_id (PK)</th><th>name</th><th>gender</th><th>phone</th><th>email</th><th>user_id (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.student_id}</b></td><td>${d.name}</td><td>${d.gender||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.user_id||d.student_id}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1053,7 +1053,7 @@ async function loadTeachers() {
   const el=document.getElementById('teachers-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/teachers');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>teacher_id (PK)</th><th>name</th><th>department</th><th>phone</th><th>email</th><th>user_id (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.teacher_id}</b></td><td>${d.name}</td><td>${d.department||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.teacher_id}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>teacher_id (PK)</th><th>name</th><th>department</th><th>phone</th><th>email</th><th>user_id (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.teacher_id}</b></td><td>${d.name}</td><td>${d.department||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.user_id||d.teacher_id}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
