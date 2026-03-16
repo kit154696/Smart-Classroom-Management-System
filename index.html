@@ -1017,7 +1017,7 @@ async function loadCourse() {
   const el=document.getElementById('course-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/courses');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>course_id (PK)</th><th>course_code</th><th>course_name</th><th>credit</th><th>semester</th><th>academic_year</th><th>teacher (FK)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.course_id}</b></td><td>${d.course_code||'-'}</td><td style="text-align:left">${d.course_name}</td><td>${d.credit}</td><td>${d.semester}</td><td>${d.academic_year}</td><td>${d.teacher_name||d.teacher_id}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>course_id (PK)</th><th>course_name</th><th>credit</th><th>semester</th><th>academic_year</th><th>teacher_id (FK)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.course_id}</b></td><td style="text-align:left">${d.course_name}</td><td>${d.credit}</td><td>${d.semester}</td><td>${d.academic_year}</td><td>${d.teacher_id}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
