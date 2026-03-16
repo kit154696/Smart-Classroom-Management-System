@@ -232,7 +232,7 @@ const server = http.createServer(async (req, res) => {
     if (p==='/api/analysis')    return json(res,200,{success:true,data:await query('SELECT aa.*,s.name AS student_name FROM AttendanceAnalysis aa JOIN Student s ON aa.student_id=s.student_id ORDER BY aa.risk_level DESC,aa.attendance_rate')});
     if (p==='/api/schedules')   return json(res,200,{success:true,data:await query("SELECT sc.*,c.course_name,cr.room_name,CONCAT(TIME_FORMAT(sc.start_time,'%H:%i'),'-',TIME_FORMAT(sc.end_time,'%H:%i')) AS time_range FROM Schedule sc JOIN Course c ON sc.course_id=c.course_id JOIN Classroom cr ON sc.room_id=cr.room_id ORDER BY FIELD(sc.day_of_week,'จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์'),sc.start_time")});
     if (p==='/api/grades')      return json(res,200,{success:true,data:await query('SELECT * FROM GradeView ORDER BY student_id,course_id')});
-    if (p==='/api/users')       return json(res,200,{success:true,data:await query("SELECT user_id,username,role,email,created_at FROM Users ORDER BY FIELD(role,'admin','teacher','student'),user_id")});
+    if (p==='/api/users')       return json(res,200,{success:true,data:await query("SELECT user_id,username,password,email,role,created_at FROM Users ORDER BY FIELD(role,'admin','teacher','student'),user_id")});
 
     // ── Serve index.html ──
     if (p === '/' || p === '/index.html') {
