@@ -1026,7 +1026,7 @@ async function loadAssignment() {
   const el=document.getElementById('assignment-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/assignments');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>assignment_id</th><th>course (FK)</th><th>title</th><th>max_score</th><th>due_date</th><th>created_at</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.assignment_id}</b></td><td>${d.course_name||d.course_id}</td><td style="text-align:left">${d.title}</td><td>${d.max_score}</td><td>${String(d.due_date||'').substring(0,16)}</td><td>${String(d.created_at||'').substring(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>assignment_id (PK)</th><th>course_id (FK)</th><th>title</th><th>max_score</th><th>due_date</th><th>created_at</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.assignment_id}</b></td><td>${d.course_id}</td><td style="text-align:left">${d.title}</td><td>${d.max_score}</td><td>${String(d.due_date||'').substring(0,16)}</td><td>${String(d.created_at||'').substring(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1035,7 +1035,7 @@ async function loadSubmission() {
   const el=document.getElementById('submission-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/submissions');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>submission_id</th><th>student (FK)</th><th>assignment (FK)</th><th>course</th><th>score</th><th>status</th><th>submit_date</th><th>graded_date</th><th>graded_by</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.submission_id}</b></td><td>${d.student_name||d.student_id}</td><td>${d.assignment_title||d.assignment_id}</td><td>${d.course_name||''}</td><td>${d.score??'-'}</td><td><span style="color:${d.status==='graded'?'green':d.status==='late'?'red':'orange'}">${d.status}</span></td><td>${String(d.submit_date||'').substring(0,16)}</td><td>${d.graded_date?String(d.graded_date).substring(0,10):'-'}</td><td>${d.grader_name||d.graded_by||'-'}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>submission_id (PK)</th><th>assignment_id (FK)</th><th>student_id (FK)</th><th>submit_date</th><th>score</th><th>graded_by</th><th>graded_date</th><th>status</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.submission_id}</b></td><td>${d.assignment_id}</td><td>${d.student_id}</td><td>${String(d.submit_date||'').substring(0,16)}</td><td>${d.score??'-'}</td><td>${d.graded_by||'-'}</td><td>${d.graded_date?String(d.graded_date).substring(0,10):'-'}</td><td><span style="color:${d.status==='graded'||d.status==='Graded'?'green':d.status==='late'||d.status==='Late'?'red':'orange'}">${d.status}</span></td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1044,7 +1044,7 @@ async function loadStudents() {
   const el=document.getElementById('students-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/students');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>student_id (PK)</th><th>name</th><th>email</th><th>phone</th><th>gender</th><th>username (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.student_id}</b></td><td>${d.name}</td><td>${d.email||d.user_email||'-'}</td><td>${d.phone||'-'}</td><td>${d.gender||'-'}</td><td>${d.username||'-'}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>student_id (PK)</th><th>name</th><th>gender</th><th>phone</th><th>email</th><th>user_id (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.student_id}</b></td><td>${d.name}</td><td>${d.gender||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||d.user_email||'-'}</td><td>${d.student_id}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1053,7 +1053,7 @@ async function loadTeachers() {
   const el=document.getElementById('teachers-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/teachers');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>teacher_id (PK)</th><th>name</th><th>department</th><th>phone</th><th>email</th><th>username (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.teacher_id}</b></td><td>${d.name}</td><td>${d.department||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.username||'-'}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>teacher_id (PK)</th><th>name</th><th>department</th><th>phone</th><th>email</th><th>user_id (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.teacher_id}</b></td><td>${d.name}</td><td>${d.department||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.teacher_id}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1063,7 +1063,7 @@ async function loadUsers() {
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/users');if(r.success&&r.data?.length){
     const rc=role=>role==='admin'?'#c0392b':role==='teacher'?'#2980b9':'#27ae60';
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>user_id (PK)</th><th>username</th><th>role</th><th>email</th><th>created_at</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.user_id}</b></td><td>${d.username}</td><td><span style="color:${rc(d.role)};font-weight:700">${d.role}</span></td><td>${d.email||'-'}</td><td>${String(d.created_at||'').substring(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>user_id (PK)</th><th>username</th><th>password</th><th>role</th><th>email</th><th>created_at</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.user_id}</b></td><td>${d.username}</td><td>${d.password||'***'}</td><td><span style="color:${rc(d.role)};font-weight:700">${d.role}</span></td><td>${d.email||'-'}</td><td>${String(d.created_at||'').substring(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1082,7 +1082,7 @@ async function loadAnalysis() {
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/analysis');if(r.success&&r.data?.length){
     const rc=lv=>lv==='High'?'#c0392b':lv==='Medium'?'#e67e22':'#27ae60';
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>analysis_id</th><th>student (FK)</th><th>total_classes</th><th>absent_count</th><th>late_count</th><th>attendance_rate</th><th>risk_level</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.analysis_id}</b></td><td>${d.student_name||d.student_id}</td><td>${d.total_classes}</td><td>${d.absent_count}</td><td>${d.late_count}</td><td>${d.attendance_rate}%</td><td><b style="color:${rc(d.risk_level)}">${d.risk_level}</b></td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>analysis_id (PK)</th><th>student_id (FK)</th><th>attendance_rate</th><th>total_classes</th><th>absent_count</th><th>late_count</th><th>risk_level</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.analysis_id}</b></td><td>${d.student_id}</td><td>${d.attendance_rate}%</td><td>${d.total_classes}</td><td>${d.absent_count}</td><td>${d.late_count}</td><td><b style="color:${rc(d.risk_level)}">${d.risk_level}</b></td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
