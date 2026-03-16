@@ -525,7 +525,6 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
       <button class="sb-btn" id="sb-assignment"  onclick="showPage('page-assignment')">📝 Assignment</button>
       <button class="sb-btn" id="sb-submission"  onclick="showPage('page-submission')">📤 Submission</button>
       <button class="sb-btn" id="sb-grades"      onclick="showPage('page-grades')">🎓 Grade</button>
-      <button class="sb-btn" id="sb-enrollment"  onclick="showPage('page-enrollment')">📋 Enrollment</button>
       <button class="sb-btn" id="sb-students"    onclick="showPage('page-students')">👨‍🎓 Student</button>
       <button class="sb-btn" id="sb-teachers"    onclick="showPage('page-teachers')">👨‍🏫 Teacher</button>
       <button class="sb-btn" id="sb-users"       onclick="showPage('page-users')">👥 Users</button>
@@ -786,11 +785,6 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
       <div class="page-pill">👥 Users (ผู้ใช้ทั้งหมด)</div>
       <div id="users-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
     </div>
-    <!-- ════════════════════════ ENROLLMENT ════════════════════════ -->
-    <div class="page" id="page-enrollment">
-      <div class="page-pill">📋 Enrollment (ลงทะเบียน)</div>
-      <div id="enrollment-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
-    </div>
     <!-- ════════════════════════ ANALYSIS ════════════════════════ -->
     <div class="page" id="page-analysis">
       <div class="page-pill">📊 AttendanceAnalysis (วิเคราะห์ความเสี่ยง)</div>
@@ -996,7 +990,7 @@ const PAGE_SB = {
   'page-classroom':'sb-classroom','page-course':'sb-course','page-assignment':'sb-assignment',
   'page-submission':'sb-submission','page-grades':'sb-grades','page-scoring':'sb-scoring',
   'page-students':'sb-students','page-teachers':'sb-teachers','page-users':'sb-users',
-  'page-enrollment':'sb-enrollment','page-analysis':'sb-analysis','page-nfc':'sb-nfc',
+  'page-analysis':'sb-analysis','page-nfc':'sb-nfc',
   'page-gradeall':'sb-gradeall',
 };
 
@@ -1094,15 +1088,6 @@ async function loadUsers() {
   try{const r=await api('GET','/users');if(r.success&&r.data?.length){
     const rc=role=>role==='admin'?'#c0392b':role==='teacher'?'#2980b9':'#27ae60';
     el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>user_id (PK)</th><th>username</th><th>role</th><th>email</th><th>created_at</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.user_id}</b></td><td>${d.username}</td><td><span style="color:${rc(d.role)};font-weight:700">${d.role}</span></td><td>${d.email||'-'}</td><td>${String(d.created_at||'').substring(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
-  }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
-}
-
-// ─── Enrollment ───────────────────────────
-async function loadEnrollment() {
-  const el=document.getElementById('enrollment-wrap'); if(!el)return;
-  el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
-  try{const r=await api('GET','/enrollments');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>enrollment_id</th><th>student_id (FK)</th><th>student_name</th><th>course_id (FK)</th><th>course_name</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.03}s both"><td><b>${d.enrollment_id}</b></td><td>${d.student_id}</td><td>${d.student_name}</td><td>${d.course_id}</td><td style="text-align:left">${d.course_name}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1392,7 +1377,7 @@ function showCourseGrade(idx) {
 // ─── Load ALL data after login ────────────
 function loadAllData() {
   loadClassroom(); loadCourse(); loadAssignment(); loadSubmission();
-  loadStudents(); loadTeachers(); loadUsers(); loadEnrollment(); loadAnalysis();
+  loadStudents(); loadTeachers(); loadUsers(); loadAnalysis();
 }
 
 // ─── Grades ───────────────────────────────
