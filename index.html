@@ -518,21 +518,21 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     </div>
     <div class="sb-menu-label">Menu</div>
     <div class="sb-menu">
-      <button class="sb-btn" id="sb-schedule"    onclick="showPage('page-schedule')">📅 Schedule</button>
-      <button class="sb-btn" id="sb-attendance"  onclick="showPage('page-attendance')">✅ Attendance</button>
-      <button class="sb-btn" id="sb-classroom"   onclick="showPage('page-classroom')">🏫 Classroom</button>
-      <button class="sb-btn" id="sb-course"      onclick="showPage('page-course')">📚 Course</button>
-      <button class="sb-btn" id="sb-assignment"  onclick="showPage('page-assignment')">📝 Assignment</button>
-      <button class="sb-btn" id="sb-submission"  onclick="showPage('page-submission')">📤 Submission</button>
-      <button class="sb-btn" id="sb-grades"      onclick="showPage('page-grades')">🎓 Grade</button>
-      <button class="sb-btn" id="sb-enrollment"  onclick="showPage('page-enrollment')">📋 Enrollment</button>
-      <button class="sb-btn" id="sb-students"    onclick="showPage('page-students')">👨‍🎓 Student</button>
-      <button class="sb-btn" id="sb-teachers"    onclick="showPage('page-teachers')">👨‍🏫 Teacher</button>
-      <button class="sb-btn" id="sb-users"       onclick="showPage('page-users')">👥 Users</button>
-      <button class="sb-btn" id="sb-analysis"    onclick="showPage('page-analysis')">📊 Analysis</button>
-      <button class="sb-btn" id="sb-scoring"     onclick="showPage('page-scoring')">✏️ Scoring</button>
-      <button class="sb-btn" id="sb-gradeall"    onclick="showPage('page-gradeall')" style="background:#8B3020;color:#fff;">📊 เกรดทุกวิชา</button>
-      <button class="sb-btn" id="sb-nfc"         onclick="showPage('page-nfc')">📲 NFC</button>
+      <button class="sb-btn" id="sb-schedule"    onclick="showPage('page-schedule')"    data-role="admin,teacher,student">📅 Schedule</button>
+      <button class="sb-btn" id="sb-attendance"  onclick="showPage('page-attendance')"  data-role="admin,teacher,student">✅ Attendance</button>
+      <button class="sb-btn" id="sb-classroom"   onclick="showPage('page-classroom')"   data-role="admin,teacher">🏫 Classroom</button>
+      <button class="sb-btn" id="sb-course"      onclick="showPage('page-course')"      data-role="admin,teacher">📚 Course</button>
+      <button class="sb-btn" id="sb-assignment"  onclick="showPage('page-assignment')"  data-role="admin,teacher,student">📝 Assignment</button>
+      <button class="sb-btn" id="sb-submission"  onclick="showPage('page-submission')"  data-role="admin,teacher">📤 Submission</button>
+      <button class="sb-btn" id="sb-grades"      onclick="showPage('page-grades')"      data-role="admin,teacher,student">🎓 Grade</button>
+      <button class="sb-btn" id="sb-enrollment"  onclick="showPage('page-enrollment')"  data-role="admin">📋 Enrollment</button>
+      <button class="sb-btn" id="sb-students"    onclick="showPage('page-students')"    data-role="admin">👨‍🎓 Student</button>
+      <button class="sb-btn" id="sb-teachers"    onclick="showPage('page-teachers')"    data-role="admin">👨‍🏫 Teacher</button>
+      <button class="sb-btn" id="sb-users"       onclick="showPage('page-users')"       data-role="admin">👥 Users</button>
+      <button class="sb-btn" id="sb-analysis"    onclick="showPage('page-analysis')"    data-role="admin,teacher">📊 Analysis</button>
+      <button class="sb-btn" id="sb-scoring"     onclick="showPage('page-scoring')"     data-role="admin,teacher">✏️ Scoring</button>
+      <button class="sb-btn" id="sb-gradeall"    onclick="showPage('page-gradeall')"    data-role="admin,teacher" style="background:#8B3020;color:#fff;">📊 เกรดทุกวิชา</button>
+      <button class="sb-btn" id="sb-nfc"         onclick="showPage('page-nfc')"         data-role="admin,teacher">📲 NFC</button>
     </div>
   </nav>
 
@@ -909,6 +909,12 @@ async function doLogin() {
       const isTA = r.role==='teacher'||r.role==='admin';
       document.getElementById('sec-attlog').style.display = isTA?'block':'none';
       document.getElementById('sec-myatt').style.display  = isTA?'none' :'block';
+
+      // ── Role-based sidebar visibility ──
+      document.querySelectorAll('.sb-btn[data-role]').forEach(btn => {
+        const roles = btn.getAttribute('data-role').split(',');
+        btn.style.display = roles.includes(r.role) ? '' : 'none';
+      });
       const dp = document.getElementById('attlog-date');
       if (dp) dp.value = new Date().toISOString().split('T')[0];
       showToast('ยินดีต้อนรับ '+(r.name||r.username)+' ✓');
