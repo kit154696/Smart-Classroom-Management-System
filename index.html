@@ -518,21 +518,18 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     </div>
     <div class="sb-menu-label">Menu</div>
     <div class="sb-menu">
-      <button class="sb-btn" id="sb-schedule"    onclick="showPage('page-schedule')"    data-role="admin,teacher,student">📅 Schedule</button>
-      <button class="sb-btn" id="sb-attendance"  onclick="showPage('page-attendance')"  data-role="admin,teacher,student">✅ Attendance</button>
-      <button class="sb-btn" id="sb-classroom"   onclick="showPage('page-classroom')"   data-role="admin,teacher">🏫 Classroom</button>
-      <button class="sb-btn" id="sb-course"      onclick="showPage('page-course')"      data-role="admin,teacher">📚 Course</button>
-      <button class="sb-btn" id="sb-assignment"  onclick="showPage('page-assignment')"  data-role="admin,teacher,student">📝 Assignment</button>
-      <button class="sb-btn" id="sb-submission"  onclick="showPage('page-submission')"  data-role="admin,teacher">📤 Submission</button>
-      <button class="sb-btn" id="sb-grades"      onclick="showPage('page-grades')"      data-role="admin,teacher,student">🎓 Grade</button>
-      <button class="sb-btn" id="sb-enrollment"  onclick="showPage('page-enrollment')"  data-role="admin">📋 Enrollment</button>
-      <button class="sb-btn" id="sb-students"    onclick="showPage('page-students')"    data-role="admin">👨‍🎓 Student</button>
-      <button class="sb-btn" id="sb-teachers"    onclick="showPage('page-teachers')"    data-role="admin">👨‍🏫 Teacher</button>
-      <button class="sb-btn" id="sb-users"       onclick="showPage('page-users')"       data-role="admin">👥 Users</button>
-      <button class="sb-btn" id="sb-analysis"    onclick="showPage('page-analysis')"    data-role="admin,teacher">📊 Analysis</button>
-      <button class="sb-btn" id="sb-scoring"     onclick="showPage('page-scoring')"     data-role="admin,teacher">✏️ Scoring</button>
-      <button class="sb-btn" id="sb-gradeall"    onclick="showPage('page-gradeall')"    data-role="admin,teacher" style="background:#8B3020;color:#fff;">📊 เกรดทุกวิชา</button>
-      <button class="sb-btn" id="sb-nfc"         onclick="showPage('page-nfc')"         data-role="admin,teacher">📲 NFC</button>
+      <button class="sb-btn" id="sb-schedule"    onclick="showPage('page-schedule')">📅 Schedule</button>
+      <button class="sb-btn" id="sb-attendance"  onclick="showPage('page-attendance')">✅ Attendance</button>
+      <button class="sb-btn" id="sb-classroom"   onclick="showPage('page-classroom')">🏫 Classroom</button>
+      <button class="sb-btn" id="sb-course"      onclick="showPage('page-course')">📚 Course</button>
+      <button class="sb-btn" id="sb-assignment"  onclick="showPage('page-assignment')">📝 Assignment</button>
+      <button class="sb-btn" id="sb-submission"  onclick="showPage('page-submission')">📤 Submission</button>
+      <button class="sb-btn" id="sb-grades"      onclick="showPage('page-grades')">🎓 Grade</button>
+      <button class="sb-btn" id="sb-students"    onclick="showPage('page-students')">👨‍🎓 Student</button>
+      <button class="sb-btn" id="sb-teachers"    onclick="showPage('page-teachers')">👨‍🏫 Teacher</button>
+      <button class="sb-btn" id="sb-users"       onclick="showPage('page-users')">👥 Users</button>
+      <button class="sb-btn" id="sb-analysis"    onclick="showPage('page-analysis')">📊 Analysis</button>
+      <button class="sb-btn" id="sb-nfc"         onclick="showPage('page-nfc')">📲 NFC</button>
     </div>
   </nav>
 
@@ -702,11 +699,6 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     </div>
 
     <!-- ════════════════════════
-         SCORING (Teacher/Admin)
-    ════════════════════════ -->
-
-
-    <!-- ════════════════════════
          NFC
     ════════════════════════ -->
     <div class="page" id="page-nfc">
@@ -759,24 +751,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
       <div class="page-pill">👥 Users (ผู้ใช้ทั้งหมด)</div>
       <div id="users-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
     </div>
-    <!-- ════════════════════════ ENROLLMENT ════════════════════════ -->
-    <div class="page" id="page-enrollment">
-      <div class="page-pill">📋 Enrollment (ลงทะเบียน)</div>
-      <div id="enrollment-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
-    </div>
     <!-- ════════════════════════ ANALYSIS ════════════════════════ -->
     <div class="page" id="page-analysis">
       <div class="page-pill">📊 AttendanceAnalysis (วิเคราะห์ความเสี่ยง)</div>
       <div id="analysis-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
-    </div>
-
-    <!-- ════════════════════════ GRADE ALL (Teacher/Admin) ════════════════════════ -->
-    <div class="page" id="page-gradeall">
-      <div class="page-pill" style="background:#8B3020;">📊 เกรดนักศึกษาทุกวิชา (Teacher/Admin)</div>
-      <div id="gradeall-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;"></div>
-      <div id="gradeall-content">
-        <div class="tbl-empty">กดปุ่มวิชาด้านบนเพื่อดูเกรด หรือรอโหลด...</div>
-      </div>
     </div>
 
   </div><!-- /app-main -->
@@ -880,21 +858,9 @@ async function doLogin() {
       document.getElementById('sb-name').textContent = r.name||r.username;
       document.getElementById('sb-id').textContent   = r.user_id||r.username;
       document.getElementById('pf-name').value       = r.name||'';
-
-      // ── saksorn (683380495-2) เห็นทุกอย่างเหมือน admin ──
-      const isSaksorn = r.user_id === '683380495-2';
-      const isTA = r.role==='teacher'||r.role==='admin'||isSaksorn;
-
-      // Attendance: saksorn เห็นทั้ง 2 ส่วน (ทั้งเช็คชื่อแบบอาจารย์ + ประวัติของตัวเอง)
+      const isTA = r.role==='teacher'||r.role==='admin';
       document.getElementById('sec-attlog').style.display = isTA?'block':'none';
-      document.getElementById('sec-myatt').style.display  = (r.role==='student')?'block':'none';
-
-      // ── Role-based sidebar visibility ──
-      const effectiveRole = isSaksorn ? 'admin' : r.role;
-      document.querySelectorAll('.sb-btn[data-role]').forEach(btn => {
-        const roles = btn.getAttribute('data-role').split(',');
-        btn.style.display = roles.includes(effectiveRole) ? '' : 'none';
-      });
+      document.getElementById('sec-myatt').style.display  = isTA?'none' :'block';
       const dp = document.getElementById('attlog-date');
       if (dp) dp.value = new Date().toISOString().split('T')[0];
       showToast('ยินดีต้อนรับ '+(r.name||r.username)+' ✓');
@@ -919,10 +885,9 @@ function doLogout() {
 const PAGE_SB = {
   'page-schedule':'sb-schedule','page-attendance':'sb-attendance',
   'page-classroom':'sb-classroom','page-course':'sb-course','page-assignment':'sb-assignment',
-  'page-submission':'sb-submission','page-grades':'sb-grades','page-scoring':'sb-scoring',
+  'page-submission':'sb-submission','page-grades':'sb-grades',
   'page-students':'sb-students','page-teachers':'sb-teachers','page-users':'sb-users',
-  'page-enrollment':'sb-enrollment','page-analysis':'sb-analysis','page-nfc':'sb-nfc',
-  'page-gradeall':'sb-gradeall',
+  'page-analysis':'sb-analysis','page-nfc':'sb-nfc',
 };
 
 function showPage(pid) {
@@ -933,7 +898,6 @@ function showPage(pid) {
   const sb = document.getElementById(PAGE_SB[pid]);
   if (sb) sb.classList.add('active');
   if (pid==='page-nfc') setTimeout(startNFC,400);
-  if (pid==='page-gradeall') loadGradeAll();
   window.scrollTo(0,0);
 }
 
@@ -943,37 +907,17 @@ async function loadSchedule() {
   el.innerHTML = '<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   const uid = currentUser?.user_id||'';
   if (!uid) return;
-  const isSaksorn = uid === '683380495-2';
-  const isTA = currentUser?.role==='teacher'||currentUser?.role==='admin'||isSaksorn;
   try {
-    if (isTA) {
-      // Admin/Teacher/Saksorn: show ALL schedules with full ER columns
-      const r = await api('GET','/schedules');
-      if (r.success && r.data?.length) {
-        el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
-          <thead><tr><th>schedule_id (PK)</th><th>course_id (FK)</th><th>room_id (FK)</th><th>day_of_week</th><th>start_time</th><th>end_time</th><th>study_hours</th><th>semester</th><th>academic_year</th></tr></thead>
-          <tbody>${r.data.map((d,i)=>`
-            <tr style="animation:fadeInUp .3s ease ${i*.04}s both">
-              <td><b>${d.schedule_id}</b></td><td>${d.course_id}</td>
-              <td>${d.room_id}</td><td>${d.day_of_week}</td>
-              <td>${d.time_range?d.time_range.split('-')[0]:'-'}</td>
-              <td>${d.time_range?d.time_range.split('-')[1]:'-'}</td>
-              <td>${d.study_hours}</td><td>${d.semester||1}</td><td>${d.academic_year||2568}</td>
-            </tr>`).join('')}</tbody></table></div>`;
-      } else el.innerHTML = '<div class="tbl-empty">ไม่พบตารางเรียน</div>';
-    } else {
-      // Student: show personal schedule
-      const r = await api('GET','/schedule/'+uid);
-      if (r.success && r.data?.length) {
-        el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
-          <thead><tr><th>#</th><th>วิชา</th><th>ห้อง</th><th>เวลา</th></tr></thead>
-          <tbody>${r.data.map((d,i)=>`
-            <tr style="animation:fadeInUp .3s ease ${i*.05}s both">
-              <td><b>${i+1}</b></td><td>${d.name||d.code||'-'}</td>
-              <td>${d.room||'-'}</td><td>${d.time||'-'}</td>
-            </tr>`).join('')}</tbody></table></div>`;
-      } else el.innerHTML = `<div class="tbl-empty">⚠️ ${r.message||'ไม่พบตารางเรียน'}</div>`;
-    }
+    const r = await api('GET','/schedule/'+uid);
+    if (r.success && r.data?.length) {
+      el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>SCHEDUL_ID</th><th>SCHEDUL_NAME</th><th>ROOM_ID</th><th>STUDY_TIME</th></tr></thead>
+        <tbody>${r.data.map((d,i)=>`
+          <tr style="animation:fadeInUp .3s ease ${i*.05}s both">
+            <td><b>${i+1}</b></td><td>${d.name||d.code||'-'}</td>
+            <td>${d.room||'-'}</td><td>${d.time||'-'}</td>
+          </tr>`).join('')}</tbody></table></div>`;
+    } else el.innerHTML = `<div class="tbl-empty">⚠️ ${r.message||'ไม่พบตารางเรียน'}</div>`;
   } catch { el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>'; }
 }
 
@@ -991,7 +935,7 @@ async function loadCourse() {
   const el=document.getElementById('course-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/courses');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>course_id (PK)</th><th>course_name</th><th>credit</th><th>semester</th><th>academic_year</th><th>teacher_id (FK)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.course_id}</b></td><td style="text-align:left">${d.course_name}</td><td>${d.credit}</td><td>${d.semester}</td><td>${d.academic_year}</td><td>${d.teacher_id}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>course_id</th><th>course_name</th><th>credit</th><th>semester</th><th>academic_year</th><th>teacher (FK)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.course_id}</b></td><td style="text-align:left">${d.course_name}</td><td>${d.credit}</td><td>${d.semester}</td><td>${d.academic_year}</td><td>${d.teacher_name||d.teacher_id}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1000,7 +944,7 @@ async function loadAssignment() {
   const el=document.getElementById('assignment-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/assignments');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>assignment_id (PK)</th><th>course_id (FK)</th><th>title</th><th>max_score</th><th>due_date</th><th>created_at</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.assignment_id}</b></td><td>${d.course_id}</td><td style="text-align:left">${d.title}</td><td>${d.max_score}</td><td>${String(d.due_date||'').substring(0,16)}</td><td>${String(d.created_at||'').substring(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>assignment_id</th><th>course (FK)</th><th>title</th><th>max_score</th><th>due_date</th><th>created_at</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.assignment_id}</b></td><td>${d.course_name||d.course_id}</td><td style="text-align:left">${d.title}</td><td>${d.max_score}</td><td>${String(d.due_date||'').substring(0,16)}</td><td>${String(d.created_at||'').substring(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1009,7 +953,7 @@ async function loadSubmission() {
   const el=document.getElementById('submission-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/submissions');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>submission_id (PK)</th><th>assignment_id (FK)</th><th>student_id (FK)</th><th>submit_date</th><th>score</th><th>graded_by</th><th>graded_date</th><th>status</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.submission_id}</b></td><td>${d.assignment_id}</td><td>${d.student_id}</td><td>${String(d.submit_date||'').substring(0,16)}</td><td>${d.score??'-'}</td><td>${d.graded_by||'-'}</td><td>${d.graded_date?String(d.graded_date).substring(0,10):'-'}</td><td><span style="color:${d.status==='graded'||d.status==='Graded'?'green':d.status==='late'||d.status==='Late'?'red':'orange'}">${d.status}</span></td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>submission_id</th><th>student (FK)</th><th>assignment (FK)</th><th>course</th><th>score</th><th>status</th><th>submit_date</th><th>graded_date</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.submission_id}</b></td><td>${d.student_name||d.student_id}</td><td>${d.assignment_title||d.assignment_id}</td><td>${d.course_name||''}</td><td>${d.score??'-'}</td><td><span style="color:${d.status==='graded'?'green':d.status==='late'?'red':'orange'}">${d.status}</span></td><td>${String(d.submit_date||'').substring(0,16)}</td><td>${d.graded_date?String(d.graded_date).substring(0,10):'-'}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1018,7 +962,7 @@ async function loadStudents() {
   const el=document.getElementById('students-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/students');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>student_id (PK)</th><th>name</th><th>gender</th><th>phone</th><th>email</th><th>user_id (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.student_id}</b></td><td>${d.name}</td><td>${d.gender||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.user_id||d.student_id}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>student_id (PK)</th><th>name</th><th>email</th><th>phone</th><th>gender</th><th>username (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.student_id}</b></td><td>${d.name}</td><td>${d.email||d.user_email||'-'}</td><td>${d.phone||'-'}</td><td>${d.gender||'-'}</td><td>${d.username||'-'}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1027,7 +971,7 @@ async function loadTeachers() {
   const el=document.getElementById('teachers-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/teachers');if(r.success&&r.data?.length){
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>teacher_id (PK)</th><th>name</th><th>department</th><th>phone</th><th>email</th><th>user_id (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.teacher_id}</b></td><td>${d.name}</td><td>${d.department||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.user_id||d.teacher_id}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>teacher_id (PK)</th><th>name</th><th>department</th><th>phone</th><th>email</th><th>username (FK→Users)</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.teacher_id}</b></td><td>${d.name}</td><td>${d.department||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.username||'-'}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1037,7 +981,7 @@ async function loadUsers() {
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/users');if(r.success&&r.data?.length){
     const rc=role=>role==='admin'?'#c0392b':role==='teacher'?'#2980b9':'#27ae60';
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>user_id (PK)</th><th>username</th><th>password</th><th>role</th><th>email</th><th>created_at</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.user_id}</b></td><td>${d.username}</td><td>${d.password||'***'}</td><td><span style="color:${rc(d.role)};font-weight:700">${d.role}</span></td><td>${d.email||'-'}</td><td>${String(d.created_at||'').substring(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>user_id (PK)</th><th>username</th><th>role</th><th>email</th><th>created_at</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.user_id}</b></td><td>${d.username}</td><td><span style="color:${rc(d.role)};font-weight:700">${d.role}</span></td><td>${d.email||'-'}</td><td>${String(d.created_at||'').substring(0,10)}</td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1056,7 +1000,7 @@ async function loadAnalysis() {
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
   try{const r=await api('GET','/analysis');if(r.success&&r.data?.length){
     const rc=lv=>lv==='High'?'#c0392b':lv==='Medium'?'#e67e22':'#27ae60';
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>analysis_id (PK)</th><th>student_id (FK)</th><th>attendance_rate</th><th>total_classes</th><th>absent_count</th><th>late_count</th><th>risk_level</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.analysis_id}</b></td><td>${d.student_id}</td><td>${d.attendance_rate}%</td><td>${d.total_classes}</td><td>${d.absent_count}</td><td>${d.late_count}</td><td><b style="color:${rc(d.risk_level)}">${d.risk_level}</b></td></tr>`).join('')}</tbody></table></div>`;
+    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>analysis_id</th><th>student (FK)</th><th>course (FK)</th><th>total_classes</th><th>absent_count</th><th>late_count</th><th>attendance_rate</th><th>risk_level</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.analysis_id}</b></td><td>${d.student_name||d.student_id}</td><td>${d.course_name||d.course_id}</td><td>${d.total_classes}</td><td>${d.absent_count}</td><td>${d.late_count}</td><td>${d.attendance_rate}%</td><td><b style="color:${rc(d.risk_level)}">${d.risk_level}</b></td></tr>`).join('')}</tbody></table></div>`;
   }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
 }
 
@@ -1114,6 +1058,7 @@ function showCourseGrade(idx) {
 
   // Stats
   const grades = c.students || [];
+  const avgScore = grades.length ? (grades.reduce((s, g) => s + (+g.total_score || 0), 0) / grades.length).toFixed(1) : 0;
   const countA = grades.filter(g => g.grade_letter === 'A').length;
   const countF = grades.filter(g => g.grade_letter === 'F').length;
 
@@ -1124,6 +1069,10 @@ function showCourseGrade(idx) {
         <div style="font-size:12px;opacity:.8;margin-top:4px;">อาจารย์: ${c.teacher_name || '-'} | ลงทะเบียน: ${c.enrolled} คน | มีเกรด: ${c.graded} คน</div>
       </div>
       <div style="display:flex;gap:12px;padding:12px 20px;background:#f9f5f3;flex-wrap:wrap;">
+        <div style="text-align:center;padding:8px 16px;background:#fff;border-radius:8px;border:1px solid #eee;">
+          <div style="font-size:22px;font-weight:800;color:#8B3020;">${avgScore}</div>
+          <div style="font-size:10px;color:#888;">คะแนนเฉลี่ย</div>
+        </div>
         <div style="text-align:center;padding:8px 16px;background:#fff;border-radius:8px;border:1px solid #eee;">
           <div style="font-size:22px;font-weight:800;color:#1a7a45;">${countA}</div>
           <div style="font-size:10px;color:#888;">ได้เกรด A</div>
@@ -1142,16 +1091,23 @@ function showCourseGrade(idx) {
     html += `<div style="overflow-x:auto;"><table class="tbl" style="margin:0;">
       <thead><tr>
         <th>#</th><th>รหัสนิสิต</th><th>ชื่อ-นามสกุล</th>
-        <th>เกรด</th><th>ภาคเรียน</th><th>ปีการศึกษา</th>
+        <th>เข้าเรียน</th><th>จิตพิสัย</th><th>งาน</th>
+        <th>กลางภาค</th><th>ปลายภาค</th><th>สอบย่อย</th>
+        <th>รวม</th><th>เกรด</th>
       </tr></thead><tbody>`;
     grades.forEach((g, i) => {
       html += `<tr style="animation:fadeInUp .25s ease ${i * .04}s both">
         <td>${i + 1}</td>
         <td><b>${g.student_id}</b></td>
         <td style="text-align:left">${g.student_name}</td>
+        <td>${g.attend_score ?? '-'}</td>
+        <td>${g.attitude_score ?? '-'}</td>
+        <td>${g.homework_score ?? '-'}</td>
+        <td>${g.midterm_score ?? '-'}</td>
+        <td>${g.final_score ?? '-'}</td>
+        <td>${g.quiz_score ?? '-'}</td>
+        <td><b>${g.total_score}</b></td>
         <td><b style="color:${gc(g.grade_letter)};font-size:15px;">${g.grade_letter || '-'}</b></td>
-        <td>${g.semester??1}</td>
-        <td>${g.academic_year??2568}</td>
       </tr>`;
     });
     html += '</tbody></table></div>';
@@ -1165,7 +1121,7 @@ function showCourseGrade(idx) {
 // ─── Load ALL data after login ────────────
 function loadAllData() {
   loadClassroom(); loadCourse(); loadAssignment(); loadSubmission();
-  loadStudents(); loadTeachers(); loadUsers(); loadEnrollment(); loadAnalysis();
+  loadStudents(); loadTeachers(); loadUsers(); loadAnalysis();
 }
 
 // ─── Grades ───────────────────────────────
@@ -1180,11 +1136,13 @@ async function checkGrade() {
     if (r.success && r.data?.length) {
       const gc=g=>g==='A'?'#1a7a45':g==='F'?'#c0392b':g.startsWith('B')?'#1d4ed8':'#333';
       el.innerHTML=`<div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>รหัสวิชา</th><th>ชื่อวิชา</th><th>เกรด</th><th>ภาคเรียน</th><th>ปีการศึกษา</th></tr></thead>
+        <thead><tr><th>รหัสวิชา</th><th>ชื่อวิชา</th><th>เข้าเรียน</th><th>จิตพิสัย</th><th>งาน</th><th>กลางภาค</th><th>ปลายภาค</th><th>รวม</th><th>เกรด</th></tr></thead>
         <tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.06}s both">
           <td><b>${d.course_id}</b></td><td style="text-align:left;">${d.course_name}</td>
+          <td>${d.attend_score??'-'}</td><td>${d.attitude_score??'-'}</td>
+          <td>${d.homework_score??'-'}</td><td>${d.midterm_score??'-'}</td>
+          <td>${d.final_score??'-'}</td><td><b>${d.total_score}</b></td>
           <td><b style="color:${gc(d.grade)};font-size:16px;">${d.grade}</b></td>
-          <td>${d.semester??1}</td><td>${d.academic_year??2568}</td>
         </tr>`).join('')}</tbody></table></div>`;
       showToast('พบเกรด '+r.data.length+' วิชา ✓');
     } else el.innerHTML=`<div class="tbl-empty">⚠️ ${r.message||'ไม่พบข้อมูลของ '+uid}</div>`;
@@ -1263,8 +1221,7 @@ async function loadMyAtt() {
           <td><b>${d.attendance_id||i+1}</b></td>
           <td>${d.student_id||uid}</td><td>${d.course_id||course||'-'}</td>
           <td><span class="badge ${bc}">${st}</span></td>
-          <td>${d.attendance_date||'-'}</td><td>${d.check_in_time||d.checkin_time||'-'}</td>
-          <td>${d.academic_year||2568}</td>
+          <td>${d.attendance_date||'-'}</td><td>${d.checkin_time||'-'}</td>
         </tr>`;
       }).join('');
       const total=r.data.length;
@@ -1280,7 +1237,7 @@ async function loadMyAtt() {
       rtxt.textContent=rate+'%'; rtxt.style.color=fill.style.background;
       rw.classList.add('show');
       el.innerHTML=`<div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>attendance_id (PK)</th><th>student_id (FK)</th><th>course_id (FK)</th><th>status</th><th>attendance_date</th><th>check_in_time</th><th>academic_year</th></tr></thead>
+        <thead><tr><th>ATTENDANCE_ID</th><th>STUDENT_ID</th><th>COURSE_ID</th><th>STATUS</th><th>ATTENDANCE_DATE</th><th>CHECK_IN_TIME</th></tr></thead>
         <tbody>${rows}</tbody></table></div>`;
       showToast('พบ '+total+' รายการ ✓');
     } else el.innerHTML=`<div class="tbl-empty">⚠️ ${r.message||'ยังไม่มีประวัติ'}</div>`;
@@ -1292,7 +1249,7 @@ async function loadMyAtt() {
 }
 
 // ─── Scoring ──────────────────────────────
-// ─── Scoring (simplified for ER — grade_letter only) ──
+const SMAX={attend:20,attitude:10,homework:20,midterm:30,final:40,quiz:20};
 
 async function loadStudentInfo() {
   const uid=document.getElementById('sc-uid').value.trim().toUpperCase();
@@ -1302,30 +1259,68 @@ async function loadStudentInfo() {
   ne.textContent='⏳ กำลังค้นหา...'; ne.style.color='#888'; sf.style.display='none';
   try {
     const r=await api('GET','/student/'+uid);
-    if (r.success && r.data) {
+    if (r.success) {
       ne.textContent=r.data.student_name; ne.style.color='#222'; sf.style.display='block';
-      // Load courses into dropdown
-      const sel=document.getElementById('sc-course');
-      const cr=await api('GET','/courses');
-      if(cr.success) sel.innerHTML=cr.data.map(c=>`<option value="${c.course_id}">${c.course_id} — ${c.course_name}</option>`).join('');
+      const sr=await api('GET','/score/'+uid);
+      if (sr.success) ['attend','attitude','homework','midterm','final','quiz'].forEach(f=>{
+        const el=document.getElementById('sc-'+f); if(el) el.value=sr.data[f+'_score']||'';
+      }); else ['attend','attitude','homework','midterm','final','quiz'].forEach(f=>{
+        const el=document.getElementById('sc-'+f); if(el) el.value='';
+      });
+      updateTotal();
     } else { ne.textContent='⚠️ ไม่พบ User ID นี้'; ne.style.color='#c0392b'; }
   } catch { ne.textContent='❌ Server ไม่ตอบสนอง'; ne.style.color='#c0392b'; }
 }
 
-function updateTotal() { return 0; }
+function updateTotal() {
+  let t=0;
+  ['attend','attitude','homework','midterm','final','quiz'].forEach(f=>{
+    const el=document.getElementById('sc-'+f); if(!el) return;
+    let v=parseFloat(el.value)||0;
+    if(v>SMAX[f]){v=SMAX[f];el.value=v;} if(v<0){v=0;el.value=0;}
+    t+=v;
+  });
+  const fill=document.getElementById('total-fill');
+  const disp=document.getElementById('total-disp');
+  const c=t>100?'#c0392b':t>=80?'#1a7a45':'var(--red)';
+  if(fill){fill.style.width=Math.min(t,100)+'%';fill.style.background=c;}
+  if(disp){disp.textContent=t+' / 100';disp.style.color=c;}
+  return t;
+}
 
-async function saveScore() { submitScore(); }
+async function saveScore() {
+  const uid=document.getElementById('sc-uid').value.trim().toUpperCase();
+  if(!uid){showToast('กรุณากรอก User ID',true);return;}
+  const t=updateTotal(); if(t>100){showToast('❌ คะแนนรวมเกิน 100!',true);return;}
+  try {
+    const r=await api('POST','/score',{student_id:uid,course_id:'CS101',
+      attend_score:  parseFloat(document.getElementById('sc-attend').value)||0,
+      attitude_score:parseFloat(document.getElementById('sc-attitude').value)||0,
+      homework_score:parseFloat(document.getElementById('sc-homework').value)||0,
+      midterm_score: parseFloat(document.getElementById('sc-midterm').value)||0,
+      final_score:   parseFloat(document.getElementById('sc-final').value)||0,
+      quiz_score:    parseFloat(document.getElementById('sc-quiz').value)||0,
+    });
+    showToast(r.success?'บันทึกคะแนนสำเร็จ ✓':r.message,!r.success);
+  } catch { showToast('❌ Server ไม่ตอบสนอง',true); }
+}
 
 async function submitScore() {
   const uid=document.getElementById('sc-uid').value.trim().toUpperCase();
   if(!uid){showToast('กรุณากรอก User ID',true);return;}
-  const course_id=document.getElementById('sc-course')?.value;
-  const grade_letter=document.getElementById('sc-grade')?.value;
-  if(!course_id||!grade_letter){showToast('กรุณาเลือกวิชาและเกรด',true);return;}
+  const t=updateTotal(); if(t>100){showToast('❌ คะแนนรวมเกิน 100!',true);return;}
   try {
-    const r=await api('POST','/score',{student_id:uid,course_id,grade_letter});
+    const r=await api('POST','/score',{student_id:uid,course_id:'CS101',
+      attend_score:  parseFloat(document.getElementById('sc-attend').value)||0,
+      attitude_score:parseFloat(document.getElementById('sc-attitude').value)||0,
+      homework_score:parseFloat(document.getElementById('sc-homework').value)||0,
+      midterm_score: parseFloat(document.getElementById('sc-midterm').value)||0,
+      final_score:   parseFloat(document.getElementById('sc-final').value)||0,
+      quiz_score:    parseFloat(document.getElementById('sc-quiz').value)||0,
+    });
     if (r.success) {
-      showToast('บันทึกเกรด '+grade_letter+' สำเร็จ ✓');
+      const g=t>=80?'A':t>=75?'B+':t>=70?'B':t>=65?'C+':t>=60?'C':t>=55?'D+':t>=50?'D':'F';
+      showToast('ยืนยันแล้ว ✓  รวม: '+t+'  เกรด: '+g);
     } else showToast(r.message,true);
   } catch { showToast('❌ Server ไม่ตอบสนอง',true); }
 }
