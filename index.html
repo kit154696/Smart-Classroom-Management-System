@@ -529,8 +529,6 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
       <button class="sb-btn" id="sb-teachers"    onclick="showPage('page-teachers')">👨‍🏫 Teacher</button>
       <button class="sb-btn" id="sb-users"       onclick="showPage('page-users')">👥 Users</button>
       <button class="sb-btn" id="sb-analysis"    onclick="showPage('page-analysis')">📊 Analysis</button>
-      <button class="sb-btn" id="sb-scoring"     onclick="showPage('page-scoring')">✏️ Scoring</button>
-      <button class="sb-btn" id="sb-gradeall"    onclick="showPage('page-gradeall')" style="background:#8B3020;color:#fff;">📊 เกรดทุกวิชา</button>
       <button class="sb-btn" id="sb-nfc"         onclick="showPage('page-nfc')">📲 NFC</button>
     </div>
   </nav>
@@ -694,42 +692,10 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     <div class="page" id="page-grades">
       <div class="page-pill">ตรวจสอบเกรด</div>
       <div class="grade-qrow">
-        <input class="grade-inp" id="grade-uid" type="text" placeholder="กรอก User ID เช่น 683380999-9">
+        <input class="grade-inp" id="grade-uid" type="text" placeholder="กรอก User ID เช่น STU001">
         <button class="grade-btn" id="grade-btn" onclick="checkGrade()">SUBMIT</button>
       </div>
       <div id="grade-wrap"><div class="tbl-empty">ป้อน User ID แล้วกด SUBMIT เพื่อดูเกรด</div></div>
-    </div>
-
-    <!-- ════════════════════════
-         SCORING (Teacher/Admin)
-    ════════════════════════ -->
-    <div class="page" id="page-scoring">
-      <div class="page-pill">ลงคะแนน</div>
-      <div class="score-wrap">
-        <div class="score-uid-row">
-          <span class="score-uid-lbl">User ID นักศึกษา :</span>
-          <input type="text" id="sc-uid" class="score-uid-inp" placeholder="เช่น STU001" onchange="loadStudentInfo()">
-          <span id="sc-name" class="score-name">ชื่อ-นามสกุล</span>
-        </div>
-        <div id="sc-fields" style="display:none;">
-          <div class="score-row"><label>เวลาเข้าเรียน :</label><input type="number" id="sc-attend"   class="score-inp" min="0" max="20"  placeholder="0"><span class="score-max">/ 20</span></div>
-          <div class="score-row"><label>จิตพิสัย :</label>      <input type="number" id="sc-attitude" class="score-inp" min="0" max="10"  placeholder="0"><span class="score-max">/ 10</span></div>
-          <div class="score-row"><label>ส่งงาน :</label>        <input type="number" id="sc-homework" class="score-inp" min="0" max="20"  placeholder="0"><span class="score-max">/ 20</span></div>
-          <div class="score-row"><label>สอบกลางภาค :</label>   <input type="number" id="sc-midterm"  class="score-inp" min="0" max="30"  placeholder="0"><span class="score-max">/ 30</span></div>
-          <div class="score-row"><label>สอบปลายภาค :</label>   <input type="number" id="sc-final"    class="score-inp" min="0" max="40"  placeholder="0"><span class="score-max">/ 40</span></div>
-          <div class="score-row"><label>สอบเก็บคะแนน :</label> <input type="number" id="sc-quiz"     class="score-inp" min="0" max="20"  placeholder="0"><span class="score-max">/ 20</span></div>
-          <div class="total-outer">
-            <span style="font-size:14px;font-weight:700;color:#555;">คะแนนรวม</span>
-            <div class="total-track"><div class="total-fill" id="total-fill"></div></div>
-            <div class="total-disp" id="total-disp">0 / 100</div>
-          </div>
-          <div class="score-actions">
-            <button class="sbtn primary"   onclick="saveScore()">SAVE / บันทึก</button>
-            <button class="sbtn secondary" onclick="loadStudentInfo()">EDIT / แก้ไข</button>
-            <button class="sbtn primary"   onclick="submitScore()">SUBMIT / ยืนยัน</button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- ════════════════════════
@@ -810,15 +776,6 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
       <div id="analysis-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
       <!-- Student Detail -->
       <div id="analysis-detail" style="display:none;margin-top:16px;"></div>
-    </div>
-
-    <!-- ════════════════════════ GRADE ALL (Teacher/Admin) ════════════════════════ -->
-    <div class="page" id="page-gradeall">
-      <div class="page-pill" style="background:#8B3020;">📊 เกรดนักศึกษาทุกวิชา (Teacher/Admin)</div>
-      <div id="gradeall-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;"></div>
-      <div id="gradeall-content">
-        <div class="tbl-empty">กดปุ่มวิชาด้านบนเพื่อดูเกรด หรือรอโหลด...</div>
-      </div>
     </div>
 
   </div><!-- /app-main -->
@@ -988,10 +945,9 @@ function loginWithKKU() {
 const PAGE_SB = {
   'page-schedule':'sb-schedule','page-attendance':'sb-attendance',
   'page-classroom':'sb-classroom','page-course':'sb-course','page-assignment':'sb-assignment',
-  'page-submission':'sb-submission','page-grades':'sb-grades','page-scoring':'sb-scoring',
+  'page-submission':'sb-submission','page-grades':'sb-grades',
   'page-students':'sb-students','page-teachers':'sb-teachers','page-users':'sb-users',
   'page-analysis':'sb-analysis','page-nfc':'sb-nfc',
-  'page-gradeall':'sb-gradeall',
 };
 
 function showPage(pid) {
@@ -1002,7 +958,6 @@ function showPage(pid) {
   const sb = document.getElementById(PAGE_SB[pid]);
   if (sb) sb.classList.add('active');
   if (pid==='page-nfc') setTimeout(startNFC,400);
-  if (pid==='page-gradeall') loadGradeAll();
   if (pid==='page-analysis') loadAnalysis();
   window.scrollTo(0,0);
 }
