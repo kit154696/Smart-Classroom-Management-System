@@ -794,7 +794,28 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     <!-- ════════════════════════ ANALYSIS ════════════════════════ -->
     <div class="page" id="page-analysis">
       <div class="page-pill">📊 AttendanceAnalysis (วิเคราะห์ความเสี่ยง)</div>
+
+      <!-- Summary Cards -->
+      <div id="analysis-summary" style="display:flex;flex-wrap:wrap;gap:12px;margin:12px 0;"></div>
+
+      <!-- Filter -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 12px;">
+        <select id="analysis-filter-risk" style="padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;" onchange="renderAnalysis()">
+          <option value="">ทุกระดับความเสี่ยง</option>
+          <option value="High">🔴 High (เสี่ยงสูง)</option>
+          <option value="Medium">🟠 Medium (เสี่ยงปานกลาง)</option>
+          <option value="Low">🟢 Low (เสี่ยงต่ำ)</option>
+        </select>
+        <input id="analysis-filter-student" type="text" placeholder="🔍 ค้นหาชื่อหรือรหัสนิสิต..." style="padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;flex:1;min-width:200px;font-family:inherit;" oninput="renderAnalysis()">
+        <select id="analysis-filter-course" style="padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;" onchange="renderAnalysis()">
+          <option value="">ทุกวิชา</option>
+        </select>
+      </div>
+
+      <!-- Table -->
       <div id="analysis-wrap"><div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div></div>
+      <!-- Student Detail -->
+      <div id="analysis-detail" style="display:none;margin-top:16px;"></div>
     </div>
 
     <!-- ════════════════════════ GRADE ALL (Teacher/Admin) ════════════════════════ -->
@@ -988,6 +1009,7 @@ function showPage(pid) {
   if (sb) sb.classList.add('active');
   if (pid==='page-nfc') setTimeout(startNFC,400);
   if (pid==='page-gradeall') loadGradeAll();
+  if (pid==='page-analysis') loadAnalysis();
   window.scrollTo(0,0);
 }
 
@@ -1085,13 +1107,172 @@ async function loadEnrollment() {
 }
 
 // ─── Attendance Analysis ──────────────────
+let analysisData = null;
 async function loadAnalysis() {
   const el=document.getElementById('analysis-wrap'); if(!el)return;
   el.innerHTML='<div class="tbl-empty"><span class="spinner dark"></span> กำลังโหลด...</div>';
-  try{const r=await api('GET','/analysis');if(r.success&&r.data?.length){
-    const rc=lv=>lv==='High'?'#c0392b':lv==='Medium'?'#e67e22':'#27ae60';
-    el.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>analysis_id</th><th>student (FK)</th><th>course (FK)</th><th>total_classes</th><th>absent_count</th><th>late_count</th><th>attendance_rate</th><th>risk_level</th></tr></thead><tbody>${r.data.map((d,i)=>`<tr style="animation:fadeInUp .3s ease ${i*.04}s both"><td><b>${d.analysis_id}</b></td><td>${d.student_name||d.student_id}</td><td>${d.course_name||d.course_id}</td><td>${d.total_classes}</td><td>${d.absent_count}</td><td>${d.late_count}</td><td>${d.attendance_rate}%</td><td><b style="color:${rc(d.risk_level)}">${d.risk_level}</b></td></tr>`).join('')}</tbody></table></div>`;
-  }else el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล</div>';}catch{el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>';}
+  document.getElementById('analysis-summary').innerHTML='';
+  document.getElementById('analysis-detail').style.display='none';
+  try {
+    const r=await api('GET','/analysis');
+    if(r.success&&r.data?.length){
+      analysisData=r.data;
+      // Populate course filter
+      const courses=[...new Set(r.data.map(d=>d.course_id))];
+      const csel=document.getElementById('analysis-filter-course');
+      csel.innerHTML='<option value="">ทุกวิชา</option>'+courses.map(c=>{
+        const nm=r.data.find(d=>d.course_id===c)?.course_name||c;
+        return `<option value="${c}">${c} — ${nm}</option>`;
+      }).join('');
+      renderAnalysisSummary();
+      renderAnalysis();
+    } else {
+      el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูล AttendanceAnalysis</div>';
+      document.getElementById('analysis-summary').innerHTML='';
+    }
+  } catch { el.innerHTML='<div class="tbl-empty">❌ Server ไม่ตอบสนอง</div>'; }
+}
+
+function renderAnalysisSummary() {
+  if(!analysisData)return;
+  const d=analysisData;
+  const high=d.filter(x=>x.risk_level==='High');
+  const med=d.filter(x=>x.risk_level==='Medium');
+  const low=d.filter(x=>x.risk_level==='Low');
+  const students=[...new Set(d.map(x=>x.student_id))];
+  const highStudents=[...new Set(high.map(x=>x.student_id))];
+  const avgRate=d.length?(d.reduce((s,x)=>s+(+x.attendance_rate||0),0)/d.length).toFixed(1):0;
+
+  document.getElementById('analysis-summary').innerHTML=`
+    <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;padding:16px;border-radius:12px;text-align:center;">
+      <div style="font-size:32px;font-weight:800;">${high.length}</div>
+      <div style="font-size:12px;opacity:.9;">🔴 เสี่ยงสูง (High)</div>
+      <div style="font-size:11px;opacity:.7;margin-top:4px;">${highStudents.length} คน</div>
+    </div>
+    <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#e67e22,#f39c12);color:#fff;padding:16px;border-radius:12px;text-align:center;">
+      <div style="font-size:32px;font-weight:800;">${med.length}</div>
+      <div style="font-size:12px;opacity:.9;">🟠 เสี่ยงปานกลาง (Medium)</div>
+    </div>
+    <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff;padding:16px;border-radius:12px;text-align:center;">
+      <div style="font-size:32px;font-weight:800;">${low.length}</div>
+      <div style="font-size:12px;opacity:.9;">🟢 เสี่ยงต่ำ (Low)</div>
+    </div>
+    <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#2c3e50,#34495e);color:#fff;padding:16px;border-radius:12px;text-align:center;">
+      <div style="font-size:32px;font-weight:800;">${avgRate}%</div>
+      <div style="font-size:12px;opacity:.9;">📊 อัตราเข้าเรียนเฉลี่ย</div>
+      <div style="font-size:11px;opacity:.7;margin-top:4px;">${students.length} คน | ${d.length} records</div>
+    </div>`;
+}
+
+function renderAnalysis() {
+  if(!analysisData)return;
+  const el=document.getElementById('analysis-wrap');
+  const riskFilter=document.getElementById('analysis-filter-risk').value;
+  const stuFilter=document.getElementById('analysis-filter-student').value.trim().toLowerCase();
+  const courseFilter=document.getElementById('analysis-filter-course').value;
+
+  let filtered=analysisData;
+  if(riskFilter) filtered=filtered.filter(d=>d.risk_level===riskFilter);
+  if(stuFilter) filtered=filtered.filter(d=>(d.student_name||'').toLowerCase().includes(stuFilter)||(d.student_id||'').toLowerCase().includes(stuFilter));
+  if(courseFilter) filtered=filtered.filter(d=>d.course_id===courseFilter);
+
+  if(!filtered.length){
+    el.innerHTML='<div class="tbl-empty">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</div>';
+    return;
+  }
+
+  const rc=lv=>lv==='High'?'#c0392b':lv==='Medium'?'#e67e22':'#27ae60';
+  const bg=lv=>lv==='High'?'#fdf2f2':lv==='Medium'?'#fef9f0':'#f0fdf4';
+  const icon=lv=>lv==='High'?'🔴':lv==='Medium'?'🟠':'🟢';
+  const bar=(rate)=>`<div style="display:flex;align-items:center;gap:6px;">
+    <div style="flex:1;height:8px;background:#eee;border-radius:4px;min-width:60px;">
+      <div style="width:${Math.min(rate,100)}%;height:100%;background:${rate>=80?'#27ae60':rate>=60?'#e67e22':'#c0392b'};border-radius:4px;"></div>
+    </div><span style="font-size:12px;font-weight:700;">${rate}%</span></div>`;
+
+  el.innerHTML=`<div style="font-size:12px;color:#888;margin-bottom:6px;">แสดง ${filtered.length} / ${analysisData.length} รายการ</div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr>
+      <th>#</th><th>รหัสนิสิต</th><th>ชื่อ-นามสกุล</th><th>วิชา</th>
+      <th>คาบทั้งหมด</th><th>ขาด</th><th>สาย</th><th>อัตราเข้าเรียน</th><th>ระดับความเสี่ยง</th><th></th>
+    </tr></thead><tbody>${filtered.map((d,i)=>`<tr style="animation:fadeInUp .2s ease ${i*.03}s both;background:${bg(d.risk_level)}">
+      <td>${i+1}</td>
+      <td><b>${d.student_id}</b></td>
+      <td style="text-align:left">${d.student_name||'-'}</td>
+      <td style="text-align:left;font-size:11px;">${d.course_id}<br><span style="color:#888">${d.course_name||''}</span></td>
+      <td>${d.total_classes}</td>
+      <td style="color:${d.absent_count>1?'#c0392b':'#333'};font-weight:${d.absent_count>1?'700':'400'}">${d.absent_count}</td>
+      <td style="color:${d.late_count>2?'#e67e22':'#333'}">${d.late_count}</td>
+      <td>${bar(d.attendance_rate)}</td>
+      <td><span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;background:${rc(d.risk_level)}">${icon(d.risk_level)} ${d.risk_level}</span></td>
+      <td><button onclick="showStudentAnalysis('${d.student_id}')" style="padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">ดูรายละเอียด</button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function showStudentAnalysis(sid) {
+  if(!analysisData)return;
+  const detail=document.getElementById('analysis-detail');
+  const records=analysisData.filter(d=>d.student_id===sid);
+  if(!records.length){detail.style.display='none';return;}
+
+  const name=records[0].student_name||sid;
+  const totalClasses=records.reduce((s,r)=>s+r.total_classes,0);
+  const totalAbsent=records.reduce((s,r)=>s+r.absent_count,0);
+  const totalLate=records.reduce((s,r)=>s+r.late_count,0);
+  const avgRate=records.length?(records.reduce((s,r)=>s+(+r.attendance_rate),0)/records.length).toFixed(1):0;
+  const worstRisk=records.some(r=>r.risk_level==='High')?'High':records.some(r=>r.risk_level==='Medium')?'Medium':'Low';
+  const rc=lv=>lv==='High'?'#c0392b':lv==='Medium'?'#e67e22':'#27ae60';
+
+  detail.style.display='block';
+  detail.innerHTML=`
+    <div style="border:2px solid ${rc(worstRisk)};border-radius:12px;overflow:hidden;">
+      <div style="background:${rc(worstRisk)};color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:18px;font-weight:700;">👤 ${name}</div>
+          <div style="font-size:12px;opacity:.8;">รหัสนิสิต: ${sid} | ลงทะเบียน ${records.length} วิชา</div>
+        </div>
+        <button onclick="document.getElementById('analysis-detail').style.display='none'" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:inherit;">✕ ปิด</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;padding:14px 20px;background:#fafafa;">
+        <div style="text-align:center;padding:10px 18px;background:#fff;border-radius:8px;border:1px solid #eee;">
+          <div style="font-size:24px;font-weight:800;color:#333;">${totalClasses}</div>
+          <div style="font-size:10px;color:#888;">คาบเรียนทั้งหมด</div>
+        </div>
+        <div style="text-align:center;padding:10px 18px;background:#fff;border-radius:8px;border:1px solid #eee;">
+          <div style="font-size:24px;font-weight:800;color:#c0392b;">${totalAbsent}</div>
+          <div style="font-size:10px;color:#888;">ขาดเรียน</div>
+        </div>
+        <div style="text-align:center;padding:10px 18px;background:#fff;border-radius:8px;border:1px solid #eee;">
+          <div style="font-size:24px;font-weight:800;color:#e67e22;">${totalLate}</div>
+          <div style="font-size:10px;color:#888;">มาสาย</div>
+        </div>
+        <div style="text-align:center;padding:10px 18px;background:#fff;border-radius:8px;border:1px solid #eee;">
+          <div style="font-size:24px;font-weight:800;color:${+avgRate>=80?'#27ae60':'#c0392b'};">${avgRate}%</div>
+          <div style="font-size:10px;color:#888;">อัตราเข้าเรียนเฉลี่ย</div>
+        </div>
+      </div>
+      <div style="padding:0 20px 14px;">
+        <div style="font-weight:700;font-size:13px;margin:10px 0 6px;color:#555;">รายละเอียดแต่ละวิชา</div>
+        <div class="tbl-wrap"><table class="tbl" style="margin:0;"><thead><tr>
+          <th>วิชา</th><th>ชื่อวิชา</th><th>คาบทั้งหมด</th><th>ขาด</th><th>สาย</th><th>อัตราเข้าเรียน</th><th>ระดับ</th>
+        </tr></thead><tbody>${records.map((d,i)=>{
+          const bg2=d.risk_level==='High'?'#fdf2f2':d.risk_level==='Medium'?'#fef9f0':'#f0fdf4';
+          return `<tr style="background:${bg2}">
+            <td><b>${d.course_id}</b></td><td style="text-align:left">${d.course_name||'-'}</td>
+            <td>${d.total_classes}</td>
+            <td style="font-weight:700;color:${d.absent_count>1?'#c0392b':'#333'}">${d.absent_count}</td>
+            <td style="color:${d.late_count>2?'#e67e22':'#333'}">${d.late_count}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="flex:1;height:8px;background:#eee;border-radius:4px;min-width:50px;">
+                  <div style="width:${Math.min(d.attendance_rate,100)}%;height:100%;background:${+d.attendance_rate>=80?'#27ae60':+d.attendance_rate>=60?'#e67e22':'#c0392b'};border-radius:4px;"></div>
+                </div><span style="font-weight:700;">${d.attendance_rate}%</span>
+              </div>
+            </td>
+            <td><span style="padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:${rc(d.risk_level)}">${d.risk_level}</span></td>
+          </tr>`;
+        }).join('')}</tbody></table></div>
+      </div>
+    </div>`;
+  detail.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 // ─── Grade All (Teacher/Admin) ────────────
