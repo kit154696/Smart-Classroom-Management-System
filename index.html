@@ -704,33 +704,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);min-height:100vh;over
     <!-- ════════════════════════
          SCORING (Teacher/Admin)
     ════════════════════════ -->
-    <div class="page" id="page-scoring">
-      <div class="page-pill">ลงเกรด</div>
-      <div class="score-wrap">
-        <div class="score-uid-row">
-          <span class="score-uid-lbl">User ID นักศึกษา :</span>
-          <input type="text" id="sc-uid" class="score-uid-inp" placeholder="เช่น 683380495-2" onchange="loadStudentInfo()">
-          <span id="sc-name" class="score-name">ชื่อ-นามสกุล</span>
-        </div>
-        <div id="sc-fields" style="display:none;">
-          <div class="score-row">
-            <label>วิชา :</label>
-            <select id="sc-course" class="score-inp" style="width:260px;padding:8px;"></select>
-          </div>
-          <div class="score-row">
-            <label>เกรด :</label>
-            <select id="sc-grade" class="score-inp" style="width:120px;padding:8px;">
-              <option value="A">A</option><option value="B+">B+</option><option value="B">B</option>
-              <option value="C+">C+</option><option value="C">C</option><option value="D+">D+</option>
-              <option value="D">D</option><option value="F">F</option>
-            </select>
-          </div>
-          <div class="score-actions">
-            <button class="sbtn primary" onclick="submitScore()">SUBMIT / บันทึกเกรด</button>
-          </div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- ════════════════════════
          NFC
